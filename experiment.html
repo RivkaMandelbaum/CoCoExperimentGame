@@ -1,0 +1,67 @@
+<html>
+    <head>
+        <title>My experiment</title> <!-- to fill in later -->
+        <script src="jspsych-6.2.0/jspsych.js"></script>
+        <script src="jspsych-6.2.0/plugins/jspsych-html-keyboard-response.js"> </script>
+        <script src="jspsych-6.2.0/plugins/jspsych-image-keyboard-response.js"></script>
+        <script src="jspsych-6.2.0/plugins/jspsych-image-button-response.js"></script>
+        <script src="jspsych-6.2.0/plugins/jspsych-html-button-response.js"></script>
+        <link href="jspsych-6.2.0/css/jspsych.css" rel="stylesheet" type="text/css">
+    </head>
+    <body></body>
+    <script>
+        /* create timeline for experiment */ 
+        let timeline = []; 
+
+        /* define welcome message as a trial */
+        let welcome = {
+            type: "html-keyboard-response",
+            stimulus: "Welcome to the experiment. Press any key to begin."
+        }; 
+        timeline.push(welcome); 
+
+        /* define dummy experiment here (for setting up framework)  
+        let middleOfTrial = { 
+            type: "html-keyboard-response",
+            stimulus: "Put experiment here. Place any key to continue"
+        }; 
+        timeline.push(middleOfTrial); */ 
+
+        /* first step: art display */ 
+            /* NOTE: jsPsych does define an image-button-response plugin, but this 
+            seemed to be the easiest way to custom-display multiple images at once. */  
+        let multiArtDisplay = {
+            type: "html-button-response",
+            stimulus: "<div><img src = 'images/img1.jpg'></img> </div>" + 
+            "<div><img src = 'images/img2.jpg'></img> </div>" + 
+            "<div><img src = 'images/img3.jpg'></img> </div>" + 
+            "<div><img src = 'images/img4.jpg'></img> </div>" + 
+            "<div><img src = 'images/img5.jpg'></img> </div>",
+            prompt: "Please select what you think is the <strong> highest-value </strong> artwork.",
+            choices: [1, 2, 3, 4, 5]
+        };
+        timeline.push(multiArtDisplay);
+
+        let artSelection = jsPsych.data.getLastTrialData(); 
+        console.log(artSelection);
+        console.log(artSelection.values());
+
+        /* End of experiment page as trial */ 
+        let goodbye = { 
+            type: "html-keyboard-response", 
+            stimulus: "Thanks for participating. The experiment is over. You can close the browser window.",
+            choices: jsPsych.NO_KEYS
+        };
+        /*timeline.push(goodbye); */
+
+        /* start the experiment */ 
+        jsPsych.init({
+            timeline: timeline, 
+            on_finish: function () { 
+                console.log("Finished"); /* Change this later */ 
+                jsPsych.data.displayData();
+            }
+        }); 
+        
+    </script>
+</html>
