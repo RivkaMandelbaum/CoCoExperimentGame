@@ -94,6 +94,12 @@
             return (getPlayerSelection() === getCorrectArtwork()); 
         }
 
+         // Returns whether the active player chose to copy in last trial
+         // Assumes that player is number 0 in choose to copy array 
+         function choseToCopy() { 
+            return (jsPsych.data.getLastTrialData().select('button_pressed').values[0] != 0); 
+        }
+
         /* Functions for dummy correctness are separated because they're based on timeline variables rather than on previous trial. */ 
 
         // Returns the button dummy player i selected in previous trial 
@@ -108,6 +114,7 @@
             return (getDummySelection(i) === getCorrectArtwork());
         }
 
+       
     /* ------------------------------------------------------------ */ 
     /* begin experiment setup:                                      */     
     /* ------------------------------------------------------------ */ 
@@ -152,39 +159,67 @@
         }; 
         timeline.push(welcome); 
 
+        // display art and allow selection
+        let artDisplaySelection = {
+            type: "html-button-response",
+            stimulus: jsPsych.timelineVariable('images'),
+            prompt: "Please select what you think is the <strong> highest-value </strong> artwork.",
+            choices: [1, 2, 3, 4, 5], 
+            data: {
+                correct: jsPsych.timelineVariable('correct'),
+                dummy_choices: jsPsych.timelineVariable('dummy_choices')
+            }, 
+            on_finish: function(data) { 
+                // check player correctness and update money/display
+                if(isPlayerCorrect()) {
+                    player.money += rewardForCorrect;
+                    player.numCorrect++;
+                    document.getElementById("money-amount").innerHTML = "Your total amount of money is: " + player.money.toString();
+                }
+                console.log("self " + testPlayer(player)); 
+
+                // run other player's choices
+                for (i = 0; i < numPlayers; i++) { 
+                    if(isDummyCorrect(i)) {
+                        dummyPlayers[i].money += rewardForCorrect;
+                        dummyPlayers[i].numCorrect ++;
+                    }
+                    console.log(`player ${i} ${testPlayer(dummyPlayers[i])}`); 
+                }
+
+            }
+        };
+
+        // display art but do not allow selection (copy instead)
+        let artDisplayCopy = { 
+            type: "html-keyboard-response", 
+            stimulus: jsPsych.timelineVariable('images'), 
+            prompt: "Press any key to continue.", 
+            data: { 
+                correct: jsPsych.timelineVariable('correct'),
+                dummy_choices: jsPsych.timelineVariable('dummy_choices')
+            },
+        }
+
         /* define art_decision_procedure as three trials: art display and selection, displaying player results, and choice to copy */ 
         let art_decision_procedure = { 
             timeline: [
                 // display art and allow selection
                 {
-                    type: "html-button-response",
-                    stimulus: jsPsych.timelineVariable('images'),
-                    prompt: "Please select what you think is the <strong> highest-value </strong> artwork.",
-                    choices: [1, 2, 3, 4, 5], 
-                    data: {
-                        correct: jsPsych.timelineVariable('correct'),
-                        dummy_choices: jsPsych.timelineVariable('dummy_choices')
-                    }, 
-                    on_finish: function(data) { 
-                        // check player correctness and update money/display
-                        if(isPlayerCorrect()) {
-                            player.money += rewardForCorrect;
-                            player.numCorrect++;
-                            document.getElementById("money-amount").innerHTML = "Your total amount of money is: " + player.money.toString();
-                        }
-                        console.log("self " + testPlayer(player)); 
-
-                        // run other player's choices
-                        for (i = 0; i < numPlayers; i++) { 
-                            if(isDummyCorrect(i)) {
-                                dummyPlayers[i].money += rewardForCorrect;
-                                dummyPlayers[i].numCorrect ++;
-                            }
-                            console.log(`player ${i} ${testPlayer(dummyPlayers[i])}`); 
-                        }
-
+                    timeline: [artDisplaySelection], 
+                    conditional_function: function() { 
+                        // only execute when player will choose on their own 
+                        return !choseToCopy();  
                     }
-                }, 
+                },
+                // display art and disallow selection 
+                {
+                    timeline: [artDisplayCopy], 
+                    conditional_function: function() { 
+                        // only execute when player copies instead of choosing
+                        return choseToCopy(); 
+                    }
+                },
                 // display player results and correctness
                 {
                     type: "html-button-response",
