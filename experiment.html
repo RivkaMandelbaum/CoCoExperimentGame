@@ -30,7 +30,7 @@
         const numPlayers = 4; // number of other players
 
         // for debugging: 
-        const numDecisions = 2; // the number of times you choose best artwork
+        const numDecisions = 2; // not currently in use - the number of times you choose best artwork
         const s1 = "<div><img src = 'images/img1.jpg'></img> </div>" + 
                     "<div><img src = 'images/img2.jpg'></img> </div>" + 
                     "<div><img src = 'images/img3.jpg'></img> </div>" + 
@@ -47,40 +47,44 @@
                     "<div><img src = 'images/img2.jpg'></img> </div>" + 
                     "<div><img src = 'images/img1.jpg'></img> </div>";
 
-        // Randomly generates an integer between 1 and numImages to be the correct artwork. 
-        function generateArtwork() { 
+        // Randomly generates an integer between 1 and numImages. 
+        /* function generateArtwork() { 
             let randomNum = (Math.random() * numImages) + 1; // random number between 1 and numImages
             return Math.floor(randomNum); // convert to integer
-        }
+        } */ 
 
-        // Returns the button selected in previous trial (should be integer between 1 and 5)
-        function getArtWorkSelected() { 
-            /* jsPsych.data returns a DataCollection object. Using .select('button_pressed') gives you a DataColumn object. Using .values gives you an array of all values for button_pressed. In this case, there is only one button_pressed -- use [0] to grab that. */
-            let offByOne = jsPsych.data.getLastTrialData().select('button_pressed').values[0]; 
-            // button_pressed stores the first button as 0; I started labeling at 1. This does conversion.
-            return offByOne + 1; 
-        }; 
-
-        // Returns what the correct answer was in the previous trial (useful because it's randomized)
+        // Returns what the correct answer was in the previous trial (useful in case abstraction changes)
         function getCorrectArtwork () { 
             return jsPsych.data.getLastTrialData().select('correct').values[0];
         }
+        // Returns the button selected in previous trial (should be integer between 1 and numImages)
+        function getPlayerSelection() {  
+            let offByOne = jsPsych.data.getLastTrialData().select('button_pressed').values[0]; 
+            
+            // button_pressed stores the first button as 0 but choices starts at 1
+            return offByOne + 1; 
+        }; 
 
-        // Takes a boolean argument indicating whether the player being checked is a dummy player. 
-        // Returns whether the answer is correct (for the player) or generates an answer and checks correctness (for the dummy)
-        function isAnswerCorrect(isDummy) { 
-            let correctAnswer = jsPsych.data.getLastTrialData().select('correct').values[0];
-
-            if (!isDummy) {
-                return (getArtWorkSelected() === correctAnswer); 
-            }
-            else {
-                return (generateArtwork() === correctAnswer)
-            }
-
+        // Returns whether player is correct. Currently simple but may be helpful if added abstraction needed
+        function isPlayerCorrect() { 
+            return (getPlayerSelection() === getCorrectArtwork()); 
         }
 
-        // creates a player with startAmount of money and numCorrect, numCopied both set to 0. numCorrect and numCopied are useful for testing and in case we want to display those later
+        /* Separate from getPlayerSelection() and isPlayerCorrect() because I thought separate code would probably work better for integration: */ 
+
+        // Returns the button dummy player i selected in previous trial 
+        function getDummySelection(i) { 
+            let offByOne = jsPsych.data.getLastTrialData().select('dummy_choices').values[0][i]; //.values returns an array with one element, the array dummy_choices, so needs to be [0][i]
+
+            return offByOne + 1; 
+        }
+
+        // Returns whether dummy player i was correct in previous trial
+        function isDummyCorrect(i) { 
+            return (getDummySelection(i) === getCorrectArtwork());
+        }
+
+        // creates a player with startAmount of money and numCorrect, numCopied, timesCopying all set to 0. numCorrect and numCopied are useful for testing and in case we want to display those later
         function createPlayer() { 
             this.money = startAmount;
             this.numCorrect = 0;
@@ -143,10 +147,13 @@
                     stimulus: jsPsych.timelineVariable('images'),
                     prompt: "Please select what you think is the <strong> highest-value </strong> artwork.",
                     choices: [1, 2, 3, 4, 5], 
-                    data: {correct: jsPsych.timelineVariable('correct')}, 
+                    data: {
+                        correct: jsPsych.timelineVariable('correct'),
+                        dummy_choices: jsPsych.timelineVariable('dummy_choices')
+                    }, 
                     on_finish: function(data) { 
                         // check player correctness and update money/display
-                        if(isAnswerCorrect(false)) {
+                        if(isPlayerCorrect()) {
                             player.money += rewardForCorrect;
                             player.numCorrect++;
                             document.getElementById("money-amount").innerHTML = "Your total amount of money is: " + player.money.toString();
@@ -155,7 +162,7 @@
 
                         // run other player's choices
                         for (i = 0; i < numPlayers; i++) { 
-                            if(isAnswerCorrect(true)) {
+                            if(isDummyCorrect(i)) {
                                 dummyPlayers[i].money += rewardForCorrect;
                                 dummyPlayers[i].numCorrect ++;
                             }
@@ -168,19 +175,36 @@
                 {
                     type: "html-button-response",
                     stimulus: function () { 
-                        let response = "Your choice was button number " + getArtWorkSelected() + ". \n"; 
-                        if (isAnswerCorrect(false)) 
+                        // displays the player's response and its correctness
+                        let response = "Your choice was button number " + getPlayerSelection() + ". \n"; 
+                        if (isPlayerCorrect())
                             return response + `Your answer is correct. You earned $${rewardForCorrect}.`; 
                         else 
                             return response + "Your answer is incorrect. The correct value was: " + getCorrectArtwork() + "."; 
                         }, 
-                    choices: ["Continue"]
+                    choices: ["Continue"], 
                 },
                 // chooseToCopy
                 {
                     type: "html-button-response",
-                    stimulus: "Here are the other players' results. PLACEHOLDER! <br> </br> In the next round, " + 
-                    `you may either choose the highest-value artwork on your own or pay another player $${payToCopy} to copy their choice. <br> </br> <br> </br>`,
+                    stimulus: function() { 
+                        // returns a string detailing other players' results and asking which to copy
+                        s = "Here are the other player's results. <br> </br>"; 
+                        for(i = 0; i < numPlayers; i++) {
+                            if((jsPsych.timelineVariable('dummy_choices', true)[i] + 1) === jsPsych.timelineVariable('correct', true)) {
+                                d_correct = "<strong> correctly </strong>"; 
+                            }
+                            else d_correct = "<strong> incorrectly </strong>";  
+
+                            d_selection = jsPsych.timelineVariable('dummy_choices', true)[i] + 1;
+
+                            s = s.concat(`Player ${i+1} ${d_correct} chose artwork ${d_selection}. Player ${i+1} now has $${dummyPlayers[i].money}. <br> </br>`);
+                        }
+
+                        s = s.concat(`You may either choose the highest-value artwork on your own or pay another player $${payToCopy} to copy their choice. <br> </br> <br> </br>`);
+
+                        return s; 
+                    },
                     prompt: "Which player would you like to copy?", 
                     choices: ["None, I would like to make my own choice.", "Player 1", "Player 2", "Player 3", "Player 4"],
                     on_finish: function(data) {
@@ -204,13 +228,12 @@
                 }
             ],
             timeline_variables: [
-                // for debugging: 
-                {correct: 1, images: s1},
-                // {correct: generateArtwork(), images: s1},
-                {correct: generateArtwork(), images: s2},
-                {correct: generateArtwork(), images: s3}
+                {correct: 1, images: s1, dummy_choices: [0, 1, 2, 3]},
+                {correct: 2, images: s2, dummy_choices: [0, 1, 2, 3]},
+                {correct: 3, images: s3, dummy_choices: [0, 1, 2, 3]}
             ],
-            // repetitions: numDecisions   
+            // repetitions: numDecisions  
+
         }
         timeline.push(art_decision_procedure);
 
