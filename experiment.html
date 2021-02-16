@@ -31,29 +31,12 @@
 
         const numDecisions = 2; // to skip last "choice" screen, rough solution
 
-        /* for debugging purposes */  
+        /* placeholders */  
         const img1 = "images/img1.jpg";
         const img2 = 'images/img2.jpg';
         const img3 = 'images/img3.jpg';
         const img4 = 'images/img4.jpg';
         const img5 = 'images/img5.jpg';
-
-        // different combinations of placeholders to display in testing
-        const s1 = "<div><img src = 'images/img1.jpg'></img> </div>" + 
-                    "<div><img src = 'images/img2.jpg'></img> </div>" + 
-                    "<div><img src = 'images/img2.jpg'></img> </div>" + 
-                    "<div><img src = 'images/img2.jpg'></img> </div>" + 
-                    "<div><img src = 'images/img2.jpg'></img> </div>";
-        const s2 = "<div><img src = 'images/img5.jpg'></img> </div>" + 
-                    "<div><img src = 'images/img4.jpg'></img> </div>" + 
-                    "<div><img src = 'images/img3.jpg'></img> </div>" + 
-                    "<div><img src = 'images/img2.jpg'></img> </div>" + 
-                    "<div><img src = 'images/img1.jpg'></img> </div>";
-        const s3 = "<div><img src = 'images/img3.jpg'></img> </div>" + 
-                    "<div><img src = 'images/img4.jpg'></img> </div>" + 
-                    "<div><img src = 'images/img5.jpg'></img> </div>" + 
-                    "<div><img src = 'images/img2.jpg'></img> </div>" + 
-                    "<div><img src = 'images/img1.jpg'></img> </div>";
     
     /* ----------------------------------------------------------*/ 
     /* functions that will be used later defined here:           */     
@@ -70,6 +53,8 @@
 
         // tests whether the player object is consistent and returns the player's stats as an array
         function testPlayer(p) {
+            if(!'money' in p || !'numCorrect' in p || !'numCopied' in p || !'timesCopying' in p) console.warn("Error! Parameter does not have correct fields.");
+
             let stats = [p.money, p.numCorrect, p.numCopied];
             if (p.money != startAmount + p.numCopied*payToCopy + p.numCorrect*rewardForCorrect - p.timesCopying*payToCopy) console.warn("Player error!"); 
             return stats;  
@@ -111,7 +96,7 @@
                 console.log("Button undefined. Ignore warning if this is first round.");
                 return false; 
             }
-            // if defined, return button_pressed (false-y when not copying)
+            // if defined, return button_pressed (truth-y when copying)
             else return button_pressed; 
         }
 
@@ -226,6 +211,12 @@
         // for debugging:
         if (numPlayers != 4) console.warn("WARNING! Did you change the number of players?")
 
+
+        let bIsCopying = false; // whether the player is copying in this round
+        let iPlayerCopying = 0; // which player they are copying
+        let numExecutions = 0; // number of rounds thru timeline 
+
+
         /* ------------------------------------------------------------ */ 
         /* define trials on timeline                                    */     
         /* ------------------------------------------------------------ */ 
@@ -237,9 +228,6 @@
         }; 
         timeline.push(welcome); 
 
-        let bIsCopying = false; // whether the player is copying in this round
-        let iPlayerCopying = 0; // which player they are copying
-        let numExecutions = 0; // number of rounds thru timeline 
 
         /* define art_decision_procedure as three trials: art display and selection, displaying player results, and choice to copy */ 
         let art_decision_procedure = { 
@@ -249,7 +237,6 @@
                     timeline: [artDisplaySelection], 
                     conditional_function: function() { 
                         // return true when the player will select 
-                        bIsCopying = choseToCopy(); 
                         return !bIsCopying;  
                     }
                 },
@@ -281,7 +268,7 @@
                                 return response + `Player ${iPlayerCopying} was <strong> correct</strong>. You earned $${rewardForCorrect}.`;
                             }
                             else {
-                                return response + `Player ${iPlayerCopying} was <strong> incorrect </strong>. The correct value was ${getCorrectArtwork()}.`
+                                return response + `Player ${iPlayerCopying} was <strong> incorrect</strong>. The correct value was ${getCorrectArtwork()}.`
                             }
                         }
                     }, 
@@ -317,29 +304,32 @@
                             // update number of executions
                             numExecutions+= 1; 
 
+                            let buttonPressed = data.button_pressed;
+                            let playerCopyingIndex = buttonPressed-1;  
+
                             // if the player chooses to copy:
-                            if (data.button_pressed != 0 && player.money >= payToCopy) {
+                            if (buttonPressed != 0 && player.money >= payToCopy) {
+                                // update bIsCopying and iPlayerCopying
+                                bIsCopying = true; 
+                                iPlayerCopying = buttonPressed;
+
                                 // adjust and display the player's money and status: 
                                 player.money -= payToCopy;
                                 document.getElementById("money-amount").innerHTML = "Your total amount of money is: " + player.money.toString();
                                 player.timesCopying++; 
 
-                                // and adjust the money of other players
-                                for(button_num = 1; button_num <= numPlayers; button_num++) {
-                                    if(data.button_pressed === button_num) {
-                                        dummyPlayers[button_num-1].money += payToCopy;
-                                        dummyPlayers[button_num-1].numCopied++;
-
-                                        iPlayerCopying = button_num; 
-
-                                        console.log(`player ${button_num} ${testPlayer(dummyPlayers[button_num-1])}`);
-                                    }
-                                }
+                                // and adjust the money of the player being copied
+                                dummyPlayers[playerCopyingIndex].money += payToCopy;
+                                dummyPlayers[playerCopyingIndex].numCopied++;
+                                console.log(`player ${buttonPressed} ${testPlayer(dummyPlayers[playerCopyingIndex])}`);
                             }
+                            // if tried to copy but doesn't have enough money, warn player
                             else if (data.button_pressed != 0 && player.money < payToCopy) { 
                                 alert("You do not have enouch money to copy."); 
                                 data.button_pressed = 0; 
                             }
+                            // if not copying, update bIsCopying to match
+                            else bIsCopying = false; 
                         }
                     }], 
                     // skips last execution (before end screen)
