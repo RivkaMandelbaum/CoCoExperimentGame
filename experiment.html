@@ -43,7 +43,7 @@
     /* ----------------------------------------------------------*/ 
     /* functions that will be used later defined here:           */     
     /* ----------------------------------------------------------*/
-        /* ---- Player creation: ---- */ 
+        /* ---- Player creation and modification: ---- */ 
 
         // creates a player with startAmount of money and numCorrect, numCopied, timesCopying all set to 0. numCorrect and numCopied are useful for testing and in case we want to display those later
         function createPlayer() { 
@@ -61,6 +61,18 @@
             if (p.money != startAmount + p.numCopied*payToCopy + p.numCorrect*rewardForCorrect - p.timesCopying*payToCopy) console.warn("Player error!"); 
             return stats;  
         }     
+
+        // update other players in a given trial assuming up-to-date timeline variables 
+        // tests each player and logs to console 
+        function updatePlayerStats(trial_index) { 
+            for (i = 0; i < numPlayers; i++) { 
+                    if(isDummyCorrect(i)) {
+                        dummyPlayers[i].money += rewardForCorrect;
+                        dummyPlayers[i].numCorrect ++;
+                    }
+                    console.log(`player ${i+1} ${testPlayer(dummyPlayers[i])}`); 
+                }
+        }
 
         /* ---- Getting previous choices and correctness: ---- */ 
 
@@ -90,10 +102,35 @@
             return jsPsych.timelineVariable('dummy_choices', true)[i];
         }
 
-        // Returns whether dummy player i was correct in previous trial
+        // Returns whether dummy player i was correct in given trial
         // i should use array index of player, not player name
         function isDummyCorrect(i) { 
             return getDummySelection(i) === jsPsych.timelineVariable('correct_choice', true);
+        }
+
+        /* ---- Functions related to sending/receiving choices ---- */ 
+
+        // If offline mode, logs to console. If online, gets responses (PENDING CHANGES BASED ON REPRESENTATION) and updates timeline variables to match. 
+        // Warning: will change the data object for the given trial! 
+        // Meant to be used after the experiment is paused, before resume. 
+        function getPlayersChoices(trial_index, offlineMode) { 
+
+            // in offline mode, log and move on - will use timeline variable
+            if(offlineMode) { 
+                console.log("offline mode"); 
+            }
+
+            // in online mode, receive responses and update the timeline variable to match
+            else { 
+                // PLACEHOLDER FOR RECEIVING RESPONSES
+                // SHOULD CHANGE BASED ON REPRESENTATION
+                let placeholderForResponse = [2, 2, 2, 2]; 
+
+                // update timeline variables 
+                for (i = 0; i < numPlayers; i++) {
+                    jsPsych.data.get().filter({'trial_index': trial_index}).values()[0].dummy_choices[i] = placeholderForResponse[i];
+                }
+            }
         }
     
     /* ------------------------------------------------------------ */ 
@@ -112,6 +149,7 @@
             }, 
             on_finish: function(data) { 
                 let trial_index = jsPsych.progress().current_trial_global;
+
                 // check player correctness and update money/display
                 if(isPlayerCorrect(trial_index)) {
                     player.money += rewardForCorrect;
@@ -120,38 +158,17 @@
                 }
                 console.log("self " + testPlayer(player)); 
                 
-                // wait for other player's responses
+                // update other players' money:
                 jsPsych.pauseExperiment(); 
 
-                // in offline mode, use dummy_choices timeline variable and don't check for a response 
-                if(offlineMode) {
-                    console.log("offline mode");
-                    jsPsych.resumeExperiment();
-                }
+                // collect responses and update timeline variables
+                getPlayersChoices(trial_index, offlineMode);
 
-                else {
-                    // PLACEHOLDER FOR DEALING WITH SENDING PLAYER RESPONSE
-                    // PLACEHOLDER FOR DEALING WITH RECEIVING RESPONSES 
-                    placeholderForResponse = [1, 2, 3, 4];
+                // update players (uses timeline variables within function) and log to console
+                updatePlayerStats(trial_index);
 
-                    // change dummy_choices timeline variable to reflect the actual response given
-                    for (i = 0; i < numPlayers; i++) {
-                        jsPsych.data.get().filter({'trial_index': trial_index}).values()[0].dummy_choices[i] = placeholderForResponse[i];
-                    }
-
-                    jsPsych.resumeExperiment(); 
-                }
-
-                // run other player's choices
-                // isDummyCorrect uses timeline variables so the above adjustment should work
-                for (i = 0; i < numPlayers; i++) { 
-                    if(isDummyCorrect(i)) {
-                        dummyPlayers[i].money += rewardForCorrect;
-                        dummyPlayers[i].numCorrect ++;
-                    }
-                    console.log(`player ${i+1} ${testPlayer(dummyPlayers[i])}`); 
-                }
-                
+                jsPsych.resumeExperiment();
+    
             }
         };
 
@@ -166,35 +183,25 @@
                 dummy_choices: jsPsych.timelineVariable('dummy_choices')
             },
             on_finish: function(data) { 
+                let trial_index = jsPsych.progress().current_trial_global;
+
                 // wait for other player's responses
                 jsPsych.pauseExperiment(); 
-                if(offlineMode) {
-                    console.log("offline mode");
-                    jsPsych.pluginAPI.setTimeout(function() {
-                        // check correctness of player being copied, update money
-                        if(isDummyCorrect(iPlayerCopying-1)) {
-                            player.money += rewardForCorrect;
-                            player.numCorrect++;
-                            document.getElementById("money-amount").innerHTML = "Your total amount of money is: " + player.money.toString();
-                        }
-                        console.log("self " + testPlayer(player)); 
 
-                        // run other player's choices
-                        for (i = 0; i < numPlayers; i++) { 
-                            if(isDummyCorrect(i)) {
-                                dummyPlayers[i].money += rewardForCorrect;
-                                dummyPlayers[i].numCorrect ++;
-                            }
-                            console.log(`player ${i+1} ${testPlayer(dummyPlayers[i])}`); 
-                        }
-                        jsPsych.resumeExperiment();
-                    }, 1);
+                // get responses and update timeline variables to match
+                getPlayersChoices(trial_index, offlineMode);
+
+                // using responses, update player stats
+                if(isDummyCorrect(iPlayerCopying-1)) {
+                    player.money += rewardForCorrect;
+                    player.numCorrect++;
+                    document.getElementById("money-amount").innerHTML = "Your total amount of money is: " + player.money.toString();
                 }
-                    
-                else { 
-                    // PLACEHOLDER FOR EVENT HANDLER
-                    jsPsych.resumeExperiment();
-                }
+                console.log("self " + testPlayer(player)); 
+
+                updatePlayerStats(trial_index);
+
+                jsPsych.resumeExperiment(); 
             }
         }
     /* ------------------------------------------------------------ */ 
