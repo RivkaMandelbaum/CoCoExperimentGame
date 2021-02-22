@@ -6,6 +6,7 @@
         <script src="jspsych-6.2.0/plugins/jspsych-image-keyboard-response.js"></script>
         <script src="jspsych-6.2.0/plugins/jspsych-multi-image-button-response.js"></script>
         <script src="jspsych-6.2.0/plugins/jspsych-html-button-response.js"></script>
+       <!-- <script src = "testimports.js" type = "text/javascript"></script> -->
         <link href="jspsych-6.2.0/css/jspsych.css" rel="stylesheet" type="text/css">
     </head>
 
@@ -30,6 +31,7 @@
         const numPlayers = 4; // number of other players
 
         const numDecisions = 2; // to skip last "choice" screen, rough solution
+        const offlineMode = true; 
 
         /* placeholders */  
         const img1 = "images/img1.jpg";
@@ -62,50 +64,30 @@
 
         /* ---- Getting previous choices and correctness: ---- */ 
 
-        // Randomly generates an integer between 1 and numImages. 
-        /* function generateArtwork() { 
-            let randomNum = (Math.random() * numImages) + 1; // random number between 1 and numImages
-            return Math.floor(randomNum); // convert to integer
-        } */ 
-
-        // Returns what the correct answer was in the previous trial (useful in case abstraction changes)
-        function getCorrectArtwork () { 
-            return jsPsych.data.getLastTrialData().select('correct').values[0];
+        // Returns what the correct answer was in the trial with given index
+        // Answers are equivalent to indices in the 'choices' array
+        function getCorrectArtwork (index) { 
+            return jsPsych.data.get().filter({'trial_index':index}).select('correct').values[0];
         }
-        // Returns the button selected in previous trial (should be integer between 1 and numImages)
-        function getPlayerSelection() {  
-            let offByOne = jsPsych.data.getLastTrialData().select('button_pressed').values[0]; 
-            
-            // choices starts at 1, button_pressed starts at 0
-            return offByOne + 1; 
+        // Returns the button selected in trial with given index 
+        // Buttons are based on indices in the 'choices array' (should be integer between 0 and numImages-1)
+        function getPlayerSelection(index) {  
+            let trial_data = jsPsych.data.get().filter({'trial_index': index});
+            return trial_data.select('button_pressed').values[0];
         }; 
 
-        // Returns whether player is correct. Useful in case abstraction changes.
-        function isPlayerCorrect() { 
-            return (getPlayerSelection() === getCorrectArtwork()); 
-        }
-
-         // Returns whether the active player chose to copy in last trial
-         // Assumes that player is number 0 in choose to copy array 
-         function choseToCopy() { 
-            let button_pressed = jsPsych.data.getLastTrialData().select('button_pressed').values[0]; 
-
-            // if button pressed is undefined, return false, log to console
-            // this should only happen in first round!
-            if(!button_pressed && button_pressed != 0) { 
-                console.log("Button undefined. Ignore warning if this is first round.");
-                return false; 
-            }
-            // if defined, return button_pressed (truth-y when copying)
-            else return button_pressed; 
+        // Returns whether player was correct in trial with given index.
+        function isPlayerCorrect(index) { 
+            return jsPsych.data.get().filter({'trial_index': index}).select('clicked_correct').values[0];
         }
 
         /* ---- Functions for dummy correctness are separated because they're based on timeline variables rather than on previous trial. ---- */ 
 
         // Returns the button dummy player i selected in previous trial 
         // i should use array index of player, not player name
+        // buttons based on 'choices' array
         function getDummySelection(i) { 
-            return jsPsych.timelineVariable('dummy_choices', true)[i] + 1;
+            return jsPsych.timelineVariable('dummy_choices', true)[i];
         }
 
         // Returns whether dummy player i was correct in previous trial
@@ -129,15 +111,39 @@
                 dummy_choices: jsPsych.timelineVariable('dummy_choices')
             }, 
             on_finish: function(data) { 
+                let trial_index = jsPsych.progress().current_trial_global;
                 // check player correctness and update money/display
-                if(isPlayerCorrect()) {
+                if(isPlayerCorrect(trial_index)) {
                     player.money += rewardForCorrect;
                     player.numCorrect++;
                     document.getElementById("money-amount").innerHTML = "Your total amount of money is: " + player.money.toString();
                 }
                 console.log("self " + testPlayer(player)); 
+                
+                // wait for other player's responses
+                jsPsych.pauseExperiment(); 
+
+                // in offline mode, use dummy_choices timeline variable and don't check for a response 
+                if(offlineMode) {
+                    console.log("offline mode");
+                    jsPsych.resumeExperiment();
+                }
+
+                else {
+                    // PLACEHOLDER FOR DEALING WITH SENDING PLAYER RESPONSE
+                    // PLACEHOLDER FOR DEALING WITH RECEIVING RESPONSES 
+                    placeholderForResponse = [1, 2, 3, 4];
+
+                    // change dummy_choices timeline variable to reflect the actual response given
+                    for (i = 0; i < numPlayers; i++) {
+                        jsPsych.data.get().filter({'trial_index': trial_index}).values()[0].dummy_choices[i] = placeholderForResponse[i];
+                    }
+
+                    jsPsych.resumeExperiment(); 
+                }
 
                 // run other player's choices
+                // isDummyCorrect uses timeline variables so the above adjustment should work
                 for (i = 0; i < numPlayers; i++) { 
                     if(isDummyCorrect(i)) {
                         dummyPlayers[i].money += rewardForCorrect;
@@ -145,7 +151,7 @@
                     }
                     console.log(`player ${i+1} ${testPlayer(dummyPlayers[i])}`); 
                 }
-
+                
             }
         };
 
@@ -160,21 +166,34 @@
                 dummy_choices: jsPsych.timelineVariable('dummy_choices')
             },
             on_finish: function(data) { 
-                // check correctness of player being copied, update money
-                if(isDummyCorrect(iPlayerCopying-1)) {
-                    player.money += rewardForCorrect;
-                    player.numCorrect++;
-                    document.getElementById("money-amount").innerHTML = "Your total amount of money is: " + player.money.toString();
-                }
-                console.log("self " + testPlayer(player)); 
+                // wait for other player's responses
+                jsPsych.pauseExperiment(); 
+                if(offlineMode) {
+                    console.log("offline mode");
+                    jsPsych.pluginAPI.setTimeout(function() {
+                        // check correctness of player being copied, update money
+                        if(isDummyCorrect(iPlayerCopying-1)) {
+                            player.money += rewardForCorrect;
+                            player.numCorrect++;
+                            document.getElementById("money-amount").innerHTML = "Your total amount of money is: " + player.money.toString();
+                        }
+                        console.log("self " + testPlayer(player)); 
 
-                 // run other player's choices
-                for (i = 0; i < numPlayers; i++) { 
-                    if(isDummyCorrect(i)) {
-                        dummyPlayers[i].money += rewardForCorrect;
-                        dummyPlayers[i].numCorrect ++;
-                    }
-                    console.log(`player ${i+1} ${testPlayer(dummyPlayers[i])}`); 
+                        // run other player's choices
+                        for (i = 0; i < numPlayers; i++) { 
+                            if(isDummyCorrect(i)) {
+                                dummyPlayers[i].money += rewardForCorrect;
+                                dummyPlayers[i].numCorrect ++;
+                            }
+                            console.log(`player ${i+1} ${testPlayer(dummyPlayers[i])}`); 
+                        }
+                        jsPsych.resumeExperiment();
+                    }, 1);
+                }
+                    
+                else { 
+                    // PLACEHOLDER FOR EVENT HANDLER
+                    jsPsych.resumeExperiment();
                 }
             }
         }
@@ -238,7 +257,7 @@
                     conditional_function: function() { 
                         // return true when the player will select 
                         return !bIsCopying;  
-                    }
+                    }, 
                 },
                 // if copying: display art and disallow selection; update money of all players 
                 {
@@ -252,29 +271,31 @@
                     type: "html-button-response",
                     stimulus: function () { 
                         let response = "";
+                        let trial_index = jsPsych.progress().current_trial_global - 1;
                         if(!bIsCopying) {
-                            let response = "Your choice was button number " + getPlayerSelection() + ". \n"; 
+                            let response = "Your choice was button number " + (getPlayerSelection(trial_index)+1) + ". \n"; 
 
-                            if (isPlayerCorrect())
+                            if (isPlayerCorrect(trial_index)) {
                                 return response + `Your answer is correct. You earned $${rewardForCorrect}.`; 
-                            else 
-                                return response + "Your answer is incorrect. The correct value was: " + getCorrectArtwork() + "."; 
-
+                            }
+                            else {
+                                return response + "Your answer is incorrect. The correct value was: " + (getCorrectArtwork(trial_index)+1) + "."; 
+                            }
                         }
                         else { 
-                            response = `You chose to copy player ${iPlayerCopying}. Player ${iPlayerCopying} chose artwork ${getDummySelection(iPlayerCopying-1)}. <br> </br>`;
+                            response = `You chose to copy player ${iPlayerCopying}. Player ${iPlayerCopying} chose artwork ${getDummySelection(iPlayerCopying-1) + 1}. <br> </br>`;
 
                             if(isDummyCorrect(iPlayerCopying-1)) {
                                 return response + `Player ${iPlayerCopying} was <strong> correct</strong>. You earned $${rewardForCorrect}.`;
                             }
                             else {
-                                return response + `Player ${iPlayerCopying} was <strong> incorrect</strong>. The correct value was ${getCorrectArtwork()}.`
+                                return response + `Player ${iPlayerCopying} was <strong> incorrect</strong>. The correct value was ${getCorrectArtwork(trial_index) + 1}.`
                             }
                         }
                     }, 
                     choices: ["Continue"], 
                 },
-                // display other player results and choose to copy; update money and iPlayerCopying if copying
+                // display other player results and choose to copy; update money, bIsCopying iPlayerCopying if copying
                 {
                     // uses timeline to allow conditional skip on last play
                     timeline: [ {
@@ -290,7 +311,7 @@
                                 d_correct = "<strong> incorrectly </strong>";
                             }
 
-                            s = s.concat(`Player ${i+1} ${d_correct} chose artwork ${getDummySelection(i)}. Player ${i+1} now has $${dummyPlayers[i].money}. <br> </br>`);
+                            s = s.concat(`Player ${i+1} ${d_correct} chose artwork ${getDummySelection(i) + 1}. Player ${i+1} now has $${dummyPlayers[i].money}. <br> </br>`);
                             }
 
                             // adds explanation of choice
@@ -304,32 +325,43 @@
                             // update number of executions
                             numExecutions+= 1; 
 
-                            let buttonPressed = data.button_pressed;
-                            let playerCopyingIndex = buttonPressed-1;  
+                            // send data and wait for other players
+                            jsPsych.pauseExperiment(); 
+                            
+                            if(offlineMode){ 
+                                let buttonPressed = data.button_pressed;
+                                let playerCopyingIndex = buttonPressed-1;  
+                                
+                                // if the player chooses to copy:
+                                if (buttonPressed != 0 && player.money >= payToCopy) {
+                                    // update bIsCopying and iPlayerCopying
+                                    bIsCopying = true; 
+                                    iPlayerCopying = buttonPressed;
 
-                            // if the player chooses to copy:
-                            if (buttonPressed != 0 && player.money >= payToCopy) {
-                                // update bIsCopying and iPlayerCopying
-                                bIsCopying = true; 
-                                iPlayerCopying = buttonPressed;
+                                    // adjust and display the player's money and status: 
+                                    player.money -= payToCopy;
+                                    document.getElementById("money-amount").innerHTML = "Your total amount of money is: " + player.money.toString();
+                                    player.timesCopying++; 
 
-                                // adjust and display the player's money and status: 
-                                player.money -= payToCopy;
-                                document.getElementById("money-amount").innerHTML = "Your total amount of money is: " + player.money.toString();
-                                player.timesCopying++; 
+                                    // and adjust the money of the player being copied
+                                    dummyPlayers[playerCopyingIndex].money += payToCopy;
+                                    dummyPlayers[playerCopyingIndex].numCopied++;
+                                    console.log(`player ${buttonPressed} ${testPlayer(dummyPlayers[playerCopyingIndex])}`);
+                                }
+                                // if tried to copy but doesn't have enough money, warn player
+                                else if (data.button_pressed != 0 && player.money < payToCopy) { 
+                                    alert("You do not have enouch money to copy."); 
+                                    data.button_pressed = 0; 
+                                }
+                                // if not copying, update bIsCopying to match
+                                else bIsCopying = false; 
 
-                                // and adjust the money of the player being copied
-                                dummyPlayers[playerCopyingIndex].money += payToCopy;
-                                dummyPlayers[playerCopyingIndex].numCopied++;
-                                console.log(`player ${buttonPressed} ${testPlayer(dummyPlayers[playerCopyingIndex])}`);
+                                jsPsych.resumeExperiment(); 
                             }
-                            // if tried to copy but doesn't have enough money, warn player
-                            else if (data.button_pressed != 0 && player.money < payToCopy) { 
-                                alert("You do not have enouch money to copy."); 
-                                data.button_pressed = 0; 
+                            else { 
+                                // PLACEHOLDER FOR EVENT HANDLER
+                                jsPsych.resumeExperiment(); 
                             }
-                            // if not copying, update bIsCopying to match
-                            else bIsCopying = false; 
                         }
                     }], 
                     // skips last execution (before end screen)
@@ -339,9 +371,9 @@
                 }
             ],
             timeline_variables: [
-                {correct_choice: 1, img_array: [img1, img2, img3, img4, img5], dummy_choices: [0, 1, 2, 3]},
-                {correct_choice: 2, img_array: [img5, img4, img3, img2, img1], dummy_choices: [0, 1, 2, 3]},
-                {correct_choice: 3, img_array: [img1, img2, img3, img4, img5], dummy_choices: [0, 1, 2, 3]}
+                {correct_choice: 0, img_array: [img1, img2, img3, img4, img5], dummy_choices: [0, 1, 2, 3]},
+                {correct_choice: 1, img_array: [img5, img4, img3, img2, img1], dummy_choices: [0, 1, 2, 3]},
+                {correct_choice: 2, img_array: [img1, img2, img3, img4, img5], dummy_choices: [0, 1, 2, 3]}
             ],
             // repetitions: numDecisions  
 
