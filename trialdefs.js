@@ -13,7 +13,7 @@
         correct: jsPsych.timelineVariable('correct_choice'),
         dummy_choices: jsPsych.timelineVariable('dummy_choices')
     }, 
-    on_finish: function(data) { 
+    on_finish: function() { 
         let trial_index = jsPsych.progress().current_trial_global;
 
         // check player correctness and update money/display
@@ -48,7 +48,7 @@ let artDisplayCopy = {
         correct: jsPsych.timelineVariable('correct_choice'),
         dummy_choices: jsPsych.timelineVariable('dummy_choices')
     },
-    on_finish: function(data) { 
+    on_finish: function() { 
         let trial_index = jsPsych.progress().current_trial_global;
 
         // wait for other player's responses
@@ -58,13 +58,15 @@ let artDisplayCopy = {
         getPlayersChoices(trial_index, offlineMode);
 
         // using responses, update player stats
-        if(isDummyCorrect(iPlayerCopying-1)) {
+        // self:
+        if(isDummyCorrect(iPlayerCopying-1, trial_index)) {
             player.money += rewardForCorrect;
             player.numCorrect++;
             document.getElementById("money-amount").innerHTML = "Your total amount of money is: " + player.money.toString();
         }
         console.log("self " + testPlayer(player)); 
 
+        // others: 
         updatePlayerStats(trial_index);
 
         jsPsych.resumeExperiment(); 
@@ -74,28 +76,8 @@ let artDisplayCopy = {
 let displaySelfResults = {
     type: "html-button-response",
     stimulus: function () { 
-        let response = "";
-        let trial_index = jsPsych.progress().current_trial_global - 1;
-        if(!bIsCopying) {
-            let response = "Your choice was button number " + (getPlayerSelection(trial_index)+1) + ". \n"; 
-
-            if (isPlayerCorrect(trial_index)) {
-                return response + `Your answer is correct. You earned $${rewardForCorrect}.`; 
-            }
-            else {
-                return response + "Your answer is incorrect. The correct value was: " + (getCorrectArtwork(trial_index)+1) + "."; 
-            }
-        }
-        else { 
-            response = `You chose to copy player ${iPlayerCopying}. Player ${iPlayerCopying} chose artwork ${getDummySelection(iPlayerCopying-1) + 1}. <br> </br>`;
-
-            if(isDummyCorrect(iPlayerCopying-1)) {
-                return response + `Player ${iPlayerCopying} was <strong> correct</strong>. You earned $${rewardForCorrect}.`;
-            }
-            else {
-                return response + `Player ${iPlayerCopying} was <strong> incorrect</strong>. The correct value was ${getCorrectArtwork(trial_index) + 1}.`
-            }
-        }
+        let index_param = jsPsych.progress().current_trial_global - 1;
+        return buildSelfResultsStimulus(index_param, bIsCopying, iPlayerCopying);
     }, 
     choices: ["Continue"],
 }
@@ -103,66 +85,70 @@ let displaySelfResults = {
 let chooseToCopy = {
     type: "html-button-response",
     stimulus: function() { 
-        // builds a string detailing player's responses
-        s = "Here are the other player's results. <br> </br>"; 
-        for(i = 0; i < numPlayers; i++) {
-        if(isDummyCorrect(i)) { 
-            d_correct = "<strong> correctly </strong>"; 
-            }
-        else {
-            d_correct = "<strong> incorrectly </strong>";
-        }
-
-        s = s.concat(`Player ${i+1} ${d_correct} chose artwork ${getDummySelection(i) + 1}. Player ${i+1} now has $${dummyPlayers[i].money}. <br> </br>`);
-        }
-
-        // adds explanation of choice
-        s = s.concat(`You may either choose the highest-value artwork on your own or pay another player $${payToCopy} to copy their choice. <br> </br> <br> </br>`);
-
-        return s; 
+        let index_param = jsPsych.progress().current_trial_global - 2;
+        return buildCopyStimulus(index_param);
     },
     prompt: "Which player would you like to copy?", 
     choices: ["None, I would like to make my own choice.", "Player 1", "Player 2", "Player 3", "Player 4"],
     on_finish: function(data) {
         // update number of executions
-        numExecutions+= 1; 
+        numExecutions++; 
 
-        // send data and wait for other players
         jsPsych.pauseExperiment(); 
-        
-        if(offlineMode){ 
-            let buttonPressed = data.button_pressed;
-            let playerCopyingIndex = buttonPressed-1;  
-            
-            // if the player chooses to copy:
-            if (buttonPressed != 0 && player.money >= payToCopy) {
-                // update bIsCopying and iPlayerCopying
-                bIsCopying = true; 
-                iPlayerCopying = buttonPressed;
 
-                // adjust and display the player's money and status: 
-                player.money -= payToCopy;
-                document.getElementById("money-amount").innerHTML = "Your total amount of money is: " + player.money.toString();
-                player.timesCopying++; 
+        // update variables 
+        let buttonPressed = getPlayerSelection(jsPsych.progress().current_trial_global);
+        let playerCopyingIndex = buttonPressed-1; 
 
-                // and adjust the money of the player being copied
-                dummyPlayers[playerCopyingIndex].money += payToCopy;
-                dummyPlayers[playerCopyingIndex].numCopied++;
-                console.log(`player ${buttonPressed} ${testPlayer(dummyPlayers[playerCopyingIndex])}`);
-            }
-            // if tried to copy but doesn't have enough money, warn player
-            else if (data.button_pressed != 0 && player.money < payToCopy) { 
-                alert("You do not have enouch money to copy."); 
-                data.button_pressed = 0; 
-            }
-            // if not copying, update bIsCopying to match
-            else bIsCopying = false; 
-
-            jsPsych.resumeExperiment(); 
+        if(buttonPressed != 0 && player.money >= payToCopy) { 
+            bIsCopying = true;
+            iPlayerCopying = buttonPressed; 
         }
+        else if(buttonPressed == 0) bIsCopying = false; 
+        // if attempted to copy but doesn't have enough money, warn and reset choice to be not copying
         else { 
-            // PLACEHOLDER FOR EVENT HANDLER
-            jsPsych.resumeExperiment(); 
+            alert("You do not have enough money to copy.");
+            jsPsych.data.get().filter({'trial_index': jsPsych.progress().current_trial_global}).select('button_pressed') = 0; 
+            bIsCopying = false; 
         }
+
+        // send and receive information if online
+        if(!offlineMode) { 
+            // PLACEHOLDER FOR SENDING AND RECEIVING ACTUAL INFO
+            placeholderForResults = [{copy: true, who: 3}, {copy: false, who: 0}, {copy: false, who: 0}, {copy: false, who: 0}];
+        }
+
+        // update self and player who you're copying if relevant
+        if(bIsCopying){
+            player.money -= payToCopy;
+            document.getElementById("money-amount").innerHTML = "Your total amount of money is: " + player.money.toString();
+            player.timesCopying++; 
+
+            // and adjust the money of the player being copied
+            dummyPlayers[playerCopyingIndex].money += payToCopy;
+            dummyPlayers[playerCopyingIndex].numCopied++;
+            console.log(`player ${buttonPressed} ${testPlayer(dummyPlayers[playerCopyingIndex])}`);
+        }
+        
+
+        // if online: update other players based on their info
+        if(!offlineMode) { 
+            for(i = 0; i < numPlayers; i++) { 
+                currInfo = placeholderForResults[i];
+                if (currInfo.copy) { 
+                    // update player copying
+                    dummyPlayers[i].money -= payToCopy;
+                    dummyPlayers[i].timesCopying++; 
+
+                    // update player being copied
+                    dummyPlayers[currInfo.who].money += payToCopy;
+                    dummyPlayers[currInfo.who].numCopied ++;
+
+                    console.log(`player ${i+1} copied player ${currInfo.who+1}`);
+                }
+            }
+        }
+
+        jsPsych.resumeExperiment(); 
     }
 }

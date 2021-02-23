@@ -21,10 +21,11 @@ function testPlayer(p) {
 }     
 
 // update other players in a given trial assuming up-to-date timeline variables 
+// using update logic from art display step - if correct, give reward
 // tests each player and logs to console 
 function updatePlayerStats(trial_index) { 
     for (i = 0; i < numPlayers; i++) { 
-            if(isDummyCorrect(i)) {
+            if(isDummyCorrect(i, trial_index)) {
                 dummyPlayers[i].money += rewardForCorrect;
                 dummyPlayers[i].numCorrect ++;
             }
@@ -53,17 +54,19 @@ function isPlayerCorrect(index) {
 
 /* ---- Functions for dummy correctness are separated because they're based on timeline variables rather than on previous trial. ---- */ 
 
-// Returns the button dummy player i selected in previous trial 
+// Returns the button dummy player i selected in given trial 
 // i should use array index of player, not player name
 // buttons based on 'choices' array
-function getDummySelection(i) { 
-    return jsPsych.timelineVariable('dummy_choices', true)[i];
+function getDummySelection(i, trial_index) { 
+    return jsPsych.data.get().filter({'trial_index': trial_index}).select('dummy_choices').values[0][i];
 }
 
 // Returns whether dummy player i was correct in given trial
 // i should use array index of player, not player name
-function isDummyCorrect(i) { 
-    return getDummySelection(i) === jsPsych.timelineVariable('correct_choice', true);
+function isDummyCorrect(i, trial_index) { 
+   let cor = jsPsych.data.get().filter({'trial_index': trial_index}).select('correct').values[0];
+  
+   return getDummySelection(i, trial_index) === cor;
 }
 
 /* ---- Functions related to sending/receiving choices ---- */ 
@@ -89,4 +92,54 @@ function getPlayersChoices(trial_index, offlineMode) {
             jsPsych.data.get().filter({'trial_index': trial_index}).values()[0].dummy_choices[i] = placeholderForResponse[i];
         }
     }
+}
+
+/* ---- Creating response strings ---- */ 
+// builds stimulus string for displaySelfResults
+// your choice (or choice of personcopying), whether it was correct, current money
+// returns string to be used as stimulus 
+function buildSelfResultsStimulus(trial_index, bIsCopying, iPlayerCopying) {
+    let response = "";
+    if(!bIsCopying) {
+        let response = "Your choice was button number " + (getPlayerSelection(trial_index)+1) + ". \n"; 
+
+        if (isPlayerCorrect(trial_index)) {
+            return response + `Your answer is correct. You earned $${rewardForCorrect}.`; 
+        }
+        else {
+            return response + "Your answer is incorrect. The correct value was: " + (getCorrectArtwork(trial_index)+1) + "."; 
+        }
+    }
+    else { 
+        response = `You chose to copy player ${iPlayerCopying}. Player ${iPlayerCopying} chose artwork ${getDummySelection(iPlayerCopying-1, trial_index) + 1}. <br> </br>`;
+
+        if(isDummyCorrect(iPlayerCopying-1, trial_index)) {
+            return response + `Player ${iPlayerCopying} was <strong> correct</strong>. You earned $${rewardForCorrect}.`;
+        }
+        else {
+            return response + `Player ${iPlayerCopying} was <strong> incorrect</strong>. The correct value was ${getCorrectArtwork(trial_index) + 1}.`
+        }
+    }
+}
+
+// builds stimulus string for chooseToCopy
+// displays other players' choices, correctness, money amount
+// returns string to be used as stimulus
+function buildCopyStimulus(trial_index) {
+    s = "Here are the other player's results. <br> </br>"; 
+        for(i = 0; i < numPlayers; i++) {
+            if(isDummyCorrect(i, trial_index)) { 
+                d_correct = "<strong> correctly </strong>"; 
+                }
+            else {
+                d_correct = "<strong> incorrectly </strong>";
+            }
+
+            s = s.concat(`Player ${i+1} ${d_correct} chose artwork ${getDummySelection(i, trial_index) + 1}. Player ${i+1} now has $${dummyPlayers[i].money}. <br> </br>`);
+        }
+
+        // adds explanation of choice
+        s = s.concat(`You may either choose the highest-value artwork on your own or pay another player $${payToCopy} to copy their choice. <br> </br> <br> </br>`);
+
+        return s; 
 }
