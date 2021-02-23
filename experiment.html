@@ -74,6 +74,12 @@
             dummyPlayers.push(otherPlayer);
         }
 
+        /* define dummy choices array for timeline variable default */ 
+        let d_choices = [];
+        for(i = 0; i < numPlayers; i++) {
+            d_choices.push(i);
+        }
+
     /* ------------------------------------------------------------ */ 
     /* define trials on timeline                                    */     
     /* ------------------------------------------------------------ */ 
@@ -117,9 +123,9 @@
                 }
             ],
             timeline_variables: [
-                {correct_choice: 0, img_array: [img1, img2, img3, img4, img5], dummy_choices: [0, 1, 2, 3]},
-                {correct_choice: 1, img_array: [img5, img4, img3, img2, img1], dummy_choices: [0, 1, 2, 3]},
-                {correct_choice: 2, img_array: [img1, img2, img3, img4, img5], dummy_choices: [0, 1, 2, 3]}
+                {correct_choice: 0, img_array: [img1, img2, img3, img4, img5], dummy_choices: d_choices},
+                {correct_choice: 1, img_array: [img5, img4, img3, img2, img1], dummy_choices: d_choices},
+                {correct_choice: 2, img_array: [img1, img2, img3, img4, img5], dummy_choices: d_choices}
             ],
         }
         timeline.push(art_decision_procedure);

@@ -7,8 +7,14 @@
     type: "multi-image-button-response",
     stimulus: jsPsych.timelineVariable('img_array'),
     prompt: "Please select what you think is the <strong> highest-value </strong> artwork.",
-    choices: [1, 2, 3, 4, 5], 
-    correct_choice: jsPsych.timelineVariable('correct_choice'),
+    choices: function() {
+        let ch = [];
+        let len = jsPsych.timelineVariable('img_array', true).length;
+        for (i = 1; i <= len; i++) { 
+            ch.push(i);
+        }
+        return ch;
+    }, 
     data: {
         correct: jsPsych.timelineVariable('correct_choice'),
         dummy_choices: jsPsych.timelineVariable('dummy_choices')
@@ -89,7 +95,13 @@ let chooseToCopy = {
         return buildCopyStimulus(index_param);
     },
     prompt: "Which player would you like to copy?", 
-    choices: ["None, I would like to make my own choice.", "Player 1", "Player 2", "Player 3", "Player 4"],
+    choices: function() { 
+        let ch = ["None, I would like to make my own choice."];
+        for (i = 1; i <= numPlayers; i++) { 
+            ch.push(`Player ${i}`);
+        }
+        return ch; 
+    },
     on_finish: function(data) {
         // update number of executions
         numExecutions++; 
