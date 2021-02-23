@@ -1,7 +1,7 @@
 /* ------------------------------------------------------------ */ 
 /* trial definion for complicated trials:                       */     
 /* ------------------------------------------------------------ */  
-const trialDuration = (1000); // force end of decision after this time
+const trialDuration = (60 * 1000); // force end of decision after this time
 
  // display art and allow selection
  let artDisplaySelection = {
