@@ -49,7 +49,10 @@ function getPlayerSelection(index) {
 
 // Returns whether player was correct in trial with given index.
 function isPlayerCorrect(index) { 
-    return jsPsych.data.get().filter({'trial_index': index}).select('clicked_correct').values[0];
+    let clicked_correct_data = jsPsych.data.get().filter({'trial_index': index}).select('clicked_correct').values[0];
+
+    if (clicked_correct_data != null) return clicked_correct_data;
+    else return(getCorrectArtwork(index) === getPlayerSelection(index));
 }
 
 /* ---- Functions for dummy correctness are separated because they're based on timeline variables rather than on previous trial. ---- */ 
@@ -101,6 +104,8 @@ function getPlayersChoices(trial_index, offlineMode) {
 function buildSelfResultsStimulus(trial_index, bIsCopying, iPlayerCopying) {
     let response = "";
     if(!bIsCopying) {
+        if(getPlayerSelection(trial_index) === null) return "Your time ran out."
+
         let response = "Your choice was button number " + (getPlayerSelection(trial_index)+1) + ". \n"; 
 
         if (isPlayerCorrect(trial_index)) {

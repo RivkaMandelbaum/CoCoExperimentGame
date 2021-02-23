@@ -1,12 +1,14 @@
 /* ------------------------------------------------------------ */ 
 /* trial definion for complicated trials:                       */     
 /* ------------------------------------------------------------ */  
- 
+const trialDuration = (1000); // force end of decision after this time
+
  // display art and allow selection
  let artDisplaySelection = {
     type: "multi-image-button-response",
     stimulus: jsPsych.timelineVariable('img_array'),
     prompt: "Please select what you think is the <strong> highest-value </strong> artwork.",
+    correct_choice: jsPsych.timelineVariable('correct_choice'),
     choices: function() {
         let ch = [];
         let len = jsPsych.timelineVariable('img_array', true).length;
@@ -15,6 +17,8 @@
         }
         return ch;
     }, 
+    response_ends_trial: true,
+    trial_duration: trialDuration,
     data: {
         correct: jsPsych.timelineVariable('correct_choice'),
         dummy_choices: jsPsych.timelineVariable('dummy_choices')
@@ -102,25 +106,30 @@ let chooseToCopy = {
         }
         return ch; 
     },
+    response_ends_trial: true, 
+    trial_duration: trialDuration,
     on_finish: function(data) {
-        // update number of executions
-        numExecutions++; 
-
         jsPsych.pauseExperiment(); 
 
         // update variables 
+        numExecutions++; 
+
         let buttonPressed = getPlayerSelection(jsPsych.progress().current_trial_global);
         let playerCopyingIndex = buttonPressed-1; 
 
-        if(buttonPressed != 0 && player.money >= payToCopy) { 
+        if (buttonPressed === null) alert("Your time ran out! Moving to next round.");
+
+        // if copying a player 
+        if(buttonPressed > 0 && buttonPressed <= numPlayers && player.money >= payToCopy) { 
             bIsCopying = true;
             iPlayerCopying = buttonPressed; 
         }
-        else if(buttonPressed == 0) bIsCopying = false; 
+        // if chose not to copy or time ran out
+        else if(buttonPressed === 0 || buttonPressed === null) bIsCopying = false; 
         // if attempted to copy but doesn't have enough money, warn and reset choice to be not copying
         else { 
             alert("You do not have enough money to copy.");
-            jsPsych.data.get().filter({'trial_index': jsPsych.progress().current_trial_global}).select('button_pressed') = 0; 
+            jsPsych.data.get().filter({'trial_index': jsPsych.progress().current_trial_global}).select('button_pressed').values[0] = 0; 
             bIsCopying = false; 
         }
 
