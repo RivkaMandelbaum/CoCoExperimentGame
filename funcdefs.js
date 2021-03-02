@@ -4,11 +4,12 @@
 /* ---- Player creation and modification: ---- */ 
 
 // creates a player with startAmount of money and numCorrect, numCopied, timesCopying all set to 0. numCorrect and numCopied are useful for testing and in case we want to display those later
-function createPlayer() { 
+function createPlayer(id) { 
     this.money = startAmount;
     this.numCorrect = 0;
     this.numCopied = 0;
-    this.timesCopying = 0;   
+    this.timesCopying = 0; 
+    this.id = id;   
 }
 
 // tests whether the player object is consistent and returns the player's stats as an array
@@ -29,7 +30,7 @@ function updatePlayerStats(trial_index) {
                 dummyPlayers[i].money += rewardForCorrect;
                 dummyPlayers[i].numCorrect ++;
             }
-            console.log(`player ${i+1} ${testPlayer(dummyPlayers[i])}`); 
+            console.log(`player ${i+1} (id ${dummyPlayers[i].id}) ${testPlayer(dummyPlayers[i])}`); 
         }
 }
 
@@ -73,6 +74,19 @@ function isDummyCorrect(i, trial_index) {
 }
 
 /* ---- Functions related to sending/receiving choices ---- */ 
+
+// Returns object with numPlayers, self id, and other ids as array
+// If offline, will return dummy values of those 
+function getPlayerInfo(){
+    if(!offlineMode) { 
+        console.log("online mode");
+        // PLACEHOLDER FOR ACTUAL FUNCTIONALITY
+    }
+    else {
+        let result = {players: numPlayers, self_id: 0, player_ids: [40, 50, 60, 100]};
+        return result; 
+    }
+}
 
 // If offline mode, logs to console. If online, gets responses (PENDING CHANGES BASED ON REPRESENTATION) and updates timeline variables to match. 
 // Warning: will change the data object for the given trial! 

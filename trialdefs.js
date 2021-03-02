@@ -2,9 +2,63 @@
 /* trial definion for complicated trials:                       */     
 /* ------------------------------------------------------------ */  
 const trialDuration = (60 * 1000); // force end of decision after this time
+const waitDuration = 500; // show waiting screen when offline for this long
+
+/* ---- consent timeline ---- */ 
+let consentChoice = { 
+    type: "html-button-response",
+    stimulus: "PLACEHOLDER FOR CONSENT INFORMATION. <br> </br> By clicking on the button below, you consent to participate in the experiment.", 
+    choices: ["Consent and continue to experiment"], 
+    on_finish: function() {         
+        console.log("finished consent form");
+    }
+}
+
+// functionality to perform after players have all finished consent part
+// plus waiting screen 
+let consentWait = { 
+    type: "html-keyboard-response", 
+    stimulus: "Please wait for other players.", 
+    choices: jsPsych.NO_KEYS,
+    trial_duration: function () { 
+        // finish this screen after waitDuration ms when offline
+        // when online, wait for all players
+        if (offlineMode) return waitDuration;
+        else return null;
+    },
+    on_finish: function() {
+        /* -------- experiment setup steps -------- */ 
+        // display initial amount of money 
+        document.getElementById("money-amount").innerHTML = "Your total amount of money is: " + startAmount.toString();
+
+        // if online, will return object with numPlayers, self id, and other ids as array 
+        // if offline, will return dummy values of those 
+        let initObject = getPlayerInfo(); 
+        numPlayers = initObject.players; 
+
+        // define player 
+        player = new createPlayer(initObject.self_id);
+
+        // define dummy players 
+        for(i = 0; i < numPlayers; i++) {
+            let otherPlayer = new createPlayer(initObject.player_ids[i]);
+            dummyPlayers.push(otherPlayer);
+        }
+
+        // define dummy choices array for timeline variable default 
+        for(i = 0; i < numPlayers; i++) {
+            d_choices.push(i);
+        }
+    }
+}
+
+// combine the two parts of the consent trial into one timeline
+let consentTrial = [consentChoice, consentWait]
+
+/* ---- art selection ---- */ 
 
  // display art and allow selection
- let artDisplaySelection = {
+ let artDisplaySelectionChoice = {
     type: "multi-image-button-response",
     stimulus: jsPsych.timelineVariable('img_array'),
     prompt: "Please select what you think is the <strong> highest-value </strong> artwork.",
@@ -22,9 +76,22 @@ const trialDuration = (60 * 1000); // force end of decision after this time
     data: {
         correct: jsPsych.timelineVariable('correct_choice'),
         dummy_choices: jsPsych.timelineVariable('dummy_choices')
-    }, 
-    on_finish: function() { 
-        let trial_index = jsPsych.progress().current_trial_global;
+    }
+};
+
+// waiting trial with after-finish functionality 
+let artDisplaySelectionWait = { 
+    type: "html-keyboard-response", 
+    stimulus: "Please wait for other players.", 
+    choices: jsPsych.NO_KEYS,
+    trial_duration: function() {
+        // finish this screen after waitDuration ms when offline
+        // when online, wait for all players
+        if (offlineMode) return waitDuration;
+        else return null;
+    },
+    on_finish: function() {
+        let trial_index = jsPsych.progress().current_trial_global - 1;
 
         // check player correctness and update money/display
         if(isPlayerCorrect(trial_index)) {
@@ -32,7 +99,7 @@ const trialDuration = (60 * 1000); // force end of decision after this time
             player.numCorrect++;
             document.getElementById("money-amount").innerHTML = "Your total amount of money is: " + player.money.toString();
         }
-        console.log("self " + testPlayer(player)); 
+        console.log(`self (id ${player.id}): ${testPlayer(player)}`); 
         
         // update other players' money:
         jsPsych.pauseExperiment(); 
@@ -44,12 +111,16 @@ const trialDuration = (60 * 1000); // force end of decision after this time
         updatePlayerStats(trial_index);
 
         jsPsych.resumeExperiment();
-
     }
-};
+}
+
+// combine into timeline
+let artDisplaySelection = [artDisplaySelectionChoice, artDisplaySelectionWait];
+
+/* ---- art display while copying ---- */ 
 
 // display art but do not allow selection (copy instead)
-let artDisplayCopy = { 
+let artDisplayCopyChoice = { 
     type: "multi-image-button-response", 
     stimulus: jsPsych.timelineVariable('img_array'), 
     prompt: "Continue to see what choice was made.", 
@@ -58,8 +129,19 @@ let artDisplayCopy = {
         correct: jsPsych.timelineVariable('correct_choice'),
         dummy_choices: jsPsych.timelineVariable('dummy_choices')
     },
-    on_finish: function() { 
-        let trial_index = jsPsych.progress().current_trial_global;
+}
+let artDisplayCopyWait = { 
+    type: "html-keyboard-response", 
+    stimulus: "Please wait for other players.", 
+    choices: jsPsych.NO_KEYS,
+    trial_duration: function() {
+        // finish this screen after waitDuration ms when offline
+        // when online, wait for all players
+        if (offlineMode) return waitDuration;
+        else return null;
+    },
+    on_finish: function() {
+        let trial_index = jsPsych.progress().current_trial_global - 1;
 
         // wait for other player's responses
         jsPsych.pauseExperiment(); 
@@ -74,7 +156,7 @@ let artDisplayCopy = {
             player.numCorrect++;
             document.getElementById("money-amount").innerHTML = "Your total amount of money is: " + player.money.toString();
         }
-        console.log("self " + testPlayer(player)); 
+        console.log(`self (id ${player.id}): ${testPlayer(player)}`); 
 
         // others: 
         updatePlayerStats(trial_index);
@@ -83,19 +165,27 @@ let artDisplayCopy = {
     }
 }
 
+let artDisplayCopy = [artDisplayCopyChoice, artDisplayCopyWait]
+
+/* ---- display own results trial ---- */ 
+
 let displaySelfResults = {
     type: "html-button-response",
     stimulus: function () { 
-        let index_param = jsPsych.progress().current_trial_global - 1;
+        let index_param = jsPsych.progress().current_trial_global - 2;
         return buildSelfResultsStimulus(index_param, bIsCopying, iPlayerCopying);
     }, 
     choices: ["Continue"],
+    response_ends_trial: true, 
+    trial_duration: trialDuration
 }
 
-let chooseToCopy = {
+/* ---- choose whether to copy timeline ---- */ 
+
+let chooseToCopyChoice = {
     type: "html-button-response",
     stimulus: function() { 
-        let index_param = jsPsych.progress().current_trial_global - 2;
+        let index_param = jsPsych.progress().current_trial_global - 3;
         return buildCopyStimulus(index_param);
     },
     prompt: "Which player would you like to copy?", 
@@ -107,14 +197,26 @@ let chooseToCopy = {
         return ch; 
     },
     response_ends_trial: true, 
-    trial_duration: trialDuration,
-    on_finish: function(data) {
+    trial_duration: trialDuration
+}
+
+let chooseToCopyWait = { 
+    type: "html-keyboard-response", 
+    stimulus: "Please wait for other players.", 
+    choices: jsPsych.NO_KEYS,
+    trial_duration: function () { 
+        // finish this screen after waitDuration ms when offline
+        // when online, wait for all players
+        if (offlineMode) return waitDuration;
+        else return null;
+    },
+    on_finish: function() {
         jsPsych.pauseExperiment(); 
 
         // update variables 
         numExecutions++; 
 
-        let buttonPressed = getPlayerSelection(jsPsych.progress().current_trial_global);
+        let buttonPressed = getPlayerSelection(jsPsych.progress().current_trial_global - 1);
         let playerCopyingIndex = buttonPressed-1; 
 
         if (buttonPressed === null) alert("Your time ran out! Moving to next round.");
@@ -129,7 +231,7 @@ let chooseToCopy = {
         // if attempted to copy but doesn't have enough money, warn and reset choice to be not copying
         else { 
             alert("You do not have enough money to copy.");
-            jsPsych.data.get().filter({'trial_index': jsPsych.progress().current_trial_global}).select('button_pressed').values[0] = 0; 
+            jsPsych.data.get().filter({'trial_index': jsPsych.progress().current_trial_global - 1}).select('button_pressed').values[0] = 0; 
             bIsCopying = false; 
         }
 
@@ -148,7 +250,7 @@ let chooseToCopy = {
             // and adjust the money of the player being copied
             dummyPlayers[playerCopyingIndex].money += payToCopy;
             dummyPlayers[playerCopyingIndex].numCopied++;
-            console.log(`player ${buttonPressed} ${testPlayer(dummyPlayers[playerCopyingIndex])}`);
+            console.log(`player ${buttonPressed} (id ${dummyPlayers[playerCopyingIndex].id}) ${testPlayer(dummyPlayers[playerCopyingIndex])}`);
         }
         
 
@@ -173,3 +275,5 @@ let chooseToCopy = {
         jsPsych.resumeExperiment(); 
     }
 }
+
+let chooseToCopy = [chooseToCopyChoice, chooseToCopyWait]

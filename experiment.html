@@ -35,7 +35,6 @@
         const payToCopy = 2; // amount you need to pay someone to copy their choices
         const startAmount = 20; // amount of money you start with
         const rewardForCorrect = 10; // amount you get when you choose the right answer
-        const numPlayers = 4; // number of other players
 
         const numDecisions = 2; // to skip last "choice" screen, rough solution
         const offlineMode = true; 
@@ -54,36 +53,20 @@
         let bIsCopying = false; // whether the player is copying in this round
         let iPlayerCopying = 0; // which player they are copying
         let numExecutions = 0; // number of rounds thru timeline 
+        let numPlayers = 4; // number of other players - adjusted if live
 
-    /* ------------------------------------------------------------ */ 
-    /* begin experiment setup:                                      */     
-    /* ------------------------------------------------------------ */ 
-
-        /* display initial amount of money */ 
-        document.getElementById("money-amount").innerHTML = "Your total amount of money is: " + startAmount.toString();
-
-        /* create timeline for experiment */ 
-        let timeline = []; 
-
-        /* define the player */ 
-        let player = new createPlayer(); 
-
-        /* define dummy players */
-        let dummyPlayers = []; 
-        for(i = 0; i < numPlayers; i++) {
-            let otherPlayer = new createPlayer();
-            dummyPlayers.push(otherPlayer);
-        }
-
-        /* define dummy choices array for timeline variable default */ 
-        let d_choices = [];
-        for(i = 0; i < numPlayers; i++) {
-            d_choices.push(i);
-        }
-
+        
+        let timeline = []; // timeline for experiment 
+        let player; // your self; will be defined after consent
+        let dummyPlayers = []; // array to hold other players; defined after consent
+        let d_choices = []; // default value for other player choices
+        
     /* ------------------------------------------------------------ */ 
     /* define trials on timeline                                    */     
     /* ------------------------------------------------------------ */ 
+
+        /* add consent and experiment setup trial*/ 
+        timeline.push({timeline: consentTrial});
 
         /* define welcome message as a trial */
         let welcome = {
@@ -97,7 +80,7 @@
             timeline: [
                 // if not copying: display art and allow selection; update money of all players
                 {
-                    timeline: [artDisplaySelection], 
+                    timeline: artDisplaySelection, 
                     conditional_function: function() { 
                         // return true when the player will select 
                         return !bIsCopying;  
@@ -105,7 +88,7 @@
                 },
                 // if copying: display art and disallow selection; update money of all players 
                 {
-                    timeline: [artDisplayCopy], 
+                    timeline: artDisplayCopy, 
                     conditional_function: function() { 
                         return bIsCopying; // do NOT recalculate this value - it will use the wrong button press
                     }  
@@ -116,7 +99,7 @@
                 },
                 // display other player results and choose to copy; update money, bIsCopying iPlayerCopying if copying
                 {
-                    timeline: [chooseToCopy], 
+                    timeline: chooseToCopy, 
                     // skips last execution (before end screen)
                     conditional_function: function() { 
                         return (numExecutions < numDecisions);
