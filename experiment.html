@@ -3,7 +3,11 @@
         It declares a number of constants, sets up the experiment, and 
         adds trials to timeline. 
         The trials are defined in trialdefs.js. 
-        The functions are defined in funcdefs.js.
+        The functions are defined in func-defs files: 
+            - backend-funcs.js deals with sending/receiving responses
+            - get-data-funcs.js deals with getting/using data saved by trials
+            - player-funcs.js contains functions updating or creating players
+            - response-string-funcs.js contains functions that build stimulus strings.
     -->
     <head>
         <title>Artwork Selection Experiment</title> 
@@ -11,9 +15,15 @@
         <script src="jspsych-6.2.0/plugins/jspsych-html-keyboard-response.js"> </script>
         <script src="jspsych-6.2.0/plugins/jspsych-multi-image-button-response.js"></script>
         <script src="jspsych-6.2.0/plugins/jspsych-html-button-response.js"></script>
-       <script src = "./funcdefs.js"></script> 
+        <script src = "./jspsych-waiting.js"></script>
        <script src = "./trialdefs.js"></script>
-        <link href="jspsych-6.2.0/css/jspsych.css" rel="stylesheet" type="text/css">
+       <script src = "func-defs/player-funcs.js"></script>
+       <script src = "func-defs/response-string-funcs.js"></script>
+       <script src = "func-defs/backend-funcs.js"></script>
+       <script src = "func-defs/get-data-funcs.js"></script> 
+       <link href="jspsych-6.2.0/css/jspsych.css" rel="stylesheet" type="text/css">
+       <link href="./additional-styling.css" rel="stylesheet" type="text/css">
+
     </head>
 
     <body>
@@ -37,7 +47,7 @@
         const rewardForCorrect = 10; // amount you get when you choose the right answer
 
         const numDecisions = 2; // to skip last "choice" screen, rough solution
-        const offlineMode = true; 
+        let offlineMode = true; 
 
 
         /* placeholders */  

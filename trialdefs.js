@@ -1,8 +1,8 @@
 /* ------------------------------------------------------------ */ 
 /* trial definion for complicated trials:                       */     
 /* ------------------------------------------------------------ */  
-const trialDuration = (60 * 1000); // force end of decision after this time
-const waitDuration = 500; // show waiting screen when offline for this long
+const trialDuration = (120 * 1000); // force end of decision after this time
+const waitDuration = 10 * 1000; // show waiting screen when offline for this long
 
 /* ---- consent timeline ---- */ 
 let consentChoice = { 
@@ -17,31 +17,31 @@ let consentChoice = {
 // functionality to perform after players have all finished consent part
 // plus waiting screen 
 let consentWait = { 
-    type: "html-keyboard-response", 
-    stimulus: "Please wait for other players.", 
-    choices: jsPsych.NO_KEYS,
-    trial_duration: function () { 
+    type: "waiting",
+    prompt: "Please wait for other players.", 
+    max_trial_duration: function (){ 
         // finish this screen after waitDuration ms when offline
         // when online, wait for all players
         if (offlineMode) return waitDuration;
         else return null;
     },
-    on_finish: function() {
+    trial_function: function() { 
         /* -------- experiment setup steps -------- */ 
         // display initial amount of money 
         document.getElementById("money-amount").innerHTML = "Your total amount of money is: " + startAmount.toString();
 
         // if online, will return object with numPlayers, self id, and other ids as array 
         // if offline, will return dummy values of those 
-        let initObject = getPlayerInfo(); 
+        let initObject = getPlayerInfo(offlineMode); 
         numPlayers = initObject.players; 
 
         // define player 
-        player = new createPlayer(initObject.self_id);
+        player = new createPlayer(initObject.self_id, initObject.self_name, initObject.self_avatar_filepath);
 
         // define dummy players 
         for(i = 0; i < numPlayers; i++) {
-            let otherPlayer = new createPlayer(initObject.player_ids[i]);
+            let otherPlayerInfo = initObject.player_info[i];
+            let otherPlayer = new createPlayer(otherPlayerInfo.id, otherPlayerInfo.name, otherPlayerInfo.avatar_filepath);
             dummyPlayers.push(otherPlayer);
         }
 
@@ -49,7 +49,8 @@ let consentWait = {
         for(i = 0; i < numPlayers; i++) {
             d_choices.push(i);
         }
-    }
+    }, 
+    function_ends_trial: true 
 }
 
 // combine the two parts of the consent trial into one timeline
@@ -81,25 +82,24 @@ let consentTrial = [consentChoice, consentWait]
 
 // waiting trial with after-finish functionality 
 let artDisplaySelectionWait = { 
-    type: "html-keyboard-response", 
-    stimulus: "Please wait for other players.", 
-    choices: jsPsych.NO_KEYS,
-    trial_duration: function() {
+    type: "waiting", 
+    prompt: "Please wait for other players.", 
+    max_trial_duration: function (){ 
         // finish this screen after waitDuration ms when offline
         // when online, wait for all players
         if (offlineMode) return waitDuration;
         else return null;
     },
-    on_finish: function() {
+    trial_function: function() {
         let trial_index = jsPsych.progress().current_trial_global - 1;
 
-        // check player correctness and update money/display
+        // check self correctness and update money/display
         if(isPlayerCorrect(trial_index)) {
             player.money += rewardForCorrect;
             player.numCorrect++;
             document.getElementById("money-amount").innerHTML = "Your total amount of money is: " + player.money.toString();
         }
-        console.log(`self (id ${player.id}): ${testPlayer(player)}`); 
+        console.log(`self (id ${player.id}, name ${player.name}, avatar ${player.avatar_filepath}): ${testPlayer(player)}`); 
         
         // update other players' money:
         jsPsych.pauseExperiment(); 
@@ -108,10 +108,11 @@ let artDisplaySelectionWait = {
         getPlayersChoices(trial_index, offlineMode);
 
         // update players (uses timeline variables within function) and log to console
-        updatePlayerStats(trial_index);
+        updateCorrect(trial_index);
 
         jsPsych.resumeExperiment();
-    }
+    }, 
+    function_ends_trial: true
 }
 
 // combine into timeline
@@ -131,16 +132,15 @@ let artDisplayCopyChoice = {
     },
 }
 let artDisplayCopyWait = { 
-    type: "html-keyboard-response", 
-    stimulus: "Please wait for other players.", 
-    choices: jsPsych.NO_KEYS,
-    trial_duration: function() {
+    type: "waiting", 
+    prompt: "Please wait for other players.", 
+    max_trial_duration: function (){ 
         // finish this screen after waitDuration ms when offline
         // when online, wait for all players
         if (offlineMode) return waitDuration;
         else return null;
     },
-    on_finish: function() {
+    trial_function: function() {
         let trial_index = jsPsych.progress().current_trial_global - 1;
 
         // wait for other player's responses
@@ -156,13 +156,14 @@ let artDisplayCopyWait = {
             player.numCorrect++;
             document.getElementById("money-amount").innerHTML = "Your total amount of money is: " + player.money.toString();
         }
-        console.log(`self (id ${player.id}): ${testPlayer(player)}`); 
+        console.log(`self (id ${player.id}, name ${player.name}, avatar ${player.avatar_filepath}): ${testPlayer(player)}`); 
 
         // others: 
-        updatePlayerStats(trial_index);
+        updateCorrect(trial_index);
 
         jsPsych.resumeExperiment(); 
-    }
+    }, 
+    function_ends_trial: true
 }
 
 let artDisplayCopy = [artDisplayCopyChoice, artDisplayCopyWait]
@@ -191,8 +192,8 @@ let chooseToCopyChoice = {
     prompt: "Which player would you like to copy?", 
     choices: function() { 
         let ch = ["None, I would like to make my own choice."];
-        for (i = 1; i <= numPlayers; i++) { 
-            ch.push(`Player ${i}`);
+        for (i = 0; i <numPlayers; i++) { 
+            ch.push(`${dummyPlayers[i].name}`);
         }
         return ch; 
     },
@@ -201,79 +202,34 @@ let chooseToCopyChoice = {
 }
 
 let chooseToCopyWait = { 
-    type: "html-keyboard-response", 
-    stimulus: "Please wait for other players.", 
-    choices: jsPsych.NO_KEYS,
-    trial_duration: function () { 
+    type: "waiting", 
+    prompt: "Please wait for other players.", 
+    max_trial_duration: function (){ 
         // finish this screen after waitDuration ms when offline
         // when online, wait for all players
         if (offlineMode) return waitDuration;
         else return null;
     },
-    on_finish: function() {
+    trial_function: function() {
         jsPsych.pauseExperiment(); 
 
-        // update variables 
-        numExecutions++; 
+        // information related to previous choice
+        let trial_index = jsPsych.progress().current_trial_global - 1;
+        let buttonPressed = getPlayerSelection(trial_index);
 
-        let buttonPressed = getPlayerSelection(jsPsych.progress().current_trial_global - 1);
-        let playerCopyingIndex = buttonPressed-1; 
+        // update relevant variables
+        bIsCopying = isPlayerCopying(buttonPressed); 
+        if(bIsCopying) iPlayerCopying = buttonPressed; 
 
-        if (buttonPressed === null) alert("Your time ran out! Moving to next round.");
-
-        // if copying a player 
-        if(buttonPressed > 0 && buttonPressed <= numPlayers && player.money >= payToCopy) { 
-            bIsCopying = true;
-            iPlayerCopying = buttonPressed; 
-        }
-        // if chose not to copy or time ran out
-        else if(buttonPressed === 0 || buttonPressed === null) bIsCopying = false; 
-        // if attempted to copy but doesn't have enough money, warn and reset choice to be not copying
-        else { 
-            alert("You do not have enough money to copy.");
-            jsPsych.data.get().filter({'trial_index': jsPsych.progress().current_trial_global - 1}).select('button_pressed').values[0] = 0; 
-            bIsCopying = false; 
-        }
-
-        // send and receive information if online
-        if(!offlineMode) { 
-            // PLACEHOLDER FOR SENDING AND RECEIVING ACTUAL INFO
-            placeholderForResults = [{copy: true, who: 3}, {copy: false, who: 0}, {copy: false, who: 0}, {copy: false, who: 0}];
-        }
-
-        // update self and player who you're copying if relevant
-        if(bIsCopying){
-            player.money -= payToCopy;
-            document.getElementById("money-amount").innerHTML = "Your total amount of money is: " + player.money.toString();
-            player.timesCopying++; 
-
-            // and adjust the money of the player being copied
-            dummyPlayers[playerCopyingIndex].money += payToCopy;
-            dummyPlayers[playerCopyingIndex].numCopied++;
-            console.log(`player ${buttonPressed} (id ${dummyPlayers[playerCopyingIndex].id}) ${testPlayer(dummyPlayers[playerCopyingIndex])}`);
-        }
-        
-
-        // if online: update other players based on their info
-        if(!offlineMode) { 
-            for(i = 0; i < numPlayers; i++) { 
-                currInfo = placeholderForResults[i];
-                if (currInfo.copy) { 
-                    // update player copying
-                    dummyPlayers[i].money -= payToCopy;
-                    dummyPlayers[i].timesCopying++; 
-
-                    // update player being copied
-                    dummyPlayers[currInfo.who].money += payToCopy;
-                    dummyPlayers[currInfo.who].numCopied ++;
-
-                    console.log(`player ${i+1} copied player ${currInfo.who+1}`);
-                }
-            }
-        }
+        // get others' choices and update players
+        currInfo = getPlayersCopying(offlineMode);
+        updateCopying(bIsCopying, buttonPressed-1, currInfo); 
 
         jsPsych.resumeExperiment(); 
-    }
+
+        numExecutions++;  // since this is last trial on timeline
+    }, 
+    function_ends_trial: true
 }
 
 let chooseToCopy = [chooseToCopyChoice, chooseToCopyWait]
