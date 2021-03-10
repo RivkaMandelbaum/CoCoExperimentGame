@@ -18,35 +18,65 @@ function buildSelfResultsStimulus(trial_index, bIsCopying, iPlayerCopying) {
         }
     }
     else { 
-        response = `You chose to copy player ${iPlayerCopying}. Player ${iPlayerCopying} chose artwork ${getDummySelection(iPlayerCopying-1, trial_index) + 1}. <br> </br>`;
+        response = `You chose to copy ${dummyPlayers[iPlayerCopying-1].name}. ${dummyPlayers[iPlayerCopying-1].name} chose artwork ${getDummySelection(iPlayerCopying-1, trial_index) + 1}. <br> </br>`;
 
         if(isDummyCorrect(iPlayerCopying-1, trial_index)) {
-            return response + `Player ${iPlayerCopying} was <strong> correct</strong>. You earned $${rewardForCorrect}.`;
+            return response + `${dummyPlayers[iPlayerCopying-1].name} was <strong> correct</strong>. You earned $${rewardForCorrect}.`;
         }
         else {
-            return response + `Player ${iPlayerCopying} was <strong> incorrect</strong>. The correct value was ${getCorrectArtwork(trial_index) + 1}.`
+            return response + `${dummyPlayers[iPlayerCopying-1].name} was <strong> incorrect</strong>. The correct value was ${getCorrectArtwork(trial_index) + 1}.`
         }
     }
 }
 
-// builds stimulus string for chooseToCopy
-// displays other players' choices, correctness, money amount
-// returns string to be used as stimulus
+// builds stimulus table for chooseToCopy
+// displays all players' choices, correctness, money amount
+// returns HTML to be used as stimulus
 function buildCopyStimulus(trial_index) {
-    s = "Here are the other player's results. <br> </br>"; 
-        for(i = 0; i < numPlayers; i++) {
-            if(isDummyCorrect(i, trial_index)) { 
-                d_correct = "<strong> correctly </strong>"; 
-                }
-            else {
-                d_correct = "<strong> incorrectly </strong>";
-            }
+    let introString = "Here are players' results. <br> </br>";
 
-            s = s.concat(`Player ${i+1} ${d_correct} chose artwork ${getDummySelection(i, trial_index) + 1}. Player ${i+1} now has $${dummyPlayers[i].money}. <br> </br>`);
-        }
+    let table = "<div id = 'table-content'><table>\
+                        <th> Player Name</th>\
+                        <th> Player Pic</th>\
+                        <th> Correct</th>\
+                        <th> Money </th>";
+    const addRowEnd = "</tr>";
 
-        // adds explanation of choice
-        s = s.concat(`You may either choose the highest-value artwork on your own or pay another player $${payToCopy} to copy their choice. <br> </br> <br> </br>`);
+    // build first row of table (yourself)
+    let correct = ""
+    if(!bIsCopying) {
+        if(isPlayerCorrect(trial_index)) correct = "Yes!";
+        else correct = "No";
+    }
+    else { 
+        if(isDummyCorrect(iPlayerCopying-1, trial_index)) correct = "Yes!";
+        else correct = "No";
+    }
+    
+    table += `<tr id = "self"><td>${player.name}</td>\
+                <td><img src =${player.avatar_filepath} width = 50vh height = 50vh></img></td>\
+                <td>${correct}</td>\
+                <td>${player.money}</td></tr>`;
 
-        return s; 
+    // build row of table for each player
+    for(i = 0; i < numPlayers; i++) {
+        let correct = isDummyCorrect(i, trial_index);
+
+        let addName = `<tr><td>${dummyPlayers[i].name}</td>`;
+        let addAvatar = `<td><img src =${dummyPlayers[i].avatar_filepath} width = 50vh height = 50vh></img></td>`;
+        let addCorrect = "";
+        if(correct) addCorrect = `<td>Yes!</td>`;
+        else addCorrect = '<td>No</td>';
+        let addMoney = `<td>${dummyPlayers[i].money}</td>`;
+
+        table += (addName + addAvatar + addCorrect + addMoney + addRowEnd);
+    }
+    table += "</table></div><br></br>";
+
+    s = introString + table; 
+
+    // adds explanation of choice
+    s += (`You may either choose the highest-value artwork on your own or pay another player $${payToCopy} to copy their choice. <br> </br> <br> </br>`);
+
+    return s; 
 }

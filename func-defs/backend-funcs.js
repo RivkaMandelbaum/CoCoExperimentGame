@@ -1,17 +1,47 @@
 /* FUNCTIONS RELATED TO SENDING/RECEIVING CHOICES */ 
 
-// Returns object with numPlayers, self id, and other ids as array
+// Returns object containing: players (number of players excluding self), 
+// self_id, self_name, self_avatar_filepath, and player_info array
+// containing id, name, and avatar_filepath for each other player
 // If offline, will return dummy values of those 
-function getPlayerInfo(){
-    if(!offlineMode) { 
+function getPlayerInfo(offlineMode){
+    if (offlineMode) {
+        let result = {
+            players: numPlayers,
+            self_id: 0,
+            self_name: "Self", 
+            self_avatar_filepath: "images/avatar-self.png",
+            player_info: [
+                { 
+                    id: 1, 
+                    name: "Bartholomew",
+                    avatar_filepath: "images/avatar1.png"
+                }, 
+                { 
+                    id: 2,
+                    name: "Edmund", 
+                    avatar_filepath: "images/avatar2.png"
+                },
+                {
+                    id: 3, 
+                    name: "Clarissa", 
+                    avatar_filepath: "images/avatar3.png"
+                },
+                {
+                    id: 4, 
+                    name: "Ida", 
+                    avatar_filepath: "images/avatar4.png"
+                }
+            ]
+        };
+        return result; 
+    }
+    else{ 
         console.log("online mode");
         // PLACEHOLDER FOR ACTUAL FUNCTIONALITY
     }
-    else {
-        let result = {players: numPlayers, self_id: 0, player_ids: [40, 50, 60, 100]};
-        return result; 
-    }
 }
+
 
 // If offline mode, logs to console. If online, gets responses (PENDING CHANGES BASED ON REPRESENTATION) and updates timeline variables to match. 
 // Warning: will change the data object for the given trial! 
@@ -27,6 +57,28 @@ function getPlayersChoices(trial_index, offlineMode) {
     else { 
         // PLACEHOLDER FOR RECEIVING RESPONSES
         // SHOULD CHANGE BASED ON REPRESENTATION
+
+        /* 
+        {id: 010, 
+        correct: true, 
+        copying: false,
+        copying_id: null, 
+        artwork_chosen_id: ,
+        artwork_chosen_filepath: ,
+        artwork_chosen_position: , 
+        trial_type (string works)
+        trial_index}
+
+        {id
+        num_who_copied
+        delta_money
+        copying 
+        trial_type
+        trial_index}
+
+
+        let server deal with deciding who's correct 
+        */
         let placeholderForResponse = [2, 2, 2, 2]; 
 
         // update timeline variables 
@@ -34,4 +86,15 @@ function getPlayersChoices(trial_index, offlineMode) {
             jsPsych.data.get().filter({'trial_index': trial_index}).values()[0].dummy_choices[i] = placeholderForResponse[i];
         }
     }
+}
+
+// If online, gets responses of who's copying who 
+function getPlayersCopying(offlineMode) { 
+    // send and receive information if online
+    if(!offlineMode) { 
+        // PLACEHOLDER FOR SENDING AND RECEIVING ACTUAL INFO
+        let placeholderForResults = [{copy: true, who: 3}, {copy: false, who: 0}, {copy: false, who: 0}, {copy: false, who: 0}];
+        return placeholderForResults;
+    }
+
 }
