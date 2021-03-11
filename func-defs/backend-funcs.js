@@ -58,32 +58,11 @@ function getPlayersChoices(trial_index, offlineMode) {
         // PLACEHOLDER FOR RECEIVING RESPONSES
         // SHOULD CHANGE BASED ON REPRESENTATION
 
-        /* 
-        {id: 010, 
-        correct: true, 
-        copying: false,
-        copying_id: null, 
-        artwork_chosen_id: ,
-        artwork_chosen_filepath: ,
-        artwork_chosen_position: , 
-        trial_type (string works)
-        trial_index}
-
-        {id
-        num_who_copied
-        delta_money
-        copying 
-        trial_type
-        trial_index}
-
-
-        let server deal with deciding who's correct 
-        */
-        let placeholderForResponse = [2, 2, 2, 2]; 
+        let response_array = [2, 2, 2, 2]; 
 
         // update timeline variables 
         for (i = 0; i < numPlayers; i++) {
-            jsPsych.data.get().filter({'trial_index': trial_index}).values()[0].dummy_choices[i] = placeholderForResponse[i];
+            jsPsych.data.get().filter({'trial_index': trial_index}).values()[0].dummy_choices[i] = response_array[i];
         }
     }
 }
