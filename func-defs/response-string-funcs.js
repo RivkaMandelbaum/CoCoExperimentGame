@@ -18,9 +18,10 @@ function buildSelfResultsStimulus(trial_index, bIsCopying, iPlayerCopying) {
         }
     }
     else { 
-        response = `You chose to copy ${dummyPlayers[iPlayerCopying-1].name}. ${dummyPlayers[iPlayerCopying-1].name} chose artwork ${getDummySelection(iPlayerCopying-1, trial_index) + 1}. <br> </br>`;
+        curr = dummyPlayers[iPlayerCopying-1];
+        response = `You chose to copy ${curr.name}. ${curr.name} chose artwork ${getDummySelection(curr.id, trial_index) + 1}. <br> </br>`;
 
-        if(isDummyCorrect(iPlayerCopying-1, trial_index)) {
+        if(isDummyCorrect(curr.id, trial_index)) {
             return response + `${dummyPlayers[iPlayerCopying-1].name} was <strong> correct</strong>. You earned $${rewardForCorrect}.`;
         }
         else {
@@ -49,7 +50,7 @@ function buildCopyStimulus(trial_index) {
         else correct = "No";
     }
     else { 
-        if(isDummyCorrect(iPlayerCopying-1, trial_index)) correct = "Yes!";
+        if(isDummyCorrect(dummyPlayers[iPlayerCopying-1].id, trial_index)) correct = "Yes!";
         else correct = "No";
     }
     
@@ -60,7 +61,7 @@ function buildCopyStimulus(trial_index) {
 
     // build row of table for each player
     for(i = 0; i < numPlayers; i++) {
-        let correct = isDummyCorrect(i, trial_index);
+        let correct = isDummyCorrect(dummyPlayers[i].id, trial_index);
 
         let addName = `<tr><td>${dummyPlayers[i].name}</td>`;
         let addAvatar = `<td><img src =${dummyPlayers[i].avatar_filepath} width = 50vh height = 50vh></img></td>`;
@@ -76,7 +77,7 @@ function buildCopyStimulus(trial_index) {
     s = introString + table; 
 
     // adds explanation of choice
-    s += (`You may either choose the highest-value artwork on your own or pay another player $${payToCopy} to copy their choice. <br> </br> <br> </br>`);
+    s += (`In the next round, you may either choose the highest-value artwork on your own or pay another player $${payToCopy} to copy their choice.`);
 
     return s; 
 }

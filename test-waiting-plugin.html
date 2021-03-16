@@ -2,7 +2,7 @@
     <head>
         <title> test waiting plugin</title> 
         <script src="jspsych-6.2.0/jspsych.js"></script>
-        <script src="jspsych-6.2.0/plugins/jspsych-waiting.js"></script>
+        <script src="./jspsych-waiting.js"></script>
         <link href="jspsych-6.2.0/css/jspsych.css" rel="stylesheet" type="text/css">
     </head>
     <body>
@@ -16,10 +16,10 @@
             type: 'waiting', 
             prompt: 'Please wait for other players.', 
             trial_function: function() { 
-               console.log("function"); 
+               console.log("function");
             },
             function_ends_trial: false, 
-            // max_trial_duration: 5000
+            max_trial_duration: 5000
         }
 
         timeline.push(test_trial); 

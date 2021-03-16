@@ -69,6 +69,8 @@ jsPsych.plugins["waiting"] = (function() {
     var new_html = '<div id="jspsych-waiting-prompt">'+trial.prompt+'</div>';
     display_element.innerHTML = new_html;
 
+    display_element.insertAdjacentHTML('beforeend', '<img src = ./images/loading-animation.gif>');
+
     // function to end trial when it is time
     var end_trial = function() {
       // kill any remaining setTimeout handlers

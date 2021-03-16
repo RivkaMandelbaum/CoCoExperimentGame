@@ -38,7 +38,8 @@ function getPlayerInfo(offlineMode){
     }
     else{ 
         console.log("online mode");
-        // PLACEHOLDER FOR ACTUAL FUNCTIONALITY
+        /* expects to receive an array of objects, each object
+        in the format: {id: (id), name: (name), avatar_filepath: (avatar's filepath)}, and returns that array */ 
     }
 }
 
@@ -55,14 +56,34 @@ function getPlayersChoices(trial_index, offlineMode) {
 
     // in online mode, receive responses and update the timeline variable to match
     else { 
-        // PLACEHOLDER FOR RECEIVING RESPONSES
-        // SHOULD CHANGE BASED ON REPRESENTATION
+        send_message = { 
+            id: player.id, 
+            correct: null,
+            copying: bIsCopying, 
+            copying_id: dummyPlayers[iPlayerCopying-1].id, 
+            artwork_chosen_id: null,
+            artwork_chosen_filepath: null,
+            artwork_chosen_position: null,
+            trial_type: "art",
+            trial_index: (trial_index+1)
+        }
 
-        let response_array = [2, 2, 2, 2]; 
+        /* SEND MESSAGE! */ 
+
+        updated_correct_choice = /* PLACEHOLDER - SHOULD GET THIS FROM THE SERVER*/ jsPsych.data.get().filter({'trial_index': trial_index}).values()[0].correct; 
+
+        jsPsych.data.get().filter({'trial_index': trial_index}).values[0].correct = updated_correct_choice; 
+
+        /* RECEIVE ARRAY OF MESSAGES
+        SHOULD BE OBJECT WITH SAME FIELDS AS send_message ABOVE 
+        THE PLACEHOLDER BELOW IS NOT IN THE CORRECT FORMAT */
+
+        let response_array = /* PLACEHOLDER */ [{id: 1, artwork_chosen_id: 2}, {id: 2, artwork_chosen_id: 2}, {id:3, artwork_chosen_id: 2}, {id: 4, artwork_chosen_id: 2}]; 
 
         // update timeline variables 
         for (i = 0; i < numPlayers; i++) {
-            jsPsych.data.get().filter({'trial_index': trial_index}).values()[0].dummy_choices[i] = response_array[i];
+            let pos = idLookup[response_array[i].id];
+            jsPsych.data.get().filter({'trial_index': trial_index}).values()[0].dummy_choices[pos] = response_array[i].artwork_chosen_id;
         }
     }
 }
@@ -76,4 +97,10 @@ function getPlayersCopying(offlineMode) {
         return placeholderForResults;
     }
 
+}
+
+// given a player id, returns the locally saved player object with that id
+function convertIdToPlayer(id) { 
+    pos = idLookup[id]; 
+    return dummyPlayers[pos]; 
 }

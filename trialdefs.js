@@ -4,6 +4,13 @@
 const trialDuration = (120 * 1000); // force end of decision after this time
 const waitDuration = 10 * 1000; // show waiting screen when offline for this long
 
+function duration(offlineMode) { 
+    // finish this screen after waitDuration ms when offline
+    // when online, wait for all players
+    if (offlineMode) return waitDuration;
+    else return null;
+}
+
 /* ---- consent timeline ---- */ 
 let consentChoice = { 
     type: "html-button-response",
@@ -19,12 +26,7 @@ let consentChoice = {
 let consentWait = { 
     type: "waiting",
     prompt: "Please wait for other players.", 
-    max_trial_duration: function (){ 
-        // finish this screen after waitDuration ms when offline
-        // when online, wait for all players
-        if (offlineMode) return waitDuration;
-        else return null;
-    },
+    max_trial_duration: function() { return duration(offlineMode)},
     trial_function: function() { 
         /* -------- experiment setup steps -------- */ 
         // display initial amount of money 
@@ -43,6 +45,7 @@ let consentWait = {
             let otherPlayerInfo = initObject.player_info[i];
             let otherPlayer = new createPlayer(otherPlayerInfo.id, otherPlayerInfo.name, otherPlayerInfo.avatar_filepath);
             dummyPlayers.push(otherPlayer);
+            idLookup[otherPlayer.id] = i; 
         }
 
         // define dummy choices array for timeline variable default 
@@ -61,14 +64,15 @@ let consentTrial = [consentChoice, consentWait]
  // display art and allow selection
  let artDisplaySelectionChoice = {
     type: "multi-image-button-response",
-    stimulus: jsPsych.timelineVariable('img_array'),
+    stimulus: ["images"], //jsPsych.timelineVariable('img_array'),
     prompt: "Please select what you think is the <strong> highest-value </strong> artwork.",
     correct_choice: jsPsych.timelineVariable('correct_choice'),
     choices: function() {
         let ch = [];
         let len = jsPsych.timelineVariable('img_array', true).length;
         for (i = 1; i <= len; i++) { 
-            ch.push(i);
+            //ch.push(i);
+            ch.push(`<img src = ${jsPsych.timelineVariable('img_array', true)[i-1]}></img>`)
         }
         return ch;
     }, 
@@ -84,14 +88,15 @@ let consentTrial = [consentChoice, consentWait]
 let artDisplaySelectionWait = { 
     type: "waiting", 
     prompt: "Please wait for other players.", 
-    max_trial_duration: function (){ 
-        // finish this screen after waitDuration ms when offline
-        // when online, wait for all players
-        if (offlineMode) return waitDuration;
-        else return null;
-    },
+    max_trial_duration: function() { return duration(offlineMode); },
     trial_function: function() {
         let trial_index = jsPsych.progress().current_trial_global - 1;
+        
+        // update players' money:
+        jsPsych.pauseExperiment(); 
+
+        // collect responses and update timeline variables
+        getPlayersChoices(trial_index, offlineMode);
 
         // check self correctness and update money/display
         if(isPlayerCorrect(trial_index)) {
@@ -100,12 +105,6 @@ let artDisplaySelectionWait = {
             document.getElementById("money-amount").innerHTML = "Your total amount of money is: " + player.money.toString();
         }
         console.log(`self (id ${player.id}, name ${player.name}, avatar ${player.avatar_filepath}): ${testPlayer(player)}`); 
-        
-        // update other players' money:
-        jsPsych.pauseExperiment(); 
-
-        // collect responses and update timeline variables
-        getPlayersChoices(trial_index, offlineMode);
 
         // update players (uses timeline variables within function) and log to console
         updateCorrect(trial_index);
@@ -134,12 +133,7 @@ let artDisplayCopyChoice = {
 let artDisplayCopyWait = { 
     type: "waiting", 
     prompt: "Please wait for other players.", 
-    max_trial_duration: function (){ 
-        // finish this screen after waitDuration ms when offline
-        // when online, wait for all players
-        if (offlineMode) return waitDuration;
-        else return null;
-    },
+    max_trial_duration: function() { return duration(offlineMode)},
     trial_function: function() {
         let trial_index = jsPsych.progress().current_trial_global - 1;
 
@@ -151,7 +145,7 @@ let artDisplayCopyWait = {
 
         // using responses, update player stats
         // self:
-        if(isDummyCorrect(iPlayerCopying-1, trial_index)) {
+        if(isDummyCorrect(dummyPlayers[iPlayerCopying-1].id, trial_index)) {
             player.money += rewardForCorrect;
             player.numCorrect++;
             document.getElementById("money-amount").innerHTML = "Your total amount of money is: " + player.money.toString();
@@ -204,12 +198,7 @@ let chooseToCopyChoice = {
 let chooseToCopyWait = { 
     type: "waiting", 
     prompt: "Please wait for other players.", 
-    max_trial_duration: function (){ 
-        // finish this screen after waitDuration ms when offline
-        // when online, wait for all players
-        if (offlineMode) return waitDuration;
-        else return null;
-    },
+    max_trial_duration: function() { return duration(offlineMode)},
     trial_function: function() {
         jsPsych.pauseExperiment(); 
 

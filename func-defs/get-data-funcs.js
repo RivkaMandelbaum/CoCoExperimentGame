@@ -22,19 +22,17 @@ function isPlayerCorrect(index) {
 
 /* ---- Functions for dummy correctness are separated because they're based on timeline variables rather than on previous trial. ---- */ 
 
-// Returns the button dummy player i selected in given trial 
-// i should use array index of player, not player name
-// buttons based on 'choices' array
-function getDummySelection(i, trial_index) { 
+// Returns the button dummy player with given id selected in given trial 
+function getDummySelection(id, trial_index) { 
+    let i = idLookup[id];
     return jsPsych.data.get().filter({'trial_index': trial_index}).select('dummy_choices').values[0][i];
 }
 
-// Returns whether dummy player i was correct in given trial
-// i should use array index of player, not player name
-function isDummyCorrect(i, trial_index) { 
+// Returns whether dummy player with given id was correct in trial with given index
+function isDummyCorrect(id, trial_index) { 
    let cor = jsPsych.data.get().filter({'trial_index': trial_index}).select('correct').values[0];
   
-   return getDummySelection(i, trial_index) === cor;
+   return getDummySelection(id, trial_index) === cor;
 }
 
 /* ---- For choose to copy trial ---- */ 

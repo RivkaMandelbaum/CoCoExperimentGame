@@ -1,0 +1,104 @@
+<html>
+    <head>
+        <title>TEST</title> 
+        <script src="jspsych-6.2.0/jspsych.js"></script>
+        <script src="jspsych-6.2.0/plugins/jspsych-html-keyboard-response.js"> </script>
+        <script src="jspsych-6.2.0/plugins/jspsych-image-keyboard-response.js"></script>
+        <script src="jspsych-6.2.0/plugins/jspsych-multi-image-button-response.js"></script>
+        <script src="jspsych-6.2.0/plugins/jspsych-html-button-response.js"></script>
+        <link href="jspsych-6.2.0/css/jspsych.css" rel="stylesheet" type="text/css">
+    </head>
+
+    <body>
+        <div id = "jspsych-target" style = "width:100%; height: 95%"> </div>
+        <div class = "total-player-money" style = "margin: auto">
+            <div id = "money-amount" style = "height: 5%; text-align:center; font-family: Arial, Helvetica, sans-serif; font-size:large"> </div>
+        </div>
+    </body>
+
+    <script>
+        let timeline = [];
+        let trial1 = { 
+            type: "multi-image-button-response",
+            stimulus: ["images/img1.jpg", "images/img2.jpg"],
+            prompt: "Click continue",
+            choices: ["Continue"],
+            on_finish: function() { 
+                console.log("trial: " + jsPsych.progress().current_trial_global);
+                jsPsych.data.displayData(); 
+            }
+        }
+
+        let display1 = {
+            type: "html-keyboard-response",
+            stimulus: "just checking",
+            on_finish: function() { 
+                console.log("button pressed in last trial: " + jsPsych.data.get().filter({'trial_index': 0}).select('button_pressed').values[0]);
+            }
+        }
+
+        let trial2 = {
+            type: "multi-image-button-response",
+            stimulus: ["images/img2.jpg", "images/img3.jpg"],
+            prompt: "Click continue",
+            choices: ["Continue"],
+            on_finish: function() { 
+                console.log("trial: " + jsPsych.progress().current_trial_global);
+                jsPsych.data.displayData(); 
+            }
+        }
+
+        function displayButtonPressed(index) { 
+            return jsPsych.data.get().filter({'trial_index': index}).select('button_pressed').values[0];
+        }
+
+        let display2 = {
+            type: "html-button-response",
+            stimulus: "just checking",
+            choices: ["0", "1"],
+            on_finish: function() { 
+                console.log("button pressed in first trial: " + jsPsych.data.get().filter({'trial_index': 0}).select('button_pressed').values[0]);
+                let i = jsPsych.progress().current_trial_global;
+                console.log("current trial: " + i); 
+                console.log("button pressed in last trial: " + displayButtonPressed(i-1));
+                console.log("button pressed in current trial: " + displayButtonPressed(i));
+
+            }
+        }
+
+        let trial3 = { 
+            type: "multi-image-button-response",
+            stimulus: ["images/img3.jpg", "images/img4.jpg"],
+            prompt: "Click continue",
+            choices: ["Continue"],
+            on_finish: function() { 
+                console.log("trial: " + jsPsych.progress().current_trial_global);
+                jsPsych.data.displayData(); 
+            }
+        }
+
+        timeline.push(trial1);
+        timeline.push(display1);
+        timeline.push(trial2);
+        timeline.push(display2);
+        timeline.push(trial3);
+
+        jsPsych.init({ 
+            timeline: timeline,
+            on_finish: function() { 
+                jsPsych.data.displayData();
+            }
+        });
+
+        /* type: "multi-image-button-response", 
+stimulus: jsPsych.timelineVariable('img_array'), 
+prompt: "Continue to see what choice was made.", 
+choices: ["Continue"],
+data: { 
+    correct: jsPsych.timelineVariable('correct_choice'),
+    dummy_choices: jsPsych.timelineVariable('dummy_choices')
+},
+on_finish: function(data) {  */
+    </script>
+</html>
+

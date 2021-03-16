@@ -25,7 +25,7 @@ function testPlayer(p) {
 function updateCorrect(trial_index) { 
     for (i = 0; i < numPlayers; i++) { 
             let currentPlayer = dummyPlayers[i];
-            if(isDummyCorrect(i, trial_index)) {
+            if(isDummyCorrect(currentPlayer.id, trial_index)) {
                 currentPlayer.money += rewardForCorrect;
                 currentPlayer.numCorrect ++;
             }
