@@ -1,9 +1,20 @@
 /* FUNCTIONS RELATED TO SENDING/RECEIVING CHOICES */ 
 
-// Returns object containing: players (number of players excluding self), 
-// self_id, self_name, self_avatar_filepath, and player_info array
-// containing id, name, and avatar_filepath for each other player
-// If offline, will return dummy values of those 
+// Returns object in the format: 
+    /* {
+        players: int (number of players, excluding self),
+        self_id: int,
+        self_name: string,
+        self_avatar_filepath: string,
+        player_info: array of player info objects, one per player, with format: 
+            {
+                id: int,
+                name: string,
+                avatar_filepath: string,
+            }
+        }
+    */
+// If offline, will return dummy values of those
 function getPlayerInfo(offlineMode){
     if (offlineMode) {
         let result = {
@@ -13,7 +24,7 @@ function getPlayerInfo(offlineMode){
             self_avatar_filepath: "images/avatar-self.png",
             player_info: [
                 { 
-                    id: 1, 
+                    id: 10, 
                     name: "Bartholomew",
                     avatar_filepath: "images/avatar1.png"
                 }, 
@@ -23,7 +34,7 @@ function getPlayerInfo(offlineMode){
                     avatar_filepath: "images/avatar2.png"
                 },
                 {
-                    id: 3, 
+                    id: 30, 
                     name: "Clarissa", 
                     avatar_filepath: "images/avatar3.png"
                 },
@@ -37,30 +48,44 @@ function getPlayerInfo(offlineMode){
         return result; 
     }
     else{ 
-        console.log("online mode");
-        /* expects to receive an array of objects, each object
-        in the format: {id: (id), name: (name), avatar_filepath: (avatar's filepath)}, and returns that array */ 
+        console.log("get player info: online mode placeholder")
+        /* RECEIVE message as described in function comment */ 
     }
 }
 
 
-// If offline mode, logs to console. If online, gets responses (PENDING CHANGES BASED ON REPRESENTATION) and updates timeline variables to match. 
-// Warning: will change the data object for the given trial! 
-// Meant to be used after the experiment is paused, before resume. 
-function getPlayersChoices(trial_index, offlineMode) { 
+// When online, does the following:
+//  1) sends message containing self choices in format described below
+//  2) gets the correct choice from server and updates trial data
+//  3) gets others' choices from server and updates trial data, assuming format:
+    /* {
+        id: int,
+        correct: bool,
+        copying: bool,
+        copying_id: int or null,
+        artwork_chosen_id: int,
+        artwork_chosen_filepath: string,
+        artwork_chosen_position: int, 
+        trial_type: "art",
+        trial_index: int
+        }
+    */
+// If the player is copying, artwork_chosen information is updated based on
+// what the player they are copying chose
+function backendArtSelections(trial_index, offlineMode) { 
 
-    // in offline mode, log and move on - will use timeline variable
+    // in offline mode, log and move on - no need to update anything, uses timeline variables instead
     if(offlineMode) { 
-        console.log("offline mode"); 
+        console.log("backend art selections: offline mode"); 
     }
 
-    // in online mode, receive responses and update the timeline variable to match
+    // in online mode, send information about self, receive correct answer and responses, and update the timeline variable to match
     else { 
-        send_message = { 
+        let send_message = { 
             id: player.id, 
             correct: null,
             copying: bIsCopying, 
-            copying_id: dummyPlayers[iPlayerCopying-1].id, 
+            copying_id: playerCopyingID, 
             artwork_chosen_id: null,
             artwork_chosen_filepath: null,
             artwork_chosen_position: null,
@@ -72,35 +97,137 @@ function getPlayersChoices(trial_index, offlineMode) {
 
         updated_correct_choice = /* PLACEHOLDER - SHOULD GET THIS FROM THE SERVER*/ jsPsych.data.get().filter({'trial_index': trial_index}).values()[0].correct; 
 
-        jsPsych.data.get().filter({'trial_index': trial_index}).values[0].correct = updated_correct_choice; 
+        jsPsych.data.get().filter({'trial_index': trial_index}).values()[0].correct = updated_correct_choice; 
 
         /* RECEIVE ARRAY OF MESSAGES
         SHOULD BE OBJECT WITH SAME FIELDS AS send_message ABOVE 
         THE PLACEHOLDER BELOW IS NOT IN THE CORRECT FORMAT */
 
-        let response_array = /* PLACEHOLDER */ [{id: 1, artwork_chosen_id: 2}, {id: 2, artwork_chosen_id: 2}, {id:3, artwork_chosen_id: 2}, {id: 4, artwork_chosen_id: 2}]; 
-
+        let response = 2; // Math.floor(Math.random() * numImages);
+        let response_array = /* PLACEHOLDER */ [
+            {
+                id: dummyPlayers[0].id,
+                artwork_chosen_id: response,
+                correct: (updated_correct_choice == response)
+            },
+            {
+                id: dummyPlayers[1].id,
+                artwork_chosen_id: response,
+                correct: (updated_correct_choice == response)
+            },
+            {
+                id: dummyPlayers[2].id,
+                artwork_chosen_id: response,
+                correct: (updated_correct_choice == response)
+            },
+            {
+                id: dummyPlayers[3].id,
+                artwork_chosen_id: response,
+                correct: (updated_correct_choice == response)
+            }
+        ];
+        
+    
         // update timeline variables 
         for (i = 0; i < numPlayers; i++) {
             let pos = idLookup[response_array[i].id];
-            jsPsych.data.get().filter({'trial_index': trial_index}).values()[0].dummy_choices[pos] = response_array[i].artwork_chosen_id;
+            jsPsych.data.get().filter({'trial_index': trial_index}).values()[0].dummy_choices[pos] = {art: response_array[i].artwork_chosen_id, correct: response_array[i].correct};
         }
     }
 }
 
-// If online, gets responses of who's copying who 
-function getPlayersCopying(offlineMode) { 
+// If online, sends and gets responses of who's copying who; otherwise returns placeholder. Format of message: 
+/* 
+    {
+        id: int,
+        num_who_copied: int (number who copied you),
+        delta_money: int,
+        copying: bool,
+        copying_id: int, 
+        trial_type: "copy",
+        trial_index: int
+    }
+*/ 
+function backendPlayersCopying(offlineMode, bIsCopying, playerCopyingID, trial_index) { 
     // send and receive information if online
     if(!offlineMode) { 
-        // PLACEHOLDER FOR SENDING AND RECEIVING ACTUAL INFO
-        let placeholderForResults = [{copy: true, who: 3}, {copy: false, who: 0}, {copy: false, who: 0}, {copy: false, who: 0}];
-        return placeholderForResults;
+        let msg = { 
+            id: player.id,
+            num_who_copied: null,
+            delta_money: null,
+            copying: bIsCopying, 
+            copying_id: playerCopyingID,
+            trial_type: "copy",
+            trial_index: trial_index
+        }
+        /* SEND msg HERE*/ 
+
+        /* RECEIVE array of objects with same fields as above */ 
     }
+    else { 
+        let delta_self = 0, delta_other = 0;
+        if(bIsCopying) {
+            delta_self -= payToCopy; 
+            delta_other += payToCopy;
+        }
 
-}
+        // create placeholder that assumes: player 1 copied player 2, player 3 copied player 0, and deals with your copy choice as well
+        let placeholder = [
+            {
+                id: player.id, 
+                num_who_copied: 0, 
+                delta_money: delta_self,
+                copying: bIsCopying,
+                copying_id: playerCopyingID,
+                trial_type: "copy",
+                trial_index: trial_index
+            },
+            {
+                id: dummyPlayers[0].id,
+                num_who_copied: 1, 
+                delta_money: payToCopy,
+                copying: false,
+                copying_id: null,
+                trial_type: "copy",
+                trial_index: trial_index
+            },
+            {
+                id: dummyPlayers[1].id,
+                num_who_copied: 0, 
+                delta_money: -payToCopy,
+                copying: true,
+                copying_id: dummyPlayers[2].id,
+                trial_type: "copy",
+                trial_index: trial_index
+            },
+            {
+                id: dummyPlayers[2].id,
+                num_who_copied: 1, 
+                delta_money: payToCopy,
+                copying: false,
+                copying_id: null,
+                trial_type: "copy",
+                trial_index: trial_index
+            },
+            {
+                id: dummyPlayers[3].id,
+                num_who_copied: 0, 
+                delta_money: -payToCopy,
+                copying: true,
+                copying_id: dummyPlayers[0].id,
+                trial_type: "copy",
+                trial_index: trial_index
+            }
+        ];
 
-// given a player id, returns the locally saved player object with that id
-function convertIdToPlayer(id) { 
-    pos = idLookup[id]; 
-    return dummyPlayers[pos]; 
+        
+        if(bIsCopying){
+            let i = idLookup[playerCopyingID]+1;
+
+            placeholder[i].num_who_copied++;
+            placeholder[i].delta_money += delta_other; 
+        } 
+
+        return placeholder;
+    }
 }

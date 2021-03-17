@@ -95,8 +95,8 @@ let artDisplaySelectionWait = {
         // update players' money:
         jsPsych.pauseExperiment(); 
 
-        // collect responses and update timeline variables
-        getPlayersChoices(trial_index, offlineMode);
+        // send and collect responses and update timeline variables
+        backendArtSelections(trial_index, offlineMode);
 
         // check self correctness and update money/display
         if(isPlayerCorrect(trial_index)) {
@@ -104,7 +104,7 @@ let artDisplaySelectionWait = {
             player.numCorrect++;
             document.getElementById("money-amount").innerHTML = "Your total amount of money is: " + player.money.toString();
         }
-        console.log(`self (id ${player.id}, name ${player.name}, avatar ${player.avatar_filepath}): ${testPlayer(player)}`); 
+        console.log(`${player.name}: ${testPlayer(player)}`); 
 
         // update players (uses timeline variables within function) and log to console
         updateCorrect(trial_index);
@@ -141,16 +141,16 @@ let artDisplayCopyWait = {
         jsPsych.pauseExperiment(); 
 
         // get responses and update timeline variables to match
-        getPlayersChoices(trial_index, offlineMode);
+        backendArtSelections(trial_index, offlineMode);
 
         // using responses, update player stats
         // self:
-        if(isDummyCorrect(dummyPlayers[iPlayerCopying-1].id, trial_index)) {
+        if(isDummyCorrect(playerCopyingID, trial_index)) {
             player.money += rewardForCorrect;
             player.numCorrect++;
             document.getElementById("money-amount").innerHTML = "Your total amount of money is: " + player.money.toString();
         }
-        console.log(`self (id ${player.id}, name ${player.name}, avatar ${player.avatar_filepath}): ${testPlayer(player)}`); 
+        console.log(`${player.name}: ${testPlayer(player)}`); 
 
         // others: 
         updateCorrect(trial_index);
@@ -168,7 +168,7 @@ let displaySelfResults = {
     type: "html-button-response",
     stimulus: function () { 
         let index_param = jsPsych.progress().current_trial_global - 2;
-        return buildSelfResultsStimulus(index_param, bIsCopying, iPlayerCopying);
+        return buildSelfResultsStimulus(index_param, bIsCopying, playerCopyingID);
     }, 
     choices: ["Continue"],
     response_ends_trial: true, 
@@ -207,12 +207,12 @@ let chooseToCopyWait = {
         let buttonPressed = getPlayerSelection(trial_index);
 
         // update relevant variables
-        bIsCopying = isPlayerCopying(buttonPressed); 
-        if(bIsCopying) iPlayerCopying = buttonPressed; 
+        bIsCopying = didPlayerCopy(buttonPressed); 
+        if(bIsCopying) playerCopyingID = dummyPlayers[buttonPressed-1].id; // button labels are created by iteration thrugh dummyPlayers array in order
 
         // get others' choices and update players
-        currInfo = getPlayersCopying(offlineMode);
-        updateCopying(bIsCopying, buttonPressed-1, currInfo); 
+        currInfo = backendPlayersCopying(offlineMode, bIsCopying, playerCopyingID, trial_index+1);
+        updateCopying(currInfo); 
 
         jsPsych.resumeExperiment(); 
 

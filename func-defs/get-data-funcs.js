@@ -22,23 +22,35 @@ function isPlayerCorrect(index) {
 
 /* ---- Functions for dummy correctness are separated because they're based on timeline variables rather than on previous trial. ---- */ 
 
-// Returns the button dummy player with given id selected in given trial 
+// Returns the art dummy player with given id selected in given trial 
 function getDummySelection(id, trial_index) { 
     let i = idLookup[id];
-    return jsPsych.data.get().filter({'trial_index': trial_index}).select('dummy_choices').values[0][i];
+
+    let data = jsPsych.data.get().filter({'trial_index': trial_index}).select('dummy_choices').values[0][i]; 
+
+    if (typeof(data) != "object") return data; 
+    else return data.art; 
 }
 
 // Returns whether dummy player with given id was correct in trial with given index
 function isDummyCorrect(id, trial_index) { 
-   let cor = jsPsych.data.get().filter({'trial_index': trial_index}).select('correct').values[0];
-  
-   return getDummySelection(id, trial_index) === cor;
+    let i = idLookup[id];
+
+    // if offline and dummy choices hasn't been updated to be an object with "correct" as a field
+    let d_choice = jsPsych.data.get().filter({'trial_index': trial_index}).select('dummy_choices').values[0][i];
+    
+    if(typeof(d_choice) != "object") {  
+        return getDummySelection(id, trial_index) == getCorrectArtwork(trial_index);
+    }
+    // otherwise use the "correct" property
+    else return d_choice.correct;
 }
 
 /* ---- For choose to copy trial ---- */ 
 
 // Given buttonPressed, which should be from the choose to copy trial, deals with conditional logic and returns whether the player is copying (boolean)
-function isPlayerCopying(buttonPressed) { 
+// assumes self = button 0
+function didPlayerCopy(buttonPressed) { 
 
     // if time ran out, alert them and return not copying
     if (buttonPressed === null) {

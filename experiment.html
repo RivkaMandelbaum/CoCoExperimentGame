@@ -61,7 +61,7 @@
     /* global variables (not const)                                 */     
     /* ------------------------------------------------------------ */
         let bIsCopying = false; // whether the player is copying in this round
-        let iPlayerCopying = 0; // which player they are copying
+        let playerCopyingID = -1; // which player they are copying
         let numExecutions = 0; // number of rounds thru timeline 
         let numPlayers = 4; // number of other players - adjusted if live
 
@@ -108,7 +108,7 @@
                 {
                     timeline: [displaySelfResults]
                 },
-                // display other player results and choose to copy; update money, bIsCopying iPlayerCopying if copying
+                // display other player results and choose to copy; update money, bIsCopying, playerCopyingID if copying
                 {
                     timeline: chooseToCopy, 
                     // skips last execution (before end screen)

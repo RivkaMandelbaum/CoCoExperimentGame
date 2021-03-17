@@ -3,7 +3,7 @@
 // builds stimulus string for displaySelfResults
 // your choice (or choice of personcopying), whether it was correct, current money
 // returns string to be used as stimulus 
-function buildSelfResultsStimulus(trial_index, bIsCopying, iPlayerCopying) {
+function buildSelfResultsStimulus(trial_index, bIsCopying, playerCopyingID) {
     let response = "";
     if(!bIsCopying) {
         if(getPlayerSelection(trial_index) === null) return "Your time ran out."
@@ -18,14 +18,14 @@ function buildSelfResultsStimulus(trial_index, bIsCopying, iPlayerCopying) {
         }
     }
     else { 
-        curr = dummyPlayers[iPlayerCopying-1];
+        curr = convertIdToPlayer(playerCopyingID);
         response = `You chose to copy ${curr.name}. ${curr.name} chose artwork ${getDummySelection(curr.id, trial_index) + 1}. <br> </br>`;
 
         if(isDummyCorrect(curr.id, trial_index)) {
-            return response + `${dummyPlayers[iPlayerCopying-1].name} was <strong> correct</strong>. You earned $${rewardForCorrect}.`;
+            return response + `${dummyPlayers[idLookup[playerCopyingID]].name} was <strong> correct</strong>. You earned $${rewardForCorrect}.`;
         }
         else {
-            return response + `${dummyPlayers[iPlayerCopying-1].name} was <strong> incorrect</strong>. The correct value was ${getCorrectArtwork(trial_index) + 1}.`
+            return response + `${dummyPlayers[idLookup[playerCopyingID]].name} was <strong> incorrect</strong>. The correct value was ${getCorrectArtwork(trial_index) + 1}.`
         }
     }
 }
@@ -50,7 +50,7 @@ function buildCopyStimulus(trial_index) {
         else correct = "No";
     }
     else { 
-        if(isDummyCorrect(dummyPlayers[iPlayerCopying-1].id, trial_index)) correct = "Yes!";
+        if(isDummyCorrect(playerCopyingID, trial_index)) correct = "Yes!";
         else correct = "No";
     }
     

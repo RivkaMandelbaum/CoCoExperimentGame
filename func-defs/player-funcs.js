@@ -15,8 +15,10 @@ function createPlayer(id, name, avatar_filepath) {
 function testPlayer(p) {
     if(!'money' in p || !'numCorrect' in p || !'numCopied' in p || !'timesCopying' in p) console.warn("Error! Parameter does not have correct fields.");
 
-    let stats = [p.money, p.numCorrect, p.numCopied];
-    if (p.money != startAmount + p.numCopied*payToCopy + p.numCorrect*rewardForCorrect - p.timesCopying*payToCopy) console.warn("Player error!"); 
+    if (p.money != startAmount + p.numCopied*payToCopy + p.numCorrect*rewardForCorrect - p.timesCopying*payToCopy) console.warn("Player error! ID and name: " + p.id + " " + p.name);
+    
+    let stats = [`id: ${p.id}`, `$: ${p.money}`, `cor: ${p.numCorrect}`, `was_cop: ${p.numCopied}`, `copied: ${p.timesCopying}`];
+
     return stats;  
 }     
 
@@ -29,41 +31,55 @@ function updateCorrect(trial_index) {
                 currentPlayer.money += rewardForCorrect;
                 currentPlayer.numCorrect ++;
             }
-            console.log(`player ${i+1} (id ${currentPlayer.id}, name ${currentPlayer.name}, avatar ${currentPlayer.avatar_filepath}) ${testPlayer(currentPlayer)}`); 
+            console.log(`${currentPlayer.name}: ${testPlayer(currentPlayer)}`); 
         }
 }
 
-// update the stats of players based on who is copying in a given round
-// parameters: boolean representing whether self is copying, playerCopyingIndex
-// representing which player is being copied if self copying, currInfo object
-// based on responses by server
-function updateCopying(bIsCopying, playerCopyingIndex, currInfo) { 
-        // update self and player who you're copying if relevant
-        if(bIsCopying){
-            player.money -= payToCopy;
+/* update the stats of players based on who is copying in a given round
+copyingInfo object should be an array of objects received from the server
+with the following fields: {
+    id: int,
+    num_who_copied: int,
+    delta_money: int, 
+    copying: bool,
+    copying_id: int or null if not copying,
+    trial_type: "copy",
+    trial_index: int
+    } 
+There should be one object per player including the self.  
+*/
+function updateCopying(copyingInfo) { 
+    for (i = 0; i <= numPlayers; i++) { 
+        currObj = copyingInfo[i]; 
+
+        // updating self is separate because not in dummyPlayers array
+        if (currObj.id == player.id) {
+            player.numCopied += currObj.num_who_copied; 
+
+            player.money += currObj.delta_money;
+
             document.getElementById("money-amount").innerHTML = "Your total amount of money is: " + player.money.toString();
-            player.timesCopying++; 
-    
-            // and adjust the money of the player being copied
-            dummyPlayers[playerCopyingIndex].money += payToCopy;
-            dummyPlayers[playerCopyingIndex].numCopied++;
-            console.log(`player ${playerCopyingIndex+1} (id ${dummyPlayers[playerCopyingIndex].id}, name ${dummyPlayers[playerCopyingIndex].name}, avatar ${dummyPlayers[playerCopyingIndex].avatar_filepath}) ${testPlayer(dummyPlayers[playerCopyingIndex])}`);
+
+            if (currObj.copying) player.timesCopying++; 
+
+            console.log(`${player.name}: ${testPlayer(player)}`);
         }
-        
-        // if online: update other players based on their info
-        if(!offlineMode) { 
-            for(i = 0; i < numPlayers; i++) { 
-                if (currInfo[i].copy) { 
-                    // update player copying
-                    dummyPlayers[i].money -= payToCopy;
-                    dummyPlayers[i].timesCopying++; 
-    
-                    // update player being copied
-                    dummyPlayers[currInfo[i].who].money += payToCopy;
-                    dummyPlayers[currInfo[i].who].numCopied ++;
-    
-                    console.log(`player ${i+1} copied player ${currInfo[i].who+1}`);
-                }
-            }
+        // updating others
+        else { 
+            currPlayer = convertIdToPlayer(currObj.id);
+
+            currPlayer.numCopied += currObj.num_who_copied;
+            currPlayer.money += currObj.delta_money;
+
+            if(currObj.copying) currPlayer.timesCopying++;
+
+            console.log(`${currPlayer.name}: ${testPlayer(currPlayer)}`)
         }
+    }
+}
+
+// given a player id, returns the locally saved player object with that id
+function convertIdToPlayer(id) { 
+    pos = idLookup[id]; 
+    return dummyPlayers[pos]; 
 }
