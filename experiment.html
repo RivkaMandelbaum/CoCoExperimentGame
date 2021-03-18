@@ -47,8 +47,9 @@
         const rewardForCorrect = 10; // amount you get when you choose the right answer
 
         const numDecisions = 2; // to skip last "choice" screen, rough solution
-        let offlineMode = true; 
+        const offlineMode = true;
 
+        const defaultOrder = Array(numImages).fill(-1); // for order timeline variable default
 
         /* placeholders */  
         const img1 = "images/img1.jpg";
@@ -71,7 +72,7 @@
         let dummyPlayers = []; // array to hold other players; defined after consent
         let d_choices = []; // default value for other player choices
         let idLookup = {}; // maps player ids to position in dummyPlayers
-
+        let orderLookup = {}; // keys = trial index, values = order of images as shown to player 
     /* ------------------------------------------------------------ */ 
     /* define trials on timeline                                    */     
     /* ------------------------------------------------------------ */ 
@@ -101,14 +102,14 @@
                 {
                     timeline: artDisplayCopy, 
                     conditional_function: function() { 
-                        return bIsCopying; // do NOT recalculate this value - it will use the wrong button press
+                        return bIsCopying; 
                     }  
                 },
                 // display player results and correctness (including if copying)
                 {
                     timeline: [displaySelfResults]
                 },
-                // display other player results and choose to copy; update money, bIsCopying, playerCopyingID if copying
+                // display other player results and choose to copy; update stats for all players, bIsCopying, playerCopyingID if copying
                 {
                     timeline: chooseToCopy, 
                     // skips last execution (before end screen)
@@ -118,9 +119,9 @@
                 }
             ],
             timeline_variables: [
-                {correct_choice: 0, img_array: [img1, img2, img3, img4, img5], dummy_choices: d_choices},
-                {correct_choice: 1, img_array: [img5, img4, img3, img2, img1], dummy_choices: d_choices},
-                {correct_choice: 2, img_array: [img1, img2, img3, img4, img5], dummy_choices: d_choices}
+                {correct_choice: img1, img_array: [img1, img2, img3, img4, img5], dummy_choices: d_choices, order: orderLookup},
+                {correct_choice: img2, img_array: [img5, img4, img3, img2, img1], dummy_choices: d_choices, order: orderLookup},
+                {correct_choice: img3, img_array: [img1, img2, img3, img4, img5], dummy_choices: d_choices, order: orderLookup}
             ],
         }
         timeline.push(art_decision_procedure);
@@ -130,6 +131,9 @@
             type: "html-keyboard-response", 
             stimulus: "Thanks for participating. The experiment is over. You can close the browser window.",
             choices: jsPsych.NO_KEYS, 
+            data: { 
+                orders: orderLookup
+            },
             trial_duration: 2000 // Remove this when not debugging (need this line for displayData())
         };
         timeline.push(goodbye);  

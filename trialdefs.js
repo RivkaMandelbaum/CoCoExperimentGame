@@ -32,6 +32,9 @@ let consentWait = {
         // display initial amount of money 
         document.getElementById("money-amount").innerHTML = "Your total amount of money is: " + startAmount.toString();
 
+        // if online, ** DEALS WITH ** artwork information. if offline, dummy
+        getArtworks(offlineMode);
+
         // if online, will return object with numPlayers, self id, and other ids as array 
         // if offline, will return dummy values of those 
         let initObject = getPlayerInfo(offlineMode); 
@@ -64,23 +67,41 @@ let consentTrial = [consentChoice, consentWait]
  // display art and allow selection
  let artDisplaySelectionChoice = {
     type: "multi-image-button-response",
-    stimulus: ["images"], //jsPsych.timelineVariable('img_array'),
+    stimulus: null, 
     prompt: "Please select what you think is the <strong> highest-value </strong> artwork.",
-    correct_choice: jsPsych.timelineVariable('correct_choice'),
     choices: function() {
+        // create choices array to return and version with randomized position to act as dictionary
         let ch = [];
         let len = jsPsych.timelineVariable('img_array', true).length;
-        for (i = 1; i <= len; i++) { 
-            //ch.push(i);
-            ch.push(`<img src = ${jsPsych.timelineVariable('img_array', true)[i-1]}></img>`)
+        for(i = 0; i < len; i++) ch.push(i);
+        let shuffled = jsPsych.randomization.shuffle(ch); 
+
+        let order = [];
+
+        // add images to the array in the order they will appear in
+        for(i = 0; i < len; i++){
+            pos = shuffled[i];
+
+            ch[i] = `<img src = ${jsPsych.timelineVariable('img_array', true)[pos]}></img>`;
+            order.push(jsPsych.timelineVariable('img_array', true)[pos])
         }
-        return ch;
+
+        // add the order that images appeared to the orderLookup object
+        orderLookup[jsPsych.progress().current_trial_global] = order;
+
+        return ch; 
     }, 
     response_ends_trial: true,
     trial_duration: trialDuration,
     data: {
         correct: jsPsych.timelineVariable('correct_choice'),
-        dummy_choices: jsPsych.timelineVariable('dummy_choices')
+        dummy_choices: jsPsych.timelineVariable('dummy_choices'), 
+        order: "This is a placeholder. It should be updated in the on_finish function."
+    }, 
+    on_finish: function() {
+        // update order data to be correct
+        let index = jsPsych.progress().current_trial_global;
+        jsPsych.data.get().values()[index].order = orderLookup[index];
     }
 };
 
@@ -122,13 +143,37 @@ let artDisplaySelection = [artDisplaySelectionChoice, artDisplaySelectionWait];
 // display art but do not allow selection (copy instead)
 let artDisplayCopyChoice = { 
     type: "multi-image-button-response", 
-    stimulus: jsPsych.timelineVariable('img_array'), 
+    stimulus: function() { 
+        // create array to return and version with randomized position to act as dictionary
+            let st = [];
+            let len = jsPsych.timelineVariable('img_array', true).length;
+            for(i = 0; i < len; i++) st.push(i);
+            let shuffled = jsPsych.randomization.shuffle(st); 
+    
+            // add images to the array in the order they will appear in
+            for(i = 0; i < len; i++){
+                pos = shuffled[i];
+    
+                st[i] = jsPsych.timelineVariable('img_array', true)[pos];
+            }
+    
+            // add the order that images appeared to the orderLookup object
+            orderLookup[jsPsych.progress().current_trial_global] = st;
+    
+            return st; 
+    }, 
     prompt: "Continue to see what choice was made.", 
     choices: ["Continue"],
     data: { 
         correct: jsPsych.timelineVariable('correct_choice'),
-        dummy_choices: jsPsych.timelineVariable('dummy_choices')
-    },
+        dummy_choices: jsPsych.timelineVariable('dummy_choices'),
+        order: "This is a placeholder. It should be updated in the on_finish function."
+    }, 
+    on_finish: function() {
+        // update order data to be correct
+        let index = jsPsych.progress().current_trial_global;
+        jsPsych.data.get().values()[index].order = orderLookup[index];
+    }
 }
 let artDisplayCopyWait = { 
     type: "waiting", 

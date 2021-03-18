@@ -1,6 +1,16 @@
-/* FUNCTIONS RELATED TO SENDING/RECEIVING CHOICES */ 
+/* FUNCTIONS RELATED TO SENDING/RECEIVING INFORMATION */ 
 
-// Returns object in the format: 
+// Gets artworks to put into timeline variables
+function getArtworks(offlineMode){
+    if(offlineMode){
+        console.log("getting artworks in offline mode")
+    }
+    else { 
+        console.log("placeholder for online mode")
+    }
+}
+
+// Gets player info from server at start of experiment. Returns object in the format: 
     /* {
         players: int (number of players, excluding self),
         self_id: int,
@@ -81,12 +91,15 @@ function backendArtSelections(trial_index, offlineMode) {
 
     // in online mode, send information about self, receive correct answer and responses, and update the timeline variable to match
     else { 
+        if(!bIsCopying) {
+            let selection = getPlayerSelection(trial_index);
+        }
         let send_message = { 
             id: player.id, 
             correct: null,
             copying: bIsCopying, 
             copying_id: playerCopyingID, 
-            artwork_chosen_id: null,
+            artwork_chosen_id: selection,
             artwork_chosen_filepath: null,
             artwork_chosen_position: null,
             trial_type: "art",
@@ -95,6 +108,7 @@ function backendArtSelections(trial_index, offlineMode) {
 
         /* SEND MESSAGE! */ 
 
+        // update correct choice to be the id of the correct artwork in this round
         updated_correct_choice = /* PLACEHOLDER - SHOULD GET THIS FROM THE SERVER*/ jsPsych.data.get().filter({'trial_index': trial_index}).values()[0].correct; 
 
         jsPsych.data.get().filter({'trial_index': trial_index}).values()[0].correct = updated_correct_choice; 
@@ -128,7 +142,7 @@ function backendArtSelections(trial_index, offlineMode) {
         ];
         
     
-        // update timeline variables 
+        // update data
         for (i = 0; i < numPlayers; i++) {
             let pos = idLookup[response_array[i].id];
             jsPsych.data.get().filter({'trial_index': trial_index}).values()[0].dummy_choices[pos] = {art: response_array[i].artwork_chosen_id, correct: response_array[i].correct};

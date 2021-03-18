@@ -6,10 +6,10 @@ function getCorrectArtwork (index) {
     return jsPsych.data.get().filter({'trial_index':index}).select('correct').values[0];
 }
 // Returns the button selected in trial with given index 
-// Buttons are based on indices in the 'choices array' (should be integer between 0 and numImages-1)
+// Buttons are based on indices in the 'choices' array and (if selection in given trial was of artwork) should be converted to artwork
 function getPlayerSelection(index) {  
     let trial_data = jsPsych.data.get().filter({'trial_index': index});
-    return trial_data.select('button_pressed').values[0];
+    return trial_data.select('button_pressed').values[0];  
 }; 
 
 // Returns whether player was correct in trial with given index.
@@ -17,7 +17,10 @@ function isPlayerCorrect(index) {
     let clicked_correct_data = jsPsych.data.get().filter({'trial_index': index}).select('clicked_correct').values[0];
 
     if (clicked_correct_data != null) return clicked_correct_data;
-    else return(getCorrectArtwork(index) === getPlayerSelection(index));
+    else {
+        let pos = getPlayerSelection(index)
+        return(getCorrectArtwork(index) === orderLookup[index][pos]);
+    }
 }
 
 /* ---- Functions for dummy correctness are separated because they're based on timeline variables rather than on previous trial. ---- */ 
@@ -28,7 +31,7 @@ function getDummySelection(id, trial_index) {
 
     let data = jsPsych.data.get().filter({'trial_index': trial_index}).select('dummy_choices').values[0][i]; 
 
-    if (typeof(data) != "object") return data; 
+    if (typeof(data) != "object") return `images/img${data+1}.jpg`; 
     else return data.art; 
 }
 

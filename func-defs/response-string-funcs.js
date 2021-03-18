@@ -8,24 +8,25 @@ function buildSelfResultsStimulus(trial_index, bIsCopying, playerCopyingID) {
     if(!bIsCopying) {
         if(getPlayerSelection(trial_index) === null) return "Your time ran out."
 
-        let response = "Your choice was button number " + (getPlayerSelection(trial_index)+1) + ". \n"; 
+        let response = "Your choice was artwork " + orderLookup[trial_index][getPlayerSelection(trial_index)] + ". \n"; 
 
         if (isPlayerCorrect(trial_index)) {
             return response + `Your answer is correct. You earned $${rewardForCorrect}.`; 
         }
         else {
-            return response + "Your answer is incorrect. The correct value was: " + (getCorrectArtwork(trial_index)+1) + "."; 
+            return response + "Your answer is incorrect. The correct value was: " + (getCorrectArtwork(trial_index)) + "."; 
         }
     }
     else { 
+        console.log(trial_index);
         curr = convertIdToPlayer(playerCopyingID);
-        response = `You chose to copy ${curr.name}. ${curr.name} chose artwork ${getDummySelection(curr.id, trial_index) + 1}. <br> </br>`;
+        response = `You chose to copy ${curr.name}. ${curr.name} chose artwork ${getDummySelection(curr.id, trial_index)}. <br> </br>`;
 
         if(isDummyCorrect(curr.id, trial_index)) {
             return response + `${dummyPlayers[idLookup[playerCopyingID]].name} was <strong> correct</strong>. You earned $${rewardForCorrect}.`;
         }
         else {
-            return response + `${dummyPlayers[idLookup[playerCopyingID]].name} was <strong> incorrect</strong>. The correct value was ${getCorrectArtwork(trial_index) + 1}.`
+            return response + `${dummyPlayers[idLookup[playerCopyingID]].name} was <strong> incorrect</strong>. The correct value was ${getCorrectArtwork(trial_index)}.`
         }
     }
 }
