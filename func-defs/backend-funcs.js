@@ -93,11 +93,11 @@ function backendArtSelections(trial_index, offlineMode) {
 
     // in online mode, send information about self, receive correct answer and responses, and update the timeline variable to match
     else { 
-        let pos = null;
-        let chosen_id = null;
+        let pos, chosen_id, chosen_filepath = null;
         if(!bIsCopying) {
             pos = getPlayerSelection(trial_index);
-            chosen_id = orderLookup[trial_index][pos];
+            chosen_id = orderLookup[trial_index][pos].id;
+            chosen_filepath = orderLookup[trial_index][pos].filepath;
         }
         let send_message = { 
             id: player.id, 
@@ -105,7 +105,7 @@ function backendArtSelections(trial_index, offlineMode) {
             copying: bIsCopying, 
             copying_id: playerCopyingID, 
             artwork_chosen_id: chosen_id,
-            artwork_chosen_filepath: null,
+            artwork_chosen_filepath: chosen_filepath,
             artwork_chosen_position: pos,
             trial_type: "art",
             trial_index: (trial_index+1)

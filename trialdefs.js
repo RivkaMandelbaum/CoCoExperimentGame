@@ -87,7 +87,7 @@ let intervalID = null;
             pos = shuffled[i];
 
             ch[i] = `<img src = ${tv_img_array[pos].filepath}></img>`;
-            order.push(tv_img_array[pos].id);
+            order.push(tv_img_array[pos]);
         }
 
         // add the order that images appeared to the orderLookup object
@@ -176,7 +176,7 @@ let artDisplayCopyChoice = {
                 pos = shuffled[i];
     
                 st[i] = tv_img_array[pos].filepath;
-                ord.push(tv_img_array[pos].id);
+                ord.push(tv_img_array[pos]);
             }
     
             // add the order that images appeared to the orderLookup object

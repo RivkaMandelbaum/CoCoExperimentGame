@@ -15,7 +15,7 @@ function getPlayerSelection(index) {
 // Returns whether player was correct in trial with given index.
 function isPlayerCorrect(index) { 
     let pos = getPlayerSelection(index);
-    let artwork_id = orderLookup[index][pos];
+    let artwork_id = orderLookup[index][pos].id;
     return(getCorrectArtwork(index).id === artwork_id);
 }
 

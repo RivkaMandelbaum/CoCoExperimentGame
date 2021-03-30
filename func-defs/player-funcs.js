@@ -2,13 +2,14 @@
 
 // creates a player with startAmount of money and numCorrect, numCopied, timesCopying all set to 0. numCorrect and numCopied are useful for testing and in case we want to display those later
 function createPlayer(id, name, avatar_filepath) { 
+    this.id = id;   
+    this.name = name; 
+    this.avatar_filepath = avatar_filepath;
+
     this.money = startAmount;
     this.numCorrect = 0;
     this.numCopied = 0;
     this.timesCopying = 0; 
-    this.id = id;   
-    this.name = name; 
-    this.avatar_filepath = avatar_filepath;
 }
 
 // tests whether the player object is consistent and returns the player's stats as an array
