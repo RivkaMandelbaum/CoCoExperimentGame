@@ -3,10 +3,12 @@
 // Gets artworks to put into timeline variables
 function getArtworks(offlineMode){
     if(offlineMode){
-        console.log("getting artworks in offline mode")
+        console.log("in getArtworks function, offline mode. using placeholders.");
+        return [img1, img2, img3, img4, img5]; // don't need to shuffle here
     }
     else { 
-        console.log("placeholder for online mode")
+        /* GET ARTWORKS FROM SERVER */ 
+        return /* SHOULD BE RETURNING ARTWORKS HERE */;
     }
 }
 
@@ -91,22 +93,28 @@ function backendArtSelections(trial_index, offlineMode) {
 
     // in online mode, send information about self, receive correct answer and responses, and update the timeline variable to match
     else { 
+        let pos = null;
+        let chosen_id = null;
         if(!bIsCopying) {
-            let selection = getPlayerSelection(trial_index);
+            pos = getPlayerSelection(trial_index);
+            chosen_id = orderLookup[trial_index][pos];
         }
         let send_message = { 
             id: player.id, 
             correct: null,
             copying: bIsCopying, 
             copying_id: playerCopyingID, 
-            artwork_chosen_id: selection,
+            artwork_chosen_id: chosen_id,
             artwork_chosen_filepath: null,
-            artwork_chosen_position: null,
+            artwork_chosen_position: pos,
             trial_type: "art",
             trial_index: (trial_index+1)
         }
 
-        /* SEND MESSAGE! */ 
+        /* SEND MESSAGES:
+            send_message as above
+            numTimeRanOut variable
+        */ 
 
         // update correct choice to be the id of the correct artwork in this round
         updated_correct_choice = /* PLACEHOLDER - SHOULD GET THIS FROM THE SERVER*/ jsPsych.data.get().filter({'trial_index': trial_index}).values()[0].correct; 

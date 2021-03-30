@@ -1,7 +1,7 @@
 /* ------------------------------------------------------------ */ 
 /* trial definion for complicated trials:                       */     
 /* ------------------------------------------------------------ */  
-const trialDuration = (120 * 1000); // force end of decision after this time
+const trialDuration = (10 * 1000); // force end of decision after this time
 const waitDuration = 10 * 1000; // show waiting screen when offline for this long
 
 function duration(offlineMode) { 
@@ -31,6 +31,9 @@ let consentWait = {
         /* -------- experiment setup steps -------- */ 
         // display initial amount of money 
         document.getElementById("money-amount").innerHTML = "Your total amount of money is: " + startAmount.toString();
+
+        // if online, ** DEALS WITH ** artwork information. if offline, dummy
+        getArtworks(offlineMode);
 
         // if online, will return object with numPlayers, self id, and other ids as array 
         // if offline, will return dummy values of those 
@@ -67,16 +70,13 @@ let intervalID = null;
     type: "multi-image-button-response",
     on_start: function() { 
         intervalID = startTimer(trialDuration / 1000);
-        // if online, ** DEALS WITH ** artwork information. if offline, dummy
-        getArtworks(offlineMode);
     },
     stimulus: null, 
     prompt: "Please select what you think is the <strong> highest-value </strong> artwork.",
     choices: function() {
         // create choices array to return and version with randomized position to act as dictionary
         let ch = [];
-        let tv_img_array = jsPsych.timelineVariable('img_array', true);
-        let len = tv_img_array.length;
+        let len = jsPsych.timelineVariable('img_array', true).length;
         for(i = 0; i < len; i++) ch.push(i);
         let shuffled = jsPsych.randomization.shuffle(ch); 
 
@@ -86,8 +86,8 @@ let intervalID = null;
         for(i = 0; i < len; i++){
             pos = shuffled[i];
 
-            ch[i] = `<img src = ${tv_img_array[pos].filepath}></img>`;
-            order.push(tv_img_array[pos].id);
+            ch[i] = `<img src = ${jsPsych.timelineVariable('img_array', true)[pos]}></img>`;
+            order.push(jsPsych.timelineVariable('img_array', true)[pos])
         }
 
         // add the order that images appeared to the orderLookup object
@@ -106,8 +106,6 @@ let intervalID = null;
         // update order data to be correct
         let index = jsPsych.progress().current_trial_global;
         jsPsych.data.get().values()[index].order = orderLookup[index];
-
-        // clear timer
         clearInterval(intervalID);
     }
 };
@@ -115,16 +113,10 @@ let intervalID = null;
 // waiting trial with after-finish functionality 
 let artDisplaySelectionWait = { 
     type: "waiting", 
-    on_start: function() { 
-        document.getElementById("countdown-timer").innerHTML = "";
-    },
     prompt: "Please wait for other players.", 
     max_trial_duration: function() { return duration(offlineMode); },
     trial_function: function() {
         let trial_index = jsPsych.progress().current_trial_global - 1;
-
-        // check if time ran out and update counter if it did
-        if(getPlayerSelection(trial_index) === null) numTimeRanOut++;
         
         // update players' money:
         jsPsych.pauseExperiment(); 
@@ -156,18 +148,10 @@ let artDisplaySelection = [artDisplaySelectionChoice, artDisplaySelectionWait];
 // display art but do not allow selection (copy instead)
 let artDisplayCopyChoice = { 
     type: "multi-image-button-response", 
-    on_start: function() { 
-        intervalID = startTimer(trialDuration / 1000);
-
-        // if online, ** DEALS WITH ** artwork information. if offline, dummy
-        getArtworks(offlineMode);
-    },
     stimulus: function() { 
         // create array to return and version with randomized position to act as dictionary
             let st = [];
-            let ord = [];
-            let tv_img_array = jsPsych.timelineVariable('img_array', true);
-            let len = tv_img_array.length;
+            let len = jsPsych.timelineVariable('img_array', true).length;
             for(i = 0; i < len; i++) st.push(i);
             let shuffled = jsPsych.randomization.shuffle(st); 
     
@@ -175,12 +159,11 @@ let artDisplayCopyChoice = {
             for(i = 0; i < len; i++){
                 pos = shuffled[i];
     
-                st[i] = tv_img_array[pos].filepath;
-                ord.push(tv_img_array[pos].id);
+                st[i] = jsPsych.timelineVariable('img_array', true)[pos];
             }
     
             // add the order that images appeared to the orderLookup object
-            orderLookup[jsPsych.progress().current_trial_global] = ord;
+            orderLookup[jsPsych.progress().current_trial_global] = st;
     
             return st; 
     }, 
@@ -195,25 +178,14 @@ let artDisplayCopyChoice = {
         // update order data to be correct
         let index = jsPsych.progress().current_trial_global;
         jsPsych.data.get().values()[index].order = orderLookup[index];
-
-        // clear timer
-        clearInterval(intervalID);
-    },
-    response_ends_trial: true,
-    trial_duration: trialDuration
+    }
 }
 let artDisplayCopyWait = { 
     type: "waiting", 
-    on_start: function() { 
-        document.getElementById("countdown-timer").innerHTML = "";
-    },
     prompt: "Please wait for other players.", 
     max_trial_duration: function() { return duration(offlineMode)},
     trial_function: function() {
         let trial_index = jsPsych.progress().current_trial_global - 1;
-
-        // check if time ran out and update counter if it did
-        if(getPlayerSelection(trial_index) === null) numTimeRanOut++;
 
         // wait for other player's responses
         jsPsych.pauseExperiment(); 
@@ -249,36 +221,15 @@ let chooseToCopyChoice = {
     },
     stimulus: function() { 
         let index_param = jsPsych.progress().current_trial_global - 2;
-        let s = buildCopyStimulus(index_param);
-
-        if (numExecutions < numDecisions) {
-            return s + (`In the next round, you may either choose the highest-value artwork on your own or pay another player $${payToCopy} to copy their choice.`);
-        }
-        else { 
-            return s;
-        }
-
+        return buildCopyStimulus(index_param);
     },
-    prompt: function() { 
-        if (numExecutions < numDecisions) {
-            return "Which player would you like to copy?";
-        }
-        else { 
-            return;
-        }
-    }, 
+    prompt: "Which player would you like to copy?", 
     choices: function() { 
-        if (numExecutions < numDecisions) { 
-            let ch = ["None, I would like to make my own choice."];
-            for (i = 0; i <numPlayers; i++) { 
-                ch.push(`${dummyPlayers[i].name}`);
-            }
-            return ch; 
+        let ch = ["None, I would like to make my own choice."];
+        for (i = 0; i <numPlayers; i++) { 
+            ch.push(`${dummyPlayers[i].name}`);
         }
-        else {
-            return ["Continue to end of experiment."];
-        }
-        
+        return ch; 
     },
     on_finish: function() {
         clearInterval(intervalID);
@@ -288,10 +239,7 @@ let chooseToCopyChoice = {
 }
 
 let chooseToCopyWait = { 
-    type: "waiting",
-    on_start: function() { 
-        document.getElementById("countdown-timer").innerHTML = "";
-    }, 
+    type: "waiting", 
     prompt: "Please wait for other players.", 
     max_trial_duration: function() { return duration(offlineMode)},
     trial_function: function() {

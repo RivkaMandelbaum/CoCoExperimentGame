@@ -1,36 +1,5 @@
 /* BUILDING AND RETURN STIMULUS STRINGS*/
 
-// builds stimulus string for displaySelfResults
-// your choice (or choice of personcopying), whether it was correct, current money
-// returns string to be used as stimulus 
-function buildSelfResultsStimulus(trial_index, bIsCopying, playerCopyingID) {
-    let response = "";
-    if(!bIsCopying) {
-        if(getPlayerSelection(trial_index) === null) return "Your time ran out."
-
-        let response = "Your choice was artwork " + orderLookup[trial_index][getPlayerSelection(trial_index)] + ". \n"; 
-
-        if (isPlayerCorrect(trial_index)) {
-            return response + `Your answer is correct. You earned $${rewardForCorrect}.`; 
-        }
-        else {
-            return response + "Your answer is incorrect. The correct value was: " + (getCorrectArtwork(trial_index)) + "."; 
-        }
-    }
-    else { 
-        console.log(trial_index);
-        curr = convertIdToPlayer(playerCopyingID);
-        response = `You chose to copy ${curr.name}. ${curr.name} chose artwork ${getDummySelection(curr.id, trial_index)}. <br> </br>`;
-
-        if(isDummyCorrect(curr.id, trial_index)) {
-            return response + `${dummyPlayers[idLookup[playerCopyingID]].name} was <strong> correct</strong>. You earned $${rewardForCorrect}.`;
-        }
-        else {
-            return response + `${dummyPlayers[idLookup[playerCopyingID]].name} was <strong> incorrect</strong>. The correct value was ${getCorrectArtwork(trial_index)}.`
-        }
-    }
-}
-
 // builds stimulus table for chooseToCopy
 // displays all players' choices, correctness, money amount
 // returns HTML to be used as stimulus
@@ -76,9 +45,6 @@ function buildCopyStimulus(trial_index) {
     table += "</table></div><br></br>";
 
     s = introString + table; 
-
-    // adds explanation of choice
-    s += (`In the next round, you may either choose the highest-value artwork on your own or pay another player $${payToCopy} to copy their choice.`);
 
     return s; 
 }
