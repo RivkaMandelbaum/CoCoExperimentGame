@@ -155,7 +155,8 @@
             stimulus: "Thanks for participating. The experiment is over. You can close the browser window.",
             choices: jsPsych.NO_KEYS, 
             data: { 
-                orders: orderLookup
+                orders: orderLookup,
+                participant_condition: player.condition,
             },
             trial_duration: 2000 // Remove this when not debugging (need this line for displayData())
         };

@@ -38,12 +38,14 @@ let consentWait = {
         numPlayers = initObject.players; 
 
         // define player 
-        player = new createPlayer(initObject.self_id, initObject.self_name, initObject.self_avatar_filepath);
+        let self = initObject.self_info; 
+        player = new createPlayer(self.id, self.name, self.avatar_filepath, self.condition);
 
         // define dummy players 
         for(i = 0; i < numPlayers; i++) {
-            let otherPlayerInfo = initObject.player_info[i];
-            let otherPlayer = new createPlayer(otherPlayerInfo.id, otherPlayerInfo.name, otherPlayerInfo.avatar_filepath);
+            let other_info = initObject.player_info[i];
+            let otherPlayer = new createPlayer(other_info.id, other_info.name, other_info.avatar_filepath, other_info.condition);
+
             dummyPlayers.push(otherPlayer);
             idLookup[otherPlayer.id] = i; 
         }
@@ -249,7 +251,21 @@ let chooseToCopyChoice = {
     },
     stimulus: function() { 
         let index_param = jsPsych.progress().current_trial_global - 2;
-        let s = buildCopyStimulus(index_param);
+        let s = "";
+
+        // build table (based on the different conditions)
+        if (player.condition === "easy") { 
+            s = buildTable_MoneyCorrectCopied(index_param);
+        }
+        else if (player.condition === "medium") { 
+            s = buildTable_MoneyCorrect(index_param);
+        }
+        else if (player.condition === "hard") { 
+            s = buildTable_Money(index_param);
+        }
+        else {
+            console.warn("Inconsistent condition names! Please check getPlayerInfo, createPlayer, and chooseToCopyChoice stimulus.")
+        }
 
         if (numExecutions < numDecisions) {
             return s + (`In the next round, you may either choose the highest-value artwork on your own or pay another player $${payToCopy} to copy their choice.`);

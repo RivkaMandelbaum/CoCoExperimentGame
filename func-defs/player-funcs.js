@@ -1,10 +1,11 @@
 /* PLAYER CREATION, TESTING, AND MODIFICATION */ 
 
 // creates a player with startAmount of money and numCorrect, numCopied, timesCopying all set to 0. numCorrect and numCopied are useful for testing and in case we want to display those later
-function createPlayer(id, name, avatar_filepath) { 
+function createPlayer(id, name, avatar_filepath, condition) { 
     this.id = id;   
     this.name = name; 
     this.avatar_filepath = avatar_filepath;
+    this.condition = condition;
 
     this.money = startAmount;
     this.numCorrect = 0;
@@ -18,7 +19,7 @@ function testPlayer(p) {
 
     if (p.money != startAmount + p.numCopied*payToCopy + p.numCorrect*rewardForCorrect - p.timesCopying*payToCopy) console.warn("Player error! ID and name: " + p.id + " " + p.name);
     
-    let stats = [`id: ${p.id}`, `$: ${p.money}`, `cor: ${p.numCorrect}`, `was_cop: ${p.numCopied}`, `copied: ${p.timesCopying}`];
+    let stats = [`id: ${p.id}`, `$: ${p.money}`, `cor: ${p.numCorrect}`, `was_cop: ${p.numCopied}`, `copied: ${p.timesCopying}`, `condition: ${p.condition}`];
 
     return stats;  
 }     

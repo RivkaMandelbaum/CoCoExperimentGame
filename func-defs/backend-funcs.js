@@ -15,45 +15,58 @@ function getArtworks(offlineMode){
 // Gets player info from server at start of experiment. Returns object in the format: 
     /* {
         players: int (number of players, excluding self),
-        self_id: int,
-        self_name: string,
-        self_avatar_filepath: string,
+        self_info: player info object, with format: {
+            id: int, 
+            name: string, 
+            avatar_filepath: string,
+            condition: string ("easy", "medium", or "hard")
+        },
         player_info: array of player info objects, one per player, with format: 
             {
                 id: int,
                 name: string,
                 avatar_filepath: string,
+                condition: string ("easy", "medium", or "hard")
             }
         }
     */
 // If offline, will return dummy values of those
 function getPlayerInfo(offlineMode){
     if (offlineMode) {
+        let default_condition = "hard"; 
+
         let result = {
             players: numPlayers,
-            self_id: 0,
-            self_name: "Self", 
-            self_avatar_filepath: "images/avatar-self.png",
+            self_info: {
+                id: 0,
+                name: "Me",
+                avatar_filepath: "images/avatar-self.png",
+                condition: default_condition
+            }, 
             player_info: [
                 { 
                     id: 10, 
                     name: "Bartholomew",
-                    avatar_filepath: "images/avatar1.png"
+                    avatar_filepath: "images/avatar1.png",
+                    condition: default_condition
                 }, 
                 { 
                     id: 2,
                     name: "Edmund", 
-                    avatar_filepath: "images/avatar2.png"
+                    avatar_filepath: "images/avatar2.png",
+                    condition: default_condition
                 },
                 {
                     id: 30, 
                     name: "Clarissa", 
-                    avatar_filepath: "images/avatar3.png"
+                    avatar_filepath: "images/avatar3.png",
+                    condition: default_condition
                 },
                 {
                     id: 4, 
                     name: "Ida", 
-                    avatar_filepath: "images/avatar4.png"
+                    avatar_filepath: "images/avatar4.png",
+                    condition: default_condition
                 }
             ]
         };

@@ -113,7 +113,7 @@ jsPsych.plugins["multi-image-button-response"] = (function() {
     var html;
     if (trial.render_on_canvas) {
       if(trial.stimulus == null) {
-        console.warn("Error from jspsych-multi-image-button-response. When render on canvas is true but stimulus is not provided, a blank 1x1 canvas will be inserted onto the page, which may interfere with formatting.")
+        console.log("Error from jspsych-multi-image-button-response. When render on canvas is true but stimulus is not provided, a blank 1x1 canvas will be inserted onto the page, which may interfere with formatting.")
       }
       // first clear the display element (because the render_on_canvas method appends to display_element instead of overwriting it with .innerHTML)
       if (display_element.hasChildNodes()) {
