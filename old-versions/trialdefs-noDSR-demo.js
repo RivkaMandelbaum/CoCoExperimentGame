@@ -1,7 +1,7 @@
 /* ------------------------------------------------------------ */ 
 /* trial definion for complicated trials:                       */     
 /* ------------------------------------------------------------ */  
-const trialDuration = (30 * 1000); // force end of decision after this time
+const trialDuration = (10 * 1000); // force end of decision after this time
 const waitDuration = 10 * 1000; // show waiting screen when offline for this long
 
 function duration(offlineMode) { 
@@ -26,14 +26,14 @@ let consentChoice = {
 let consentWait = { 
     type: "waiting",
     prompt: "Please wait for other players.", 
-    data: {
-        participant_condition: "placeholder",
-    },
     max_trial_duration: function() { return duration(offlineMode)},
     trial_function: function() { 
         /* -------- experiment setup steps -------- */ 
         // display initial amount of money 
         document.getElementById("money-amount").innerHTML = "Your total amount of money is: " + startAmount.toString();
+
+        // if online, ** DEALS WITH ** artwork information. if offline, dummy
+        getArtworks(offlineMode);
 
         // if online, will return object with numPlayers, self id, and other ids as array 
         // if offline, will return dummy values of those 
@@ -41,14 +41,12 @@ let consentWait = {
         numPlayers = initObject.players; 
 
         // define player 
-        let self = initObject.self_info; 
-        player = new createPlayer(self.id, self.name, self.avatar_filepath, self.condition);
+        player = new createPlayer(initObject.self_id, initObject.self_name, initObject.self_avatar_filepath);
 
         // define dummy players 
         for(i = 0; i < numPlayers; i++) {
-            let other_info = initObject.player_info[i];
-            let otherPlayer = new createPlayer(other_info.id, other_info.name, other_info.avatar_filepath, other_info.condition);
-
+            let otherPlayerInfo = initObject.player_info[i];
+            let otherPlayer = new createPlayer(otherPlayerInfo.id, otherPlayerInfo.name, otherPlayerInfo.avatar_filepath);
             dummyPlayers.push(otherPlayer);
             idLookup[otherPlayer.id] = i; 
         }
@@ -58,10 +56,7 @@ let consentWait = {
             d_choices.push(i);
         }
     }, 
-    function_ends_trial: true,
-    on_finish: function() { 
-        jsPsych.data.get().values()[jsPsych.progress().current_trial_global].participant_condition = player.condition; 
-    } 
+    function_ends_trial: true 
 }
 
 // combine the two parts of the consent trial into one timeline
@@ -81,8 +76,7 @@ let intervalID = null;
     choices: function() {
         // create choices array to return and version with randomized position to act as dictionary
         let ch = [];
-        let img_array = getArtworks(offlineMode);
-        let len = img_array.length;
+        let len = jsPsych.timelineVariable('img_array', true).length;
         for(i = 0; i < len; i++) ch.push(i);
         let shuffled = jsPsych.randomization.shuffle(ch); 
 
@@ -92,8 +86,8 @@ let intervalID = null;
         for(i = 0; i < len; i++){
             pos = shuffled[i];
 
-            ch[i] = `<img src = ${img_array[pos].filepath}></img>`;
-            order.push(img_array[pos]);
+            ch[i] = `<img src = ${jsPsych.timelineVariable('img_array', true)[pos]}></img>`;
+            order.push(jsPsych.timelineVariable('img_array', true)[pos])
         }
 
         // add the order that images appeared to the orderLookup object
@@ -104,16 +98,14 @@ let intervalID = null;
     response_ends_trial: true,
     trial_duration: trialDuration,
     data: {
-        correct: "Placeholder to be updated in waiting trial through backendArtSelections function",
-        dummy_choices: "Placeholder to be updated in waiting trial through backendArtSelections function", 
+        correct: jsPsych.timelineVariable('correct_choice'),
+        dummy_choices: jsPsych.timelineVariable('dummy_choices'), 
         order: "This is a placeholder. It should be updated in the on_finish function."
     }, 
     on_finish: function() {
         // update order data to be correct
         let index = jsPsych.progress().current_trial_global;
         jsPsych.data.get().values()[index].order = orderLookup[index];
-
-        // clear timer
         clearInterval(intervalID);
     }
 };
@@ -121,16 +113,10 @@ let intervalID = null;
 // waiting trial with after-finish functionality 
 let artDisplaySelectionWait = { 
     type: "waiting", 
-    on_start: function() { 
-        document.getElementById("countdown-timer").innerHTML = "";
-    },
     prompt: "Please wait for other players.", 
     max_trial_duration: function() { return duration(offlineMode); },
     trial_function: function() {
         let trial_index = jsPsych.progress().current_trial_global - 1;
-
-        // check if time ran out and update counter if it did
-        if(getPlayerSelection(trial_index) === null) numTimeRanOut++;
         
         // update players' money:
         jsPsych.pauseExperiment(); 
@@ -144,7 +130,7 @@ let artDisplaySelectionWait = {
             player.numCorrect++;
             document.getElementById("money-amount").innerHTML = "Your total amount of money is: " + player.money.toString();
         }
-        //console.log(`${player.name}: ${testPlayer(player)}`); 
+        console.log(`${player.name}: ${testPlayer(player)}`); 
 
         // update players (uses timeline variables within function) and log to console
         updateCorrect(trial_index);
@@ -162,15 +148,10 @@ let artDisplaySelection = [artDisplaySelectionChoice, artDisplaySelectionWait];
 // display art but do not allow selection (copy instead)
 let artDisplayCopyChoice = { 
     type: "multi-image-button-response", 
-    on_start: function() { 
-        intervalID = startTimer(trialDuration / 1000);
-    },
     stimulus: function() { 
         // create array to return and version with randomized position to act as dictionary
             let st = [];
-            let ord = [];
-            let img_array = getArtworks(offlineMode);
-            let len = img_array.length;
+            let len = jsPsych.timelineVariable('img_array', true).length;
             for(i = 0; i < len; i++) st.push(i);
             let shuffled = jsPsych.randomization.shuffle(st); 
     
@@ -178,45 +159,33 @@ let artDisplayCopyChoice = {
             for(i = 0; i < len; i++){
                 pos = shuffled[i];
     
-                st[i] = img_array[pos].filepath;
-                ord.push(img_array[pos]);
+                st[i] = jsPsych.timelineVariable('img_array', true)[pos];
             }
     
             // add the order that images appeared to the orderLookup object
-            orderLookup[jsPsych.progress().current_trial_global] = ord;
+            orderLookup[jsPsych.progress().current_trial_global] = st;
     
             return st; 
     }, 
     prompt: "Continue to see what choice was made.", 
     choices: ["Continue"],
     data: { 
-        correct: "Placeholder to be updated in waiting trial through backendArtSelections function",
-        dummy_choices: "Placeholder to be updated in waiting trial through backendArtSelections function",
+        correct: jsPsych.timelineVariable('correct_choice'),
+        dummy_choices: jsPsych.timelineVariable('dummy_choices'),
         order: "This is a placeholder. It should be updated in the on_finish function."
     }, 
     on_finish: function() {
         // update order data to be correct
         let index = jsPsych.progress().current_trial_global;
         jsPsych.data.get().values()[index].order = orderLookup[index];
-
-        // clear timer
-        clearInterval(intervalID);
-    },
-    response_ends_trial: true,
-    trial_duration: trialDuration
+    }
 }
 let artDisplayCopyWait = { 
     type: "waiting", 
-    on_start: function() { 
-        document.getElementById("countdown-timer").innerHTML = "";
-    },
     prompt: "Please wait for other players.", 
     max_trial_duration: function() { return duration(offlineMode)},
     trial_function: function() {
         let trial_index = jsPsych.progress().current_trial_global - 1;
-
-        // check if time ran out and update counter if it did
-        if(getPlayerSelection(trial_index) === null) numTimeRanOut++;
 
         // wait for other player's responses
         jsPsych.pauseExperiment(); 
@@ -231,7 +200,7 @@ let artDisplayCopyWait = {
             player.numCorrect++;
             document.getElementById("money-amount").innerHTML = "Your total amount of money is: " + player.money.toString();
         }
-        //console.log(`${player.name}: ${testPlayer(player)}`); 
+        console.log(`${player.name}: ${testPlayer(player)}`); 
 
         // others: 
         updateCorrect(trial_index);
@@ -252,50 +221,15 @@ let chooseToCopyChoice = {
     },
     stimulus: function() { 
         let index_param = jsPsych.progress().current_trial_global - 2;
-        let s = "";
-
-        // build table (based on the different conditions)
-        if (player.condition === "easy") { 
-            s = buildTable_MoneyCorrectCopied(index_param);
-        }
-        else if (player.condition === "medium") { 
-            s = buildTable_MoneyCorrect(index_param);
-        }
-        else if (player.condition === "hard") { 
-            s = buildTable_Money(index_param);
-        }
-        else {
-            console.warn("Inconsistent condition names! Please check getPlayerInfo, createPlayer, and chooseToCopyChoice stimulus.")
-        }
-
-        if (numExecutions < numDecisions) {
-            return s + (`In the next round, you may either choose the highest-value artwork on your own or pay another player $${payToCopy} to copy their choice.`);
-        }
-        else { 
-            return s;
-        }
-
+        return buildCopyStimulus(index_param);
     },
-    prompt: function() { 
-        if (numExecutions < numDecisions) {
-            return "Which player would you like to copy?";
-        }
-        else { 
-            return;
-        }
-    }, 
+    prompt: "Which player would you like to copy?", 
     choices: function() { 
-        if (numExecutions < numDecisions) { 
-            let ch = ["None, I would like to make my own choice."];
-            for (i = 0; i <numPlayers; i++) { 
-                ch.push(`${dummyPlayers[i].name}`);
-            }
-            return ch; 
+        let ch = ["None, I would like to make my own choice."];
+        for (i = 0; i <numPlayers; i++) { 
+            ch.push(`${dummyPlayers[i].name}`);
         }
-        else {
-            return ["Continue to end of experiment."];
-        }
-        
+        return ch; 
     },
     on_finish: function() {
         clearInterval(intervalID);
@@ -305,10 +239,7 @@ let chooseToCopyChoice = {
 }
 
 let chooseToCopyWait = { 
-    type: "waiting",
-    on_start: function() { 
-        document.getElementById("countdown-timer").innerHTML = "";
-    }, 
+    type: "waiting", 
     prompt: "Please wait for other players.", 
     max_trial_duration: function() { return duration(offlineMode)},
     trial_function: function() {

@@ -33,7 +33,7 @@ function updateCorrect(trial_index) {
                 currentPlayer.money += rewardForCorrect;
                 currentPlayer.numCorrect ++;
             }
-            console.log(`${currentPlayer.name}: ${testPlayer(currentPlayer)}`); 
+            //console.log(`${currentPlayer.name}: ${testPlayer(currentPlayer)}`); 
         }
 }
 
@@ -64,7 +64,7 @@ function updateCopying(copyingInfo) {
 
             if (currObj.copying) player.timesCopying++; 
 
-            console.log(`${player.name}: ${testPlayer(player)}`);
+            //console.log(`${player.name}: ${testPlayer(player)}`);
         }
         // updating others
         else { 
@@ -75,7 +75,7 @@ function updateCopying(copyingInfo) {
 
             if(currObj.copying) currPlayer.timesCopying++;
 
-            console.log(`${currPlayer.name}: ${testPlayer(currPlayer)}`)
+            //console.log(`${currPlayer.name}: ${testPlayer(currPlayer)}`)
         }
     }
 }

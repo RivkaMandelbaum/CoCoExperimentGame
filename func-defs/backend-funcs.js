@@ -1,9 +1,9 @@
 /* FUNCTIONS RELATED TO SENDING/RECEIVING INFORMATION */ 
 
-// Gets artworks to put into timeline variables
+// Gets artworks from server for the round; should be array of art objects, 
+// which have the fields: id, name, filepath
 function getArtworks(offlineMode){
     if(offlineMode){
-        console.log("in getArtworks function, offline mode. using placeholders.");
         return [img1, img2, img3, img4, img5]; // don't need to shuffle here
     }
     else { 
@@ -33,7 +33,7 @@ function getArtworks(offlineMode){
 // If offline, will return dummy values of those
 function getPlayerInfo(offlineMode){
     if (offlineMode) {
-        let default_condition = "hard"; 
+        let default_condition = "easy"; 
 
         let result = {
             players: numPlayers,
@@ -101,7 +101,18 @@ function backendArtSelections(trial_index, offlineMode) {
 
     // in offline mode, log and move on - no need to update anything, uses timeline variables instead
     if(offlineMode) { 
-        console.log("backend art selections: offline mode"); 
+        // update correct choice
+        jsPsych.data.get().filter({'trial_index': trial_index}).values()[0].correct = eval(`img${(numExecutions % numImages) + 1}`); 
+
+        jsPsych.data.get().filter({'trial_index': trial_index}).values()[0].dummy_choices = []; 
+
+        // update dummy choices
+        for (i = 0; i < numPlayers; i++) {
+            let dummy_art = eval(`img${(i % numImages) + 1}`);
+            let dummy_correct = (jsPsych.data.get().filter({'trial_index': trial_index}).values()[0].correct.id == dummy_art.id);
+
+            jsPsych.data.get().filter({'trial_index': trial_index}).values()[0].dummy_choices[i] = {art: dummy_art, correct: dummy_correct};
+        }
     }
 
     // in online mode, send information about self, receive correct answer and responses, and update the timeline variable to match
@@ -130,7 +141,7 @@ function backendArtSelections(trial_index, offlineMode) {
         */ 
 
         // update correct choice to be the id of the correct artwork in this round
-        updated_correct_choice = /* PLACEHOLDER - SHOULD GET THIS FROM THE SERVER*/ jsPsych.data.get().filter({'trial_index': trial_index}).values()[0].correct; 
+        updated_correct_choice = "THIS IS A PLACEHOLDER!" /* PLACEHOLDER - SHOULD GET THIS FROM THE SERVER*/ 
 
         jsPsych.data.get().filter({'trial_index': trial_index}).values()[0].correct = updated_correct_choice; 
 
@@ -162,7 +173,8 @@ function backendArtSelections(trial_index, offlineMode) {
             }
         ];
         
-    
+        jsPsych.data.get().filter({'trial_index': trial_index}).values()[0].dummy_choices = []; 
+        
         // update data
         for (i = 0; i < numPlayers; i++) {
             let pos = idLookup[response_array[i].id];

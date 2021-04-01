@@ -22,36 +22,36 @@ function isPlayerCorrect(index) {
 /* ---- Functions for dummy correctness are separated because they're based on timeline variables rather than on previous trial. ---- */ 
 
 // Returns the art object that dummy player with given id selected in given trial 
+// CURRENTLY NOT IN USE, but could be an interesting condition
 function getDummySelection(id, trial_index) { 
     let i = idLookup[id];
 
-    let data = jsPsych.data.get().filter({'trial_index': trial_index}).select('dummy_choices').values[0][i]; 
+    let data = jsPsych.data.get().filter({'trial_index': trial_index}).select('dummy_choices').values[0]; 
 
-    // if using placeholder d_choices values
-    if (typeof(data) != "object"){
-        eval(`to_return = img${data+1}`); 
-        return to_return;
-    } 
-    // if the d_choices array has been updated with correct choices by the server (dummy_choices[i].art is the artwork chosen by that player)
+    if(data === null) { 
+        console.warn("dummy choices cannot be null!");
+        return null;
+    }
     else {
-        return data.art
-    }; 
+        return data[i].art;
+    }
+
 }
 
 // Returns whether dummy player with given id was correct in trial with given index
 function isDummyCorrect(player_id, trial_index) { 
     let i = idLookup[player_id];
 
-    // if offline and dummy choices hasn't been updated to be an object with "correct" as a field
-    let d_choice = jsPsych.data.get().filter({'trial_index': trial_index}).select('dummy_choices').values[0][i];
-    
-    if(typeof(d_choice) != "object") { 
-        let dummy_selected = getDummySelection(player_id, trial_index).id;
-        let current_correct = getCorrectArtwork(trial_index).id;
-        return (dummy_selected == current_correct);
+    let d_choices = jsPsych.data.get().filter({'trial_index': trial_index}).select('dummy_choices').values[0];
+
+    if(d_choices === null){
+        console.warn("dummy_choices cannot be null!");
+        return null;
     }
-    // otherwise use the "correct" property
-    else return d_choice.correct;
+    else{
+        return d_choices[i].correct;
+    }
+    
 }
 
 /* ---- For choose to copy trial ---- */ 

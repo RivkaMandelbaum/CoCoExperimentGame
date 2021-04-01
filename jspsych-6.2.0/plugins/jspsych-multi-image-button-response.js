@@ -351,7 +351,13 @@ jsPsych.plugins["multi-image-button-response"] = (function() {
 
       // after a valid response, the stimulus will have the CSS class 'responded'
       // which can be used to provide visual feedback that a response was recorded
-      display_element.querySelector('#multi-stimulus').className += ' responded';
+      if(!trial.render_on_canvas) {
+        display_element.querySelector('#multi-stimulus').className += ' responded';
+        display_element.querySelector(`#multi-button-${choice}`).className += '-responded';
+      }
+      else {
+        display_element.querySelector(`#multi-button-${choice}`).className += '-responded';
+      }
 
       // disable all the buttons after a response
       var btns = document.querySelectorAll('.multi-button button');
