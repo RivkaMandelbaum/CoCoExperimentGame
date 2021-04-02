@@ -1,4 +1,8 @@
-/* FUNCTIONS THAT USE/GET DATA SAVED BY PREVIOUS TRIALS*/
+/* -------------------------------------------------------------------------- */
+/* Functions that get data saved by previous trials.                          */
+/* Author: Rivka Mandelbaum                                                   */
+/* -------------------------------------------------------------------------- */
+
 
 // Returns what the correct answer was in the trial with given index
 // Answers are in the format of an artwork object, with id, name, and filepath

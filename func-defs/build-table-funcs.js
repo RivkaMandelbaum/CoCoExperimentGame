@@ -1,4 +1,9 @@
-/* BUILDING AND RETURN STIMULUS STRINGS*/
+/* -------------------------------------------------------------------------- */
+/* Functions that build a string of HTML representing the table which shows   */
+/* players' responses.                                                        */
+/* The different functions are for different conditions.                      */
+/* Author: Rivka Mandelbaum                                                   */
+/* -------------------------------------------------------------------------- */
 
 /* ---- helper functions ---- */ 
 // builds string representing html for intro string and table (up to "Money")
@@ -16,12 +21,12 @@ function introString(){
 // builds string representing what to fill in table for "Correct" column
 function correctString(trial_index){
     let correct = ""
-    if(!bIsCopying) {
+    if(!playerState.is_copying) {
         if(isPlayerCorrect(trial_index)) correct = "Yes!";
         else correct = "No";
     }
     else { 
-        if(isDummyCorrect(playerCopyingID, trial_index)) correct = "Yes!";
+        if(isDummyCorrect(playerState.player_copying_id, trial_index)) correct = "Yes!";
         else correct = "No";
     }
     return correct;
@@ -55,7 +60,7 @@ function buildTable_MoneyCorrectCopied(trial_index){
 
     // build first row of table (yourself)
     let correct = correctString(trial_index);
-    let money_from_others = (player.numCopied * payToCopy);
+    let money_from_others = (player.numWasCopied * payToCopy);
     
     table += selfBasic(); 
     table += `<td>${correct}</td>`;
@@ -65,7 +70,7 @@ function buildTable_MoneyCorrectCopied(trial_index){
     for(i = 0; i < numPlayers; i++) {
         let addBasic = otherBasic(dummyPlayers[i]);
         let correct = isDummyCorrect(dummyPlayers[i].id, trial_index);
-        let money_from_others = dummyPlayers[i].numCopied * payToCopy;
+        let money_from_others = dummyPlayers[i].numWasCopied * payToCopy;
 
         let addCorrect = "";
         if(correct) addCorrect = `<td>Yes!</td>`;

@@ -1,8 +1,13 @@
 /* ------------------------------------------------------------ */ 
-/* trial definion for complicated trials:                       */     
-/* ------------------------------------------------------------ */  
-const trialDuration = (30 * 1000); // force end of decision after this time
-const waitDuration = 10 * 1000; // show waiting screen when offline for this long
+/* Definitions of complicated trials for Artwork Selection      */
+/* Experiment.                                                  */   
+/* Author: Rivka Mandelbaum                                     */  
+/* ------------------------------------------------------------ */
+
+/* For trial duration paramaters: 
+   Must be placed here so that trialdefs.js can access during creation. */ 
+const trialDuration = (120 * 1000); // force end of decision after this time
+const waitDuration = 10 * 1000; // when offline, and function_ends_trial is false in waiting trials, waiting trials end after this amount of time
 
 function duration(offlineMode) { 
     // finish this screen after waitDuration ms when offline
@@ -14,11 +19,8 @@ function duration(offlineMode) {
 /* ---- consent timeline ---- */ 
 let consentChoice = { 
     type: "html-button-response",
-    stimulus: "PLACEHOLDER FOR CONSENT INFORMATION. <br> </br> By clicking on the button below, you consent to participate in the experiment.", 
+    stimulus: "Placeholder for consent information. <br> </br> By clicking on the button below, you consent to participate in the experiment.", 
     choices: ["Consent and continue to experiment"], 
-    on_finish: function() {         
-        console.log("finished consent form");
-    }
 }
 
 // functionality to perform after players have all finished consent part
@@ -26,16 +28,11 @@ let consentChoice = {
 let consentWait = { 
     type: "waiting",
     prompt: "Please wait for other players.", 
-    data: {
-        participant_condition: "placeholder",
-    },
-    max_trial_duration: function() { return duration(offlineMode)},
     trial_function: function() { 
-        /* -------- experiment setup steps -------- */ 
         // display initial amount of money 
         document.getElementById("money-amount").innerHTML = "Your total amount of money is: " + startAmount.toString();
 
-        // if online, will return object with numPlayers, self id, and other ids as array 
+        // returns object with numPlayers, self id, and other ids as array 
         // if offline, will return dummy values of those 
         let initObject = getPlayerInfo(offlineMode); 
         numPlayers = initObject.players; 
@@ -52,37 +49,35 @@ let consentWait = {
             dummyPlayers.push(otherPlayer);
             idLookup[otherPlayer.id] = i; 
         }
-
-        // define dummy choices array for timeline variable default 
-        for(i = 0; i < numPlayers; i++) {
-            d_choices.push(i);
-        }
     }, 
-    function_ends_trial: true,
     on_finish: function() { 
+        // update participant condition data
         jsPsych.data.get().values()[jsPsych.progress().current_trial_global].participant_condition = player.condition; 
-    } 
+    }, 
+    data: {
+        participant_condition: "placeholder", // to be updated when player.condition is received from backend
+    },
+    max_trial_duration: function() { return duration(offlineMode)},
+    function_ends_trial: true,  
 }
 
-// combine the two parts of the consent trial into one timeline
 let consentTrial = [consentChoice, consentWait]
 
 /* ---- art selection ---- */ 
-let intervalID = null; 
+let intervalID = null; // for timer functions
 
- // display art and allow selection
+ // display art and allow player to choose highest-value image
  let artDisplaySelectionChoice = {
     type: "multi-image-button-response",
     on_start: function() { 
         intervalID = startTimer(trialDuration / 1000);
     },
-    stimulus: null, 
-    prompt: "Please select what you think is the <strong> highest-value </strong> artwork.",
     choices: function() {
-        // create choices array to return and version with randomized position to act as dictionary
+        // return array of artworks in randomized positions to create buttons, and create dictionary of positions player saw in given trial
         let ch = [];
         let img_array = getArtworks(offlineMode);
         let len = img_array.length;
+
         for(i = 0; i < len; i++) ch.push(i);
         let shuffled = jsPsych.randomization.shuffle(ch); 
 
@@ -101,12 +96,11 @@ let intervalID = null;
 
         return ch; 
     }, 
-    response_ends_trial: true,
-    trial_duration: trialDuration,
+    prompt: "Please select what you think is the <strong> highest-value </strong> artwork.",
     data: {
         correct: "Placeholder to be updated in waiting trial through backendArtSelections function",
         dummy_choices: "Placeholder to be updated in waiting trial through backendArtSelections function", 
-        order: "This is a placeholder. It should be updated in the on_finish function."
+        order: "Placeholder to be updated in the on_finish function."
     }, 
     on_finish: function() {
         // update order data to be correct
@@ -115,17 +109,18 @@ let intervalID = null;
 
         // clear timer
         clearInterval(intervalID);
-    }
+    }, 
+    response_ends_trial: true,
+    trial_duration: trialDuration,
 };
 
-// waiting trial with after-finish functionality 
+// wait for other players' info and update local information
 let artDisplaySelectionWait = { 
     type: "waiting", 
     on_start: function() { 
         document.getElementById("countdown-timer").innerHTML = "";
     },
     prompt: "Please wait for other players.", 
-    max_trial_duration: function() { return duration(offlineMode); },
     trial_function: function() {
         let trial_index = jsPsych.progress().current_trial_global - 1;
 
@@ -135,7 +130,7 @@ let artDisplaySelectionWait = {
         // update players' money:
         jsPsych.pauseExperiment(); 
 
-        // send and collect responses and update timeline variables
+        // send and collect responses and update previous trial data
         backendArtSelections(trial_index, offlineMode);
 
         // check self correctness and update money/display
@@ -146,31 +141,32 @@ let artDisplaySelectionWait = {
         }
         //console.log(`${player.name}: ${testPlayer(player)}`); 
 
-        // update players (uses timeline variables within function) and log to console
+        // update players (uses data from previous trial)
         updateCorrect(trial_index);
 
         jsPsych.resumeExperiment();
-    }, 
+    },
+    max_trial_duration: function() { return duration(offlineMode); },
     function_ends_trial: true
 }
 
-// combine into timeline
 let artDisplaySelection = [artDisplaySelectionChoice, artDisplaySelectionWait];
 
 /* ---- art display while copying ---- */ 
 
-// display art but do not allow selection (copy instead)
+// display art without allowing player to select
 let artDisplayCopyChoice = { 
     type: "multi-image-button-response", 
     on_start: function() { 
         intervalID = startTimer(trialDuration / 1000);
     },
     stimulus: function() { 
-        // create array to return and version with randomized position to act as dictionary
+        // create array of images with randomized position and add positions to dictionary
             let st = [];
             let ord = [];
             let img_array = getArtworks(offlineMode);
             let len = img_array.length;
+
             for(i = 0; i < len; i++) st.push(i);
             let shuffled = jsPsych.randomization.shuffle(st); 
     
@@ -192,7 +188,7 @@ let artDisplayCopyChoice = {
     data: { 
         correct: "Placeholder to be updated in waiting trial through backendArtSelections function",
         dummy_choices: "Placeholder to be updated in waiting trial through backendArtSelections function",
-        order: "This is a placeholder. It should be updated in the on_finish function."
+        order: "Placeholder to be updated in the on_finish function."
     }, 
     on_finish: function() {
         // update order data to be correct
@@ -211,22 +207,20 @@ let artDisplayCopyWait = {
         document.getElementById("countdown-timer").innerHTML = "";
     },
     prompt: "Please wait for other players.", 
-    max_trial_duration: function() { return duration(offlineMode)},
     trial_function: function() {
         let trial_index = jsPsych.progress().current_trial_global - 1;
 
         // check if time ran out and update counter if it did
         if(getPlayerSelection(trial_index) === null) numTimeRanOut++;
 
-        // wait for other player's responses
         jsPsych.pauseExperiment(); 
 
-        // get responses and update timeline variables to match
+        // get responses and update previous trial data to match
         backendArtSelections(trial_index, offlineMode);
 
         // using responses, update player stats
         // self:
-        if(isDummyCorrect(playerCopyingID, trial_index)) {
+        if(isDummyCorrect(playerState.player_copying_id, trial_index)) {
             player.money += rewardForCorrect;
             player.numCorrect++;
             document.getElementById("money-amount").innerHTML = "Your total amount of money is: " + player.money.toString();
@@ -238,6 +232,7 @@ let artDisplayCopyWait = {
 
         jsPsych.resumeExperiment(); 
     }, 
+    max_trial_duration: function() { return duration(offlineMode)},
     function_ends_trial: true
 }
 
@@ -268,6 +263,7 @@ let chooseToCopyChoice = {
             console.warn("Inconsistent condition names! Please check getPlayerInfo, createPlayer, and chooseToCopyChoice stimulus.")
         }
 
+        // in all but last round, add explanation about being allowed to copy
         if (numExecutions < numDecisions) {
             return s + (`In the next round, you may either choose the highest-value artwork on your own or pay another player $${payToCopy} to copy their choice.`);
         }
@@ -310,26 +306,26 @@ let chooseToCopyWait = {
         document.getElementById("countdown-timer").innerHTML = "";
     }, 
     prompt: "Please wait for other players.", 
-    max_trial_duration: function() { return duration(offlineMode)},
     trial_function: function() {
         jsPsych.pauseExperiment(); 
 
         // information related to previous choice
-        let trial_index = jsPsych.progress().current_trial_global - 1;
-        let buttonPressed = getPlayerSelection(trial_index);
+        let curr_trial_index = jsPsych.progress().current_trial_global;
+        let choice = getPlayerSelection(curr_trial_index - 1);
 
         // update relevant variables
-        bIsCopying = didPlayerCopy(buttonPressed); 
-        if(bIsCopying) playerCopyingID = dummyPlayers[buttonPressed-1].id; // button labels are created by iteration thrugh dummyPlayers array in order
+        playerState.is_copying = didPlayerCopy(choice); 
+        if(playerState.is_copying) playerState.player_copying_id = dummyPlayers[choice-1].id; // button labels are created by iteration thrugh dummyPlayers array in order
 
         // get others' choices and update players
-        currInfo = backendPlayersCopying(offlineMode, bIsCopying, playerCopyingID, trial_index+1);
+        currInfo = backendPlayersCopying(offlineMode, playerState, curr_trial_index);
         updateCopying(currInfo); 
 
         jsPsych.resumeExperiment(); 
 
         numExecutions++;  // since this is last trial on timeline
     }, 
+    max_trial_duration: function() { return duration(offlineMode); },
     function_ends_trial: true
 }
 

@@ -1,4 +1,7 @@
-let intervals = [];
+/* -------------------------------------------------------------------------- */
+/* Functions that deal with countdown timer display.                          */
+/* Author: Rivka Mandelbaum                                                   */
+/* -------------------------------------------------------------------------- */
 
 function startTimer(timeLimit) {
     let timeLeft = timeLimit; 

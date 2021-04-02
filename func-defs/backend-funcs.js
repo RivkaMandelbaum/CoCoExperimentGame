@@ -1,4 +1,8 @@
-/* FUNCTIONS RELATED TO SENDING/RECEIVING INFORMATION */ 
+/* -------------------------------------------------------------------------- */
+/* Functions that send and receive data from backend. In offline mode, these  */
+/* functions return dummy values, which are hard-coded.                       */
+/* Author: Rivka Mandelbaum                                                   */
+/* -------------------------------------------------------------------------- */
 
 // Gets artworks from server for the round; should be array of art objects, 
 // which have the fields: id, name, filepath
@@ -118,7 +122,7 @@ function backendArtSelections(trial_index, offlineMode) {
     // in online mode, send information about self, receive correct answer and responses, and update the timeline variable to match
     else { 
         let pos, chosen_id, chosen_filepath = null;
-        if(!bIsCopying) {
+        if(!playerState.is_copying) {
             pos = getPlayerSelection(trial_index);
             chosen_id = orderLookup[trial_index][pos].id;
             chosen_filepath = orderLookup[trial_index][pos].filepath;
@@ -126,8 +130,8 @@ function backendArtSelections(trial_index, offlineMode) {
         let send_message = { 
             id: player.id, 
             correct: null,
-            copying: bIsCopying, 
-            copying_id: playerCopyingID, 
+            copying: playerState.is_copying, 
+            copying_id: playerState.player_copying_id, 
             artwork_chosen_id: chosen_id,
             artwork_chosen_filepath: chosen_filepath,
             artwork_chosen_position: pos,
@@ -195,15 +199,15 @@ function backendArtSelections(trial_index, offlineMode) {
         trial_index: int
     }
 */ 
-function backendPlayersCopying(offlineMode, bIsCopying, playerCopyingID, trial_index) { 
+function backendPlayersCopying(offlineMode, playerState, trial_index) { 
     // send and receive information if online
     if(!offlineMode) { 
         let msg = { 
             id: player.id,
             num_who_copied: null,
             delta_money: null,
-            copying: bIsCopying, 
-            copying_id: playerCopyingID,
+            copying: playerState.is_copying, 
+            copying_id: playerState.player_copying_id,
             trial_type: "copy",
             trial_index: trial_index
         }
@@ -213,7 +217,7 @@ function backendPlayersCopying(offlineMode, bIsCopying, playerCopyingID, trial_i
     }
     else { 
         let delta_self = 0, delta_other = 0;
-        if(bIsCopying) {
+        if(playerState.is_copying) {
             delta_self -= payToCopy; 
             delta_other += payToCopy;
         }
@@ -224,8 +228,8 @@ function backendPlayersCopying(offlineMode, bIsCopying, playerCopyingID, trial_i
                 id: player.id, 
                 num_who_copied: 0, 
                 delta_money: delta_self,
-                copying: bIsCopying,
-                copying_id: playerCopyingID,
+                copying: playerState.is_copying,
+                copying_id: playerState.player_copying_id,
                 trial_type: "copy",
                 trial_index: trial_index
             },
@@ -268,8 +272,8 @@ function backendPlayersCopying(offlineMode, bIsCopying, playerCopyingID, trial_i
         ];
 
         
-        if(bIsCopying){
-            let i = idLookup[playerCopyingID]+1;
+        if(playerState.is_copying){
+            let i = idLookup[playerState.player_copying_id]+1;
 
             placeholder[i].num_who_copied++;
             placeholder[i].delta_money += delta_other; 
