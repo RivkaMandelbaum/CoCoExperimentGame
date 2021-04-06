@@ -19,8 +19,11 @@ function getPlayerSelection(index) {
 // Returns whether player was correct in trial with given index.
 function isPlayerCorrect(index) { 
     let pos = getPlayerSelection(index);
+    if (pos === null) return false; // time ran out
+
     let artwork_id = orderLookup[index][pos].id;
-    return(getCorrectArtwork(index).id === artwork_id);
+    return(getCorrectArtwork(index).id === artwork_id);    
+  
 }
 
 /* ---- Functions for dummy correctness are separated because they're based on timeline variables rather than on previous trial. ---- */ 

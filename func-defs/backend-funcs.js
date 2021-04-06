@@ -103,14 +103,14 @@ function getPlayerInfo(offlineMode){
 // what the player they are copying chose
 function backendArtSelections(trial_index, offlineMode) { 
 
-    // in offline mode, log and move on - no need to update anything, uses timeline variables instead
+    // in offline mode, fill with dummy values
     if(offlineMode) { 
         // update correct choice
         jsPsych.data.get().filter({'trial_index': trial_index}).values()[0].correct = eval(`img${(numExecutions % numImages) + 1}`); 
 
+        // update dummy choices
         jsPsych.data.get().filter({'trial_index': trial_index}).values()[0].dummy_choices = []; 
 
-        // update dummy choices
         for (i = 0; i < numPlayers; i++) {
             let dummy_art = eval(`img${(i % numImages) + 1}`);
             let dummy_correct = (jsPsych.data.get().filter({'trial_index': trial_index}).values()[0].correct.id == dummy_art.id);

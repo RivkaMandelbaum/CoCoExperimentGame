@@ -183,6 +183,7 @@ let artDisplayCopyChoice = {
     
             return st; 
     }, 
+    render_on_canvas: false,
     prompt: "Continue to see what choice was made.", 
     choices: ["Continue"],
     data: { 

@@ -128,6 +128,9 @@ jsPsych.plugins["multi-image-button-response"] = (function() {
       canvas.style.margin = 0;
       canvas.style.padding = 0;
 
+      let padwidth = 20; // between images
+
+
       if(trial.stimulus != null) {
         // create images 
         img_array = [];
@@ -193,7 +196,7 @@ jsPsych.plugins["multi-image-button-response"] = (function() {
         for(let i = 0; i < widths.length; i++){
           totalWidth += widths[i];
         }
-        canvas.width = totalWidth;
+        canvas.width = totalWidth + (padwidth *(widths.length - 1));
       }
       else{
         canvas.height = 1;
@@ -232,8 +235,11 @@ jsPsych.plugins["multi-image-button-response"] = (function() {
         // for(let i = img_array.length-1; i >=0; i--) { 
         //   //display_element.insertAdjacentHTML('afterbegin', `<img src = ${img_array[i].src}>`); 
         // }
+        let dx = 0;
         for(let i = 0; i < img_array.length; i++) {
-          ctx.drawImage(img_array[i],(i*widths[i]),0,widths[i],heights[i])
+          ctx.drawImage(img_array[i],dx,0,widths[i],heights[i])
+          dx += widths[i];
+          dx += padwidth;
         }
           
       }
@@ -247,19 +253,17 @@ jsPsych.plugins["multi-image-button-response"] = (function() {
     }
 
     else {
-
       // use html variable to build html of: stimuli, buttons, and prompt if applicable
       let html = ""; 
 
       // add stimuli to html as image elements (if applicable)
       if (trial.stimulus !== null) {
         for (let i = 0; i < trial.stimulus.length; i++) {
-          html += '<img src="'+trial.stimulus[i]+'" id="jspsych-multi-image-button-response-stimulus">';
+          html += `<img src = "${trial.stimulus[i]}" class = "multi-image-stimulus" id="jspsych-multi-image-button-response-stimulus-${i}">`;
         }
       }
-
       // add buttons (using trial.button_html if applicable)
-      // first get custom button_html into array (if relevant):
+      // first get button_html into array:
       var buttons = []; // html for each button
 
       if (Array.isArray(trial.button_html)) {
@@ -295,27 +299,30 @@ jsPsych.plugins["multi-image-button-response"] = (function() {
       display_element.innerHTML = html;
 
       // set image dimensions after image has loaded (so that we have access to naturalHeight/naturalWidth)
-      var img = display_element.querySelector('#jspsych-multi-image-button-response-stimulus');
-      if (trial.stimulus_height !== null) {
-        height = trial.stimulus_height;
-        if (trial.stimulus_width == null && trial.maintain_aspect_ratio) {
-          width = img.naturalWidth * (trial.stimulus_height/img.naturalHeight);
+      for(let i = 0; i < trial.stimulus.length; i++) {
+        var img = display_element.querySelector(`#jspsych-multi-image-button-response-stimulus-${i}`);
+        if (trial.stimulus_height !== null) {
+          height = trial.stimulus_height;
+          if (trial.stimulus_width == null && trial.maintain_aspect_ratio) {
+            width = img.naturalWidth * (trial.stimulus_height/img.naturalHeight);
+          }
+        } else {
+          height = img.naturalHeight;
         }
-      } else {
-        height = img.naturalHeight;
-      }
-      if (trial.stimulus_width !== null) {
-        width = trial.stimulus_width;
-        if (trial.stimulus_height == null && trial.maintain_aspect_ratio) {
-          height = img.naturalHeight * (trial.stimulus_width/img.naturalWidth);
+        if (trial.stimulus_width !== null) {
+          width = trial.stimulus_width;
+          if (trial.stimulus_height == null && trial.maintain_aspect_ratio) {
+            height = img.naturalHeight * (trial.stimulus_width/img.naturalWidth);
+          }
+        } else if (!(trial.stimulus_height !== null & trial.maintain_aspect_ratio)) {
+          // if stimulus width is null, only use the image's natural width if the width value wasn't set 
+          // in the if statement above, based on a specified height and maintain_aspect_ratio = true
+          width = img.naturalWidth;
         }
-      } else if (!(trial.stimulus_height !== null & trial.maintain_aspect_ratio)) {
-        // if stimulus width is null, only use the image's natural width if the width value wasn't set 
-        // in the if statement above, based on a specified height and maintain_aspect_ratio = true
-        width = img.naturalWidth;
+        img.style.height = height.toString() + "px";
+        img.style.width = width.toString() + "px";
       }
-      img.style.height = height.toString() + "px";
-      img.style.width = width.toString() + "px";
+        
     }
 
     // start timing
@@ -352,7 +359,7 @@ jsPsych.plugins["multi-image-button-response"] = (function() {
       // after a valid response, the stimulus will have the CSS class 'responded'
       // which can be used to provide visual feedback that a response was recorded
       if(!trial.render_on_canvas) {
-        display_element.querySelector('#multi-stimulus').className += ' responded';
+        display_element.querySelector(`#jspsych-multi-image-button-response-stimulus-${choice}`).className += ' responded';
         display_element.querySelector(`#multi-button-${choice}`).className += '-responded';
       }
       else {

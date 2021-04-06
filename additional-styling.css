@@ -4,10 +4,21 @@
     height: 95%;
 } 
 
+/* multi-image-button-response stimulus styling */ 
+/* based on jspsych-image-button-response styling */ 
+.multi-image-stimulus { 
+    display: inline-block;
+    padding: 6px 12px;
+    margin: 5px;
+    vertical-align: middle;
+    border: 1px solid transparent;
+    border-radius: 4px;
+    border-color: #ccc;
+}
+
 /* --- table --- */
 table{ 
-    margin-left:auto;
-    margin-right: auto;
+    margin: auto;
     width: 90%;
     border-collapse: collapse;
     text-align: center;
@@ -24,6 +35,10 @@ td, th {
 
 /* -- sidebar -- */ 
 .sidebar{
+    /* top: 0;
+    left: 0; 
+    width: 10%; 
+    height: 100%;  */
     display: flex;
     justify-content: space-between;
     align-items: center;
