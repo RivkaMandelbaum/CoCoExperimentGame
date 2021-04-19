@@ -1,6 +1,8 @@
 /* -------------------------------------------------------------------------- */
 /* Functions that send and receive data from backend. In offline mode, these  */
 /* functions return dummy values, which are hard-coded.                       */
+/* Most of this code contains placeholders which will be updated when the     */
+/* backend has been completed.                                                */
 /* Author: Rivka Mandelbaum                                                   */
 /* -------------------------------------------------------------------------- */
 
@@ -8,7 +10,7 @@
 // which have the fields: id, name, filepath
 function getArtworks(offlineMode){
     if(offlineMode){
-        return [img1, img2, img3, img4, img5]; // don't need to shuffle here
+        return [img1, img2, img3, img4, img5];
     }
     else { 
         /* GET ARTWORKS FROM SERVER */ 
