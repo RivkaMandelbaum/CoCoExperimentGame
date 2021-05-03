@@ -105,21 +105,91 @@ function getPlayerInfo(offlineMode){
 // If the player is copying, artwork_chosen information is updated based on
 // what the player they are copying chose
 function backendArtSelections(trial_index, offlineMode) { 
+    let trial_data = jsPsych.data.get().filter({'trial_index': trial_index}).values()[0];
+
+    function rand_art() { 
+        let random_choice = Math.floor((Math.random() * numImages) + 1);
+        let random_art = eval(`img${random_choice}`);
+        return random_art;
+    }
 
     // in offline mode, fill with dummy values
-    if(offlineMode) { 
-        // update correct choice
-        jsPsych.data.get().filter({'trial_index': trial_index}).values()[0].correct = eval(`img${(numExecutions % numImages) + 1}`); 
+    if(offlineMode) {  
+        // update correct choice (random), overwrite dummy_choices placeholder
+        trial_data.correct = rand_art();
+        console.log("correct choice: img" + trial_data.correct.id)
 
-        // update dummy choices
-        jsPsych.data.get().filter({'trial_index': trial_index}).values()[0].dummy_choices = []; 
+        trial_data.dummy_choices = new Array(numPlayers).fill({art: null, correct: null});
+ 
+        // if first round, no one is copying, so decide other players' choices and return 
+        copying_trial_index = trial_index - 2; 
+        if(copying_trial_index <= 1) { 
+            // update dummy choices
+            for (i = 0; i < numPlayers; i++) {
+                let dummy_art = rand_art();
+                let dummy_correct = (trial_data.correct.id == dummy_art.id);
 
-        for (i = 0; i < numPlayers; i++) {
-            let dummy_art = eval(`img${(i % numImages) + 1}`);
-            let dummy_correct = (jsPsych.data.get().filter({'trial_index': trial_index}).values()[0].correct.id == dummy_art.id);
-
-            jsPsych.data.get().filter({'trial_index': trial_index}).values()[0].dummy_choices[i] = {art: dummy_art, correct: dummy_correct};
+                trial_data.dummy_choices[i] = {art: dummy_art, correct: dummy_correct};
+             }
+            return; 
         }
+        // otherwise, get players who are copying
+        dummy_copying_choices = jsPsych.data.get().filter({'trial_index': copying_trial_index}).values()[0].dummy_choices; // {copying: bool, copying_id: null/int}, sorted in dummyChoices order
+        console.log(dummy_copying_choices)
+
+        // figure out everyone's choices (when online, the backend should do this)
+
+        // initialize "visited" array for search
+        let visited = new Array(numPlayers);
+        console.log(visited)
+        for(p = 0; p < numPlayers; p++) { 
+            visited[p] = !dummy_copying_choices[p].copying;
+            
+            // since it's offline, if they're choosing, make their choice and add it to dummy_choices at this point 
+            if(!dummy_copying_choices[p].copying) { 
+                let dummy_art = eval(`img${(p % numImages) + 1}`);
+                let dummy_correct = (trial_data.correct.id == dummy_art.id);
+
+                trial_data.dummy_choices[p] = {art: dummy_art, correct: dummy_correct};
+            }
+
+        }
+        console.log(visited)
+
+        // dfs-type search to give each of them the choosing information here 
+        for(p = 0; p < numPlayers; p++) { 
+            if (!visited[p]){
+                find_art(p);
+            }
+        }
+        
+        function find_art(p) {
+            visited[p] = true; 
+            let next_pos = idLookup[dummy_copying_choices[p].copying_id];
+
+            // base cases: make a decision (set artwork choice) which can propogate back to the first person who copied
+            if(visited[next_pos]) { 
+                // if the person p is copying didn't copy, or they did but they've already been assigned a choice, assign p their info
+                if(trial_data.dummy_choices[next_pos].art != null) { 
+                    trial_data.dummy_choices[p] = trial_data.dummy_choices[next_pos];
+                }
+                // if the person p is copying did copy (art is initialized to null) but they haven't been assigned a choice (art remains null), there's a loop - randomly assign a choice value
+                else { 
+                    // make random choice
+                    let rand_art = rand_art()
+
+                    trial_data.dummy_choices[p].art = rand_art; 
+                    trial_data.dummy_choices[p].correct = (trial_data.correct.id == rand_art.id);
+                }
+                return trial_data.dummy_choices[p];
+            }
+            // if the person p is copying did copy and hasn't been assigned a choice, recursively visit that person
+            else { 
+                trial_data.dummy_choices[p] = find_art(next_pos);
+                return trial_data.dummy_choices[p]; 
+            }
+        }
+        console.log("final artwork selection: " + trial_data.dummy_choices)
     }
 
     // in online mode, send information about self, receive correct answer and responses, and update the timeline variable to match
@@ -281,6 +351,16 @@ function backendPlayersCopying(offlineMode, playerState, trial_index) {
             placeholder[i].num_who_copied++;
             placeholder[i].delta_money += delta_other; 
         } 
+
+        // update data for the previous trial (to use in offline mode in backendArtSelections)
+        let prev_trial_index = trial_index - 1;
+        jsPsych.data.get().filter({'trial_index': prev_trial_index}).values()[0].dummy_choices = []; 
+
+        for (i = 0; i < numPlayers; i++) { 
+            // this uses the assumption that the hard-coded "placeholder" is sorted in order of the dummyChoices array
+
+            jsPsych.data.get().filter({'trial_index': prev_trial_index}).values()[0].dummy_choices[i] = {copying: placeholder[i+1].copying, copying_id: placeholder[i+1].copying_id};
+        }
 
         return placeholder;
     }

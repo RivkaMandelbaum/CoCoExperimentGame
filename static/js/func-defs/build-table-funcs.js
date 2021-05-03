@@ -52,33 +52,33 @@ function otherBasic(p) {
 /* --- functions for each condition ---- */ 
 /* each return the HTML for a table with columns Name and Avatar, with additional columns depending on condition, to be displayed as a stimulus*/
 
-// columns: money, correct, money received from others copying
+// columns: money, correct, number of people who copied them
 // for condition = "easy"
 function buildTable_MoneyCorrectCopied(trial_index){
-    let table = introString() + "<th> Correct </th>" + "<th> Money received from others </th>";
+    let table = introString() + "<th> Correct </th>" + "<th> chosen # times</th>";
     const addRowEnd = "</tr>";
 
     // build first row of table (yourself)
     let correct = correctString(trial_index);
-    let money_from_others = (player.numWasCopied * payToCopy);
+    let was_copied = player.numWasCopied;
     
     table += selfBasic(); 
     table += `<td>${correct}</td>`;
-    table += `<td>${money_from_others}</td></tr>`
+    table += `<td>${was_copied}</td></tr>`
 
     // build row of table for each player
     for(i = 0; i < numPlayers; i++) {
         let addBasic = otherBasic(dummyPlayers[i]);
         let correct = isDummyCorrect(dummyPlayers[i].id, trial_index);
-        let money_from_others = dummyPlayers[i].numWasCopied * payToCopy;
+        let was_copied = dummyPlayers[i].numWasCopied;
 
         let addCorrect = "";
         if(correct) addCorrect = `<td>Yes!</td>`;
         else addCorrect = '<td>No</td>';
 
-        let addMoneyFromOthers = `<td>${money_from_others}</td>`;
+        let addCopied = `<td>${was_copied}</td>`;
 
-        table += (addBasic + addCorrect + addMoneyFromOthers + addRowEnd);
+        table += (addBasic + addCorrect + addCopied + addRowEnd);
     }
     table += "</table></div><br></br>";
 

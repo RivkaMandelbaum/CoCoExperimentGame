@@ -6,7 +6,7 @@
 
 /* For trial duration paramaters: 
    Must be placed here so that trialdefs.js can access during creation. */ 
-const trialDuration = (120 * 1000); // force end of decision after this time
+const trialDuration = (3600 * 1000); // force end of decision after this time
 const waitDuration = 10 * 1000; // when offline, and function_ends_trial is false in waiting trials, waiting trials end after this amount of time
 
 function duration(offlineMode) { 
@@ -290,6 +290,9 @@ let chooseToCopyChoice = {
         }
         
     },
+    data: { 
+        dummy_choices: "Placeholder to be updated in waiting trial through backendPlayersCopying function",
+    }, 
     on_finish: function() {
         clearInterval(intervalID);
     },

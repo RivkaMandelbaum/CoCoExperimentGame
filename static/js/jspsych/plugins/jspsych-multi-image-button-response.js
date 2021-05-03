@@ -9,8 +9,6 @@ jsPsych.plugins["multi-image-button-response"] = (function() {
 
   var plugin = {};
 
-  // jsPsych.pluginAPI.registerPreload('multi-image-button-response', 'stimulus', 'image');
-
   plugin.info = {
     name: 'multi-image-button-response',
     description: 'Takes an array of images and of choices. Displays images, choices displayed as buttons. Takes optional correct_choice and returns correct (boolean) if given.',
@@ -108,222 +106,264 @@ jsPsych.plugins["multi-image-button-response"] = (function() {
 
   plugin.trial = function(display_element, trial) {
 
-    // if the stimulus is provided, create a canvas element 
-    var heights = [], widths = [];
-    var html;
-    if (trial.render_on_canvas) {
-      if(trial.stimulus == null) {
-        console.log("Error from jspsych-multi-image-button-response. When render on canvas is true but stimulus is not provided, a blank 1x1 canvas will be inserted onto the page, which may interfere with formatting.")
-      }
-      // first clear the display element (because the render_on_canvas method appends to display_element instead of overwriting it with .innerHTML)
-      if (display_element.hasChildNodes()) {
-        // can't loop through child list because the list will be modified by .removeChild()
-        while (display_element.firstChild) {
-          display_element.removeChild(display_element.firstChild);
+    for_preload = trial.stimulus; 
+    if (trial.stimulus === null) {
+      for_preload = [];
+      if(trial.choices[0].includes("<img src")) { 
+        for(i = 0; i < trial.choices.length; i++) {
+          remove_img_tag = trial.choices[i].replace('jpg></img>', 'jpg')
+          remove_img_tag = remove_img_tag.replace('<img src = ../static', '../static')
+          for_preload.push(remove_img_tag)
         }
-      }
-      // create canvas element 
-      var canvas = document.createElement("canvas");
-      canvas.id = "multi-stimulus";
-      canvas.style.margin = 0;
-      canvas.style.padding = 0;
-
-      let padwidth = 20; // between images
-
-
-      if(trial.stimulus != null) {
-        // create images 
-        img_array = [];
-
-        for(let i = 0; i < trial.stimulus.length; i++) { 
-          let img = new Image(); 
-
-          img.src = trial.stimulus[i]; 
-
-          img_array.push(img); 
-        }
-
-        // determine image height and width
-        if (trial.stimulus_height !== null) { // heights were specified 
-          if (trial.stimulus_height.length != trial.stimulus.length) console.warn("There must be the same number of images and image-heights provided!");
-
-          for(let i = 0; i < trial.stimulus_height.length; i++) { 
-            heights.push(trial.stimulus_height[i]);
-          }
-          
-          // if no widths provided AND maintaining aspect ratio, use heights to determine widths
-          if (trial.stimulus_width == null && trial.maintain_aspect_ratio) {
-            for(let i = 0; i < trial.stimulus_height.length; i++){
-              widths.push(img_array[i].naturalWidth * (trial.stimulus_height[i]/img_array[i].naturalHeight));
-            }
-          }
-        } else { // heights were not specified
-            for(let i = 0; i < img_array.length; i++) { 
-              heights.push(img_array[i].naturalHeight);
-            }
-        }
-
-        if (trial.stimulus_width !== null) { // widths were specified
-          if(trial.stimulus_width.length != trial.stimulus.length) console.warn("There must be the same number of images and image-widths provided!");
-          for(let i = 0; i < img_array.length; i++){
-            widths.push(trial.stimulus_width[i]);
-          }
-
-          // if no heights provided AND maintaining aspect ratio, use widths to determine heights
-          if (trial.stimulus_height == null && trial.maintain_aspect_ratio) {
-            for(let i = 0; i < trial.stimulus_height.length; i++) {
-              heights.push(img_array[i].naturalHeight * trial.stimulus_width[i]/img_array[i].naturalWidth);
-            }
-          }
-        } else if (!(trial.stimulus_height !== null & trial.maintain_aspect_ratio)) { 
-          // when this else-if is reached, width is not provided
-          // it would only have been set if heights were provided AND maintain_aspect_ratio is true
-          // in other cases, it needs to be set here
-          for (let i = 0; i < img_array.length; i++) { 
-            widths.push(img_array[i].naturalWidth);
-          }
-        } 
-      
-
-        // set canvas size to fit images
-        let maxHeight = 0;
-        for(let i = 0; i < heights.length; i++) {
-          if (heights[i] > maxHeight) maxHeight = heights[i];
-        }
-        canvas.height = maxHeight; 
-
-        let totalWidth = 0;
-        for(let i = 0; i < widths.length; i++){
-          totalWidth += widths[i];
-        }
-        canvas.width = totalWidth + (padwidth *(widths.length - 1));
-      }
-      else{
-        canvas.height = 1;
-        canvas.width = 1;
-      }
-
-      // create buttons
-      var buttons = [];
-      if (Array.isArray(trial.button_html)) {
-        if (trial.button_html.length == trial.choices.length) {
-          buttons = trial.button_html;
-        } else {
-          console.error('Error in multi-image-button-response plugin. The length of the button_html array does not equal the length of the choices array');
-        }
-      } else {
-        for (var i = 0; i < trial.choices.length; i++) {
-          buttons.push(trial.button_html);
-        }
-      }
-      var btngroup_div = document.createElement('div');
-      btngroup_div.id = "multi-btngroup";
-      html = '';
-      for (var i = 0; i < trial.choices.length; i++) {
-        var str = buttons[i].replace(/%choice%/g, trial.choices[i]);
-        html += '<div class="multi-button" style="display: inline-block; margin:'+trial.margin_vertical+' '+trial.margin_horizontal+'" id="multi-button-' + i +'" data-choice="'+i+'">'+str+'</div>';
-      }
-      btngroup_div.innerHTML = html;
-
-      display_element.insertBefore(canvas, null);
-
-      if (trial.stimulus != null) {
-        // add canvas to screen and draw image
-        var ctx = canvas.getContext("2d");
-
-        // alternative without canvas:
-        // for(let i = img_array.length-1; i >=0; i--) { 
-        //   //display_element.insertAdjacentHTML('afterbegin', `<img src = ${img_array[i].src}>`); 
-        // }
-        let dx = 0;
-        for(let i = 0; i < img_array.length; i++) {
-          ctx.drawImage(img_array[i],dx,0,widths[i],heights[i])
-          dx += widths[i];
-          dx += padwidth;
-        }
-          
-      }
-
-      // add buttons to screen
-      display_element.insertBefore(btngroup_div, canvas.nextElementSibling);
-      // add prompt if there is one
-      if (trial.prompt !== null) {
-        display_element.insertAdjacentHTML('beforeend', trial.prompt);
       }
     }
 
-    else {
-      // use html variable to build html of: stimuli, buttons, and prompt if applicable
-      let html = ""; 
+    jsPsych.pluginAPI.preloadImages(for_preload, 
+      mainPluginFunction(display_element, trial), 
+      function(file) {return; },
+      function(file) { console.warn("Error loading file: " + file);}
+    );
 
-      // add stimuli to html as image elements (if applicable)
-      if (trial.stimulus !== null) {
-        for (let i = 0; i < trial.stimulus.length; i++) {
-          html += `<img src = "${trial.stimulus[i]}" class = "multi-image-stimulus" id="jspsych-multi-image-button-response-stimulus-${i}">`;
-        }
-      }
-      // add buttons (using trial.button_html if applicable)
-      // first get button_html into array:
-      var buttons = []; // html for each button
-
-      if (Array.isArray(trial.button_html)) {
-        if (trial.button_html.length == trial.choices.length) {
-          buttons = trial.button_html;
-        } else {
-          console.error('Error in multi-image-button-response plugin. The length of the button_html array does not equal the length of the choices array');
-        }
-      } else { // if not an array, all html is the same
-        for (var i = 0; i < trial.choices.length; i++) {
-          buttons.push(trial.button_html);
-        }
-      }
-
-      // add the div id for the buttons
-      html += '<div id="jspsych-image-button-response-btngroup">';
-
-      // add the buttons' html to the html variable
-      for (var i = 0; i < trial.choices.length; i++) {
-        var str = buttons[i].replace(/%choice%/g, trial.choices[i]);
-
-        html += '<div class="multi-button" style="display: inline-block; margin:'+trial.margin_vertical+' '+trial.margin_horizontal+'" id="multi-button-' + i +'" data-choice="'+i+'">'+str+'</div>';
-      }
-      
-      html += '</div>';
-
-      // add prompt
-      if (trial.prompt !== null){
-        html += trial.prompt;
-      }
-
-      // update the page content
-      display_element.innerHTML = html;
-
-      // set image dimensions after image has loaded (so that we have access to naturalHeight/naturalWidth)
-      for(let i = 0; i < trial.stimulus.length; i++) {
-        var img = display_element.querySelector(`#jspsych-multi-image-button-response-stimulus-${i}`);
-        if (trial.stimulus_height !== null) {
-          height = trial.stimulus_height;
-          if (trial.stimulus_width == null && trial.maintain_aspect_ratio) {
-            width = img.naturalWidth * (trial.stimulus_height/img.naturalHeight);
+    function mainPluginFunction(display_element, trial) {
+      // if the stimulus is provided, create a canvas element 
+      var heights = [], widths = [];
+      var html;
+      if (trial.render_on_canvas) {
+        // first clear the display element (because the render_on_canvas method appends to display_element instead of overwriting it with .innerHTML)
+        if (display_element.hasChildNodes()) {
+          // can't loop through child list because the list will be modified by .removeChild()
+          while (display_element.firstChild) {
+            display_element.removeChild(display_element.firstChild);
           }
-        } else {
-          height = img.naturalHeight;
         }
-        if (trial.stimulus_width !== null) {
-          width = trial.stimulus_width;
-          if (trial.stimulus_height == null && trial.maintain_aspect_ratio) {
-            height = img.naturalHeight * (trial.stimulus_width/img.naturalWidth);
+        // create canvas element 
+        var canvas = document.createElement("canvas");
+        canvas.id = "multi-stimulus";
+        canvas.style.margin = 0;
+        canvas.style.padding = 0;
+
+        let padwidth = 20; // between images
+
+
+        if(trial.stimulus != null) {
+          // create images 
+          img_array = [];
+
+          for(let i = 0; i < trial.stimulus.length; i++) { 
+            let img = new Image(); 
+
+            img.src = trial.stimulus[i]; 
+
+            img_array.push(img); 
           }
-        } else if (!(trial.stimulus_height !== null & trial.maintain_aspect_ratio)) {
-          // if stimulus width is null, only use the image's natural width if the width value wasn't set 
-          // in the if statement above, based on a specified height and maintain_aspect_ratio = true
-          width = img.naturalWidth;
-        }
-        img.style.height = height.toString() + "px";
-        img.style.width = width.toString() + "px";
-      }
+
+          // determine image height and width
+          if (trial.stimulus_height !== null) { // heights were specified 
+            if (trial.stimulus_height.length != trial.stimulus.length) console.warn("There must be the same number of images and image-heights provided!");
+
+            for(let i = 0; i < trial.stimulus_height.length; i++) { 
+              heights.push(trial.stimulus_height[i]);
+            }
+            
+            // if no widths provided AND maintaining aspect ratio, use heights to determine widths
+            if (trial.stimulus_width == null && trial.maintain_aspect_ratio) {
+              for(let i = 0; i < trial.stimulus_height.length; i++){
+                widths.push(img_array[i].naturalWidth * (trial.stimulus_height[i]/img_array[i].naturalHeight));
+              }
+            }
+          } else { // heights were not specified
+              for(let i = 0; i < img_array.length; i++) { 
+                heights.push(img_array[i].naturalHeight);
+              }
+          }
+
+          if (trial.stimulus_width !== null) { // widths were specified
+            if(trial.stimulus_width.length != trial.stimulus.length) console.warn("There must be the same number of images and image-widths provided!");
+            for(let i = 0; i < img_array.length; i++){
+              widths.push(trial.stimulus_width[i]);
+            }
+
+            // if no heights provided AND maintaining aspect ratio, use widths to determine heights
+            if (trial.stimulus_height == null && trial.maintain_aspect_ratio) {
+              for(let i = 0; i < trial.stimulus_height.length; i++) {
+                heights.push(img_array[i].naturalHeight * trial.stimulus_width[i]/img_array[i].naturalWidth);
+              }
+            }
+          } else if (!(trial.stimulus_height !== null & trial.maintain_aspect_ratio)) { 
+            // when this else-if is reached, width is not provided
+            // it would only have been set if heights were provided AND maintain_aspect_ratio is true
+            // in other cases, it needs to be set here
+            for (let i = 0; i < img_array.length; i++) { 
+              widths.push(img_array[i].naturalWidth);
+            }
+          } 
         
+
+          // set canvas size to fit images
+          let maxHeight = 0;
+          for(let i = 0; i < heights.length; i++) {
+            if (heights[i] > maxHeight) maxHeight = heights[i];
+          }
+          canvas.height = maxHeight; 
+
+          let totalWidth = 0;
+          for(let i = 0; i < widths.length; i++){
+            totalWidth += widths[i];
+          }
+          canvas.width = totalWidth + (padwidth *(widths.length - 1));
+        }
+        else{
+          canvas.height = 1;
+          canvas.width = 1;
+        }
+
+        // create buttons
+        var buttons = [];
+        if (Array.isArray(trial.button_html)) {
+          if (trial.button_html.length == trial.choices.length) {
+            buttons = trial.button_html;
+          } else {
+            console.error('Error in multi-image-button-response plugin. The length of the button_html array does not equal the length of the choices array');
+          }
+        } else {
+          for (var i = 0; i < trial.choices.length; i++) {
+            buttons.push(trial.button_html);
+          }
+        }
+        var btngroup_div = document.createElement('div');
+        btngroup_div.id = "multi-btngroup";
+        html = '';
+        for (var i = 0; i < trial.choices.length; i++) {
+          var str = buttons[i].replace(/%choice%/g, trial.choices[i]);
+          html += '<div class="multi-button" style="display: inline-block; margin:'+trial.margin_vertical+' '+trial.margin_horizontal+'" id="multi-button-' + i +'" data-choice="'+i+'">'+str+'</div>';
+        }
+        btngroup_div.innerHTML = html;
+
+        display_element.insertBefore(canvas, null);
+
+        if (trial.stimulus != null) {
+          // add canvas to screen and draw image
+          var ctx = canvas.getContext("2d");
+
+          // alternative without canvas:
+          // for(let i = img_array.length-1; i >=0; i--) { 
+          //   //display_element.insertAdjacentHTML('afterbegin', `<img src = ${img_array[i].src}>`); 
+          // }
+          let dx = 0;
+          for(let i = 0; i < img_array.length; i++) {
+            ctx.drawImage(img_array[i],dx,0,widths[i],heights[i])
+            dx += widths[i];
+            dx += padwidth;
+          }
+            
+        }
+
+        // add buttons to screen
+        display_element.insertBefore(btngroup_div, canvas.nextElementSibling);
+        // add prompt if there is one
+        if (trial.prompt !== null) {
+          display_element.insertAdjacentHTML('beforeend', trial.prompt);
+        }
+      }
+
+      else {
+        // use html variable to build html of: stimuli, buttons, and prompt if applicable
+        let html = ""; 
+
+        // add stimuli to html as image elements (if applicable)
+        if (trial.stimulus !== null) {
+          for (let i = 0; i < trial.stimulus.length; i++) {
+            html += `<img src = "${trial.stimulus[i]}" class = "multi-image-stimulus" id="jspsych-multi-image-button-response-stimulus-${i}">`;
+          }
+        }
+        // add buttons (using trial.button_html if applicable)
+        // first get button_html into array:
+        var buttons = []; // html for each button
+
+        if (Array.isArray(trial.button_html)) {
+          if (trial.button_html.length == trial.choices.length) {
+            buttons = trial.button_html;
+          } else {
+            console.error('Error in multi-image-button-response plugin. The length of the button_html array does not equal the length of the choices array');
+          }
+        } else { // if not an array, all html is the same
+          for (var i = 0; i < trial.choices.length; i++) {
+            buttons.push(trial.button_html);
+          }
+        }
+
+        // add the div id for the buttons
+        html += '<div id="jspsych-image-button-response-btngroup">';
+
+        // add the buttons' html to the html variable
+        for (var i = 0; i < trial.choices.length; i++) {
+          var str = buttons[i].replace(/%choice%/g, trial.choices[i]);
+
+          html += '<div class="multi-button" style="display: inline-block; margin:'+trial.margin_vertical+' '+trial.margin_horizontal+'" id="multi-button-' + i +'" data-choice="'+i+'">'+str+'</div>';
+        }
+        
+        html += '</div>';
+
+        // add prompt
+        if (trial.prompt !== null){
+          html += trial.prompt;
+        }
+
+        // update the page content
+        display_element.innerHTML = html;
+
+        // set image dimensions after image has loaded (so that we have access to naturalHeight/naturalWidth)
+        for(let i = 0; i < trial.stimulus.length; i++) {
+          var img = display_element.querySelector(`#jspsych-multi-image-button-response-stimulus-${i}`);
+
+          if (trial.stimulus_height !== null) {
+            height = trial.stimulus_height;
+            if (trial.stimulus_width == null && trial.maintain_aspect_ratio) {
+              width = img.naturalWidth * (trial.stimulus_height/img.naturalHeight);
+            }
+          } else {
+              // if(img.src.search("img4.jpg") != -1){
+              //   img.onload = function() {
+              //       console.log("I am within the onload thingy. Height, width: " + img.naturalHeight + ", " + img.naturalWidth);
+              //       height = img.naturalHeight;
+              //       width = img.naturalWidth;
+              //   };
+              // }
+              // else {
+              //   height = img.naturalHeight;
+              // }
+              // console.log(img.src.search('img4.jpg'));
+              height = img.naturalHeight;
+          }
+          if (trial.stimulus_width !== null) {
+            width = trial.stimulus_width;
+            if (trial.stimulus_height == null && trial.maintain_aspect_ratio) {
+              height = img.naturalHeight * (trial.stimulus_width/img.naturalWidth);
+            }
+          } else if (!(trial.stimulus_height !== null & trial.maintain_aspect_ratio)) {
+            // if stimulus width is null, only use the image's natural width if the width value wasn't set 
+            // in the if statement above, based on a specified height and maintain_aspect_ratio = true
+              // if(img.src.search("img4.jpg") != -1){
+              //   console.log("Yo")
+              //   img.onload(function() {
+              //       console.log("I am within the onload thingy. Width: " + img.naturalWidth);
+              //       width = img.naturalWidth;
+              //   })
+              // }
+              // else {
+              //   width = img.naturalWidth;
+              // }
+              // // console.log(img)
+              width = img.naturalWidth;
+          }
+          img.style.height = height.toString() + "px";
+          img.style.width = width.toString() + "px";
+        }
+        
+          
+      }
     }
+
 
     // start timing
     var start_time = performance.now();

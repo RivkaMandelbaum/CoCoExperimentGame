@@ -20,9 +20,9 @@
  }
 
  .jspsych-content-wrapper {
-   display: flex;
+   /* display: flex; */
    margin: auto;
-   flex: 1 1 100%;
+   /* flex: 1 1 100%; */
    width: 100%;
  }
 

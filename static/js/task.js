@@ -31,7 +31,7 @@ The functions are defined in func-defs files:
 
 	/* quantities of parts of experiment*/           
 	const numImages = 5; // the number of artworks displayed (used in offline mode)
-	const numDecisions = 2; // number of times you choose to copy, also needed to calculate start amount and skip last "choice" buttons
+	const numDecisions = 6; // number of times you choose to copy, also needed to calculate start amount and skip last "choice" buttons
 
 	/* money-related */
 	const payToCopy = 2; // amount you need to pay someone to copy their choices
