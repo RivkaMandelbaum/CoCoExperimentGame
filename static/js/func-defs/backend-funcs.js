@@ -163,33 +163,26 @@ function backendArtSelections(trial_index, offlineMode) {
         function find_art(p) {
             visited[p] = true; 
             let next_pos = idLookup[dummy_copying_choices[p].copying_id];
-            console.log("find_art(" + p + ") next_pos = " + next_pos)
 
             // base cases: make a decision (set artwork choice) which can propogate back to the first person who copied
             if(visited[next_pos]) { 
-                console.log("visited (base case)")
                 // if the person p is copying didn't copy, or they did but they've already been assigned a choice, assign p their info
                 if(trial_data.dummy_choices[next_pos].art != null) { 
                     trial_data.dummy_choices[p] = trial_data.dummy_choices[next_pos];
-                    console.log("next art != null")
                 }
                 // if the person p is copying did copy (art is initialized to null) but they haven't been assigned a choice (art remains null), there's a loop - randomly assign a choice value
                 else { 
                     // make random choice
                     let art_choice = rand_art();
-                    console.log("next art == null; making random choice")
-
                     let iscor = (trial_data.correct.id == art_choice.id);
+
                     trial_data.dummy_choices[p] = {art: art_choice, correct: iscor};
                 }
-                console.log("choice: " + (((trial_data.dummy_choices)[p]).art).name)
                 return trial_data.dummy_choices[p];
             }
             // if the person p is copying did copy and hasn't been assigned a choice, recursively visit that person
             else { 
-                console.log("not visited. recursive call")
                 trial_data.dummy_choices[p] = find_art(next_pos);
-                console.log("choice: " + trial_data.dummy_choices[p].art.name)
                 return trial_data.dummy_choices[p]; 
             }
         }
