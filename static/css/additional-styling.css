@@ -1,7 +1,6 @@
 /* jspsych  */
 #jspsych-target{
-    width: 100%;
-    height: 95%;
+    height: 95vh;
 } 
 
 /* multi-image-button-response stimulus styling */ 
@@ -51,7 +50,7 @@ td, th {
     align-items: center;
     background-color:lightcyan;
     border: 1px solid blue; 
-    height: 5%;
+    height: 5vh;
 }
 
 /* timer elements, based on css-tricks.com */ 

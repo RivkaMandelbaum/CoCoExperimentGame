@@ -52,19 +52,19 @@ function getPlayerInfo(offlineMode){
             player_info: [
                 { 
                     id: 10, 
-                    name: "Bartholomew",
+                    name: "Bart",
                     avatar_filepath: "../static/images/avatar1.png",
                     condition: default_condition
                 }, 
                 { 
                     id: 2,
-                    name: "Edmund", 
+                    name: "Ed", 
                     avatar_filepath: "../static/images/avatar2.png",
                     condition: default_condition
                 },
                 {
                     id: 30, 
-                    name: "Clarissa", 
+                    name: "Claire", 
                     avatar_filepath: "../static/images/avatar3.png",
                     condition: default_condition
                 },
@@ -85,6 +85,11 @@ function getPlayerInfo(offlineMode){
     }
 }
 
+function rand_art() { 
+    let random_choice = Math.floor((Math.random() * numImages) + 1);
+    let random_art = eval(`img${random_choice}`);
+    return random_art;
+}
 
 // When online, does the following:
 //  1) sends message containing self choices in format described below
@@ -106,12 +111,6 @@ function getPlayerInfo(offlineMode){
 // what the player they are copying chose
 function backendArtSelections(trial_index, offlineMode) { 
     let trial_data = jsPsych.data.get().filter({'trial_index': trial_index}).values()[0];
-
-    function rand_art() { 
-        let random_choice = Math.floor((Math.random() * numImages) + 1);
-        let random_art = eval(`img${random_choice}`);
-        return random_art;
-    }
 
     // in offline mode, fill with dummy values
     if(offlineMode) {  
@@ -135,29 +134,27 @@ function backendArtSelections(trial_index, offlineMode) {
         }
         // otherwise, get players who are copying
         dummy_copying_choices = jsPsych.data.get().filter({'trial_index': copying_trial_index}).values()[0].dummy_choices; // {copying: bool, copying_id: null/int}, sorted in dummyChoices order
-        console.log(dummy_copying_choices)
 
         // figure out everyone's choices (when online, the backend should do this)
 
         // initialize "visited" array for search
         let visited = new Array(numPlayers);
-        console.log(visited)
         for(p = 0; p < numPlayers; p++) { 
             visited[p] = !dummy_copying_choices[p].copying;
             
             // since it's offline, if they're choosing, make their choice and add it to dummy_choices at this point 
             if(!dummy_copying_choices[p].copying) { 
-                let dummy_art = eval(`img${(p % numImages) + 1}`);
+                let dummy_art = rand_art();//eval(`img${(p % numImages) + 1}`);
                 let dummy_correct = (trial_data.correct.id == dummy_art.id);
 
                 trial_data.dummy_choices[p] = {art: dummy_art, correct: dummy_correct};
             }
 
         }
-        console.log(visited)
 
         // dfs-type search to give each of them the choosing information here 
         for(p = 0; p < numPlayers; p++) { 
+            console.log("player " + p);
             if (!visited[p]){
                 find_art(p);
             }
@@ -166,26 +163,34 @@ function backendArtSelections(trial_index, offlineMode) {
         function find_art(p) {
             visited[p] = true; 
             let next_pos = idLookup[dummy_copying_choices[p].copying_id];
+            console.log("find_art(" + p + ") next_pos = " + next_pos)
+
 
             // base cases: make a decision (set artwork choice) which can propogate back to the first person who copied
             if(visited[next_pos]) { 
+                console.log("visited (base case)")
                 // if the person p is copying didn't copy, or they did but they've already been assigned a choice, assign p their info
                 if(trial_data.dummy_choices[next_pos].art != null) { 
                     trial_data.dummy_choices[p] = trial_data.dummy_choices[next_pos];
+                    console.log("next art != null")
                 }
                 // if the person p is copying did copy (art is initialized to null) but they haven't been assigned a choice (art remains null), there's a loop - randomly assign a choice value
                 else { 
                     // make random choice
-                    let rand_art = rand_art()
+                    let art_choice = rand_art();
 
-                    trial_data.dummy_choices[p].art = rand_art; 
-                    trial_data.dummy_choices[p].correct = (trial_data.correct.id == rand_art.id);
+                    trial_data.dummy_choices[p].art = art_choice; 
+                    trial_data.dummy_choices[p].correct = (trial_data.correct.id == art_choice.id);
+                    console.log("next art == null; making random choice")
                 }
+                console.log("choice: " + trial_data.dummy_choices[p])
                 return trial_data.dummy_choices[p];
             }
             // if the person p is copying did copy and hasn't been assigned a choice, recursively visit that person
             else { 
+                console.log("not visited. recursive call")
                 trial_data.dummy_choices[p] = find_art(next_pos);
+                console.log("choice: " + trial_data.dummy_choices[p])
                 return trial_data.dummy_choices[p]; 
             }
         }
@@ -309,38 +314,42 @@ function backendPlayersCopying(offlineMode, playerState, trial_index) {
             {
                 id: dummyPlayers[0].id,
                 num_who_copied: 1, 
-                delta_money: payToCopy,
-                copying: false,
-                copying_id: null,
-                trial_type: "copy",
-                trial_index: trial_index
-            },
-            {
-                id: dummyPlayers[1].id,
-                num_who_copied: 0, 
-                delta_money: -payToCopy,
+                delta_money: 0,
                 copying: true,
-                copying_id: dummyPlayers[2].id,
+                copying_id: dummyPlayers[1].id,
                 trial_type: "copy",
                 trial_index: trial_index
-            },
-            {
-                id: dummyPlayers[2].id,
-                num_who_copied: 1, 
-                delta_money: payToCopy,
-                copying: false,
-                copying_id: null,
-                trial_type: "copy",
-                trial_index: trial_index
-            },
-            {
+                },
+                {
+                    id: dummyPlayers[1].id,
+                    num_who_copied: 1, 
+                    delta_money: 0,
+                    copying: true,
+                    copying_id: dummyPlayers[0].id,
+                    trial_type: "copy",
+                    trial_index: trial_index
+                },
+                {
+                    id: dummyPlayers[2].id,
+                    num_who_copied: 0, 
+                    delta_money: 0,
+                    copying: false,
+                    copying_id: null,
+                    trial_type: "copy",
+                    trial_index: trial_index
+
+                },
+                {
+                   
                 id: dummyPlayers[3].id,
                 num_who_copied: 0, 
-                delta_money: -payToCopy,
-                copying: true,
-                copying_id: dummyPlayers[0].id,
+                delta_money: 0,
+                copying: false,
+                copying_id: null,
                 trial_type: "copy",
                 trial_index: trial_index
+           
+
             }
         ];
 

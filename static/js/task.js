@@ -168,11 +168,18 @@ The functions are defined in func-defs files:
 			console.log("placeholder for recording trial data on update")
 		},
 		on_finish: function () {
-			// For debugging: 
-			jsPsych.data.displayData();
+			if(offlineMode){
+				jsPsych.data.displayData();
 
-			/* save data - CHECK PSITURK API*/
+				jsPsych.pluginAPI.setTimeout(function() { 
+					psiturk.completeHIT();
+				}, (300 * 1000));
+			}
+			else { 
+				/* save data - CHECK PSITURK API*/
 			psiturk.completeHIT();
+			}
+			
 		},
 		show_progress_bar: true 
 	}); 
