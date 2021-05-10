@@ -165,7 +165,6 @@ function backendArtSelections(trial_index, offlineMode) {
             let next_pos = idLookup[dummy_copying_choices[p].copying_id];
             console.log("find_art(" + p + ") next_pos = " + next_pos)
 
-
             // base cases: make a decision (set artwork choice) which can propogate back to the first person who copied
             if(visited[next_pos]) { 
                 console.log("visited (base case)")
@@ -178,23 +177,22 @@ function backendArtSelections(trial_index, offlineMode) {
                 else { 
                     // make random choice
                     let art_choice = rand_art();
-
-                    trial_data.dummy_choices[p].art = art_choice; 
-                    trial_data.dummy_choices[p].correct = (trial_data.correct.id == art_choice.id);
                     console.log("next art == null; making random choice")
+
+                    let iscor = (trial_data.correct.id == art_choice.id);
+                    trial_data.dummy_choices[p] = {art: art_choice, correct: iscor};
                 }
-                console.log("choice: " + trial_data.dummy_choices[p])
+                console.log("choice: " + (((trial_data.dummy_choices)[p]).art).name)
                 return trial_data.dummy_choices[p];
             }
             // if the person p is copying did copy and hasn't been assigned a choice, recursively visit that person
             else { 
                 console.log("not visited. recursive call")
                 trial_data.dummy_choices[p] = find_art(next_pos);
-                console.log("choice: " + trial_data.dummy_choices[p])
+                console.log("choice: " + trial_data.dummy_choices[p].art.name)
                 return trial_data.dummy_choices[p]; 
             }
         }
-        console.log("final artwork selection: " + trial_data.dummy_choices)
     }
 
     // in online mode, send information about self, receive correct answer and responses, and update the timeline variable to match
@@ -313,43 +311,39 @@ function backendPlayersCopying(offlineMode, playerState, trial_index) {
             },
             {
                 id: dummyPlayers[0].id,
-                num_who_copied: 1, 
-                delta_money: 0,
+                num_who_copied: 0, 
+                delta_money: -payToCopy,
                 copying: true,
                 copying_id: dummyPlayers[1].id,
                 trial_type: "copy",
                 trial_index: trial_index
-                },
-                {
-                    id: dummyPlayers[1].id,
-                    num_who_copied: 1, 
-                    delta_money: 0,
-                    copying: true,
-                    copying_id: dummyPlayers[0].id,
-                    trial_type: "copy",
-                    trial_index: trial_index
-                },
-                {
-                    id: dummyPlayers[2].id,
-                    num_who_copied: 0, 
-                    delta_money: 0,
-                    copying: false,
-                    copying_id: null,
-                    trial_type: "copy",
-                    trial_index: trial_index
-
-                },
-                {
-                   
-                id: dummyPlayers[3].id,
-                num_who_copied: 0, 
-                delta_money: 0,
+            },
+            {          
+                id: dummyPlayers[1].id,
+                num_who_copied: 1, 
+                delta_money: payToCopy,
                 copying: false,
                 copying_id: null,
                 trial_type: "copy",
                 trial_index: trial_index
-           
-
+            },
+            {      
+                id: dummyPlayers[2].id,
+                num_who_copied: 0, 
+                delta_money: -payToCopy,
+                copying: true,
+                copying_id: dummyPlayers[3].id,
+                trial_type: "copy",
+                trial_index: trial_index
+            },
+            {          
+                id: dummyPlayers[3].id,
+                num_who_copied: 1, 
+                delta_money: payToCopy,
+                copying: false,
+                copying_id: null,
+                trial_type: "copy",
+                trial_index: trial_index
             }
         ];
 
