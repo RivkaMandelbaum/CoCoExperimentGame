@@ -24,9 +24,9 @@ The functions are defined in func-defs files:
 
 	// condition code lookup 
 	const conditionLookup = { 
-		0: buildTable_MoneyCorrectCopied,
-		1: buildTable_MoneyCorrect,
-		2: buildTable_Money,
+		0: buildTable_TotalPayoff,
+		1: buildTable_DirectPayoff,
+		2: buildTable_NumWasCopied,
 	}
 
 	/* quantities of parts of experiment*/           

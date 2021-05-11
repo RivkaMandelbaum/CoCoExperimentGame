@@ -6,128 +6,80 @@
 /* -------------------------------------------------------------------------- */
 
 /* ---- helper functions ---- */ 
-// builds string representing html for intro string and table (up to "Money")
+// builds string representing html for intro string and table (up to "Player Pic")
 function introString(){
     let s = "Here are players' results. <br> </br>";
 
     s += "<div id = 'table-content'><table>\
                         <th> Player Name</th>\
-                        <th> Player Pic</th>\
-                        <th> Money</th>";
+                        <th> Player Pic</th>";
 
     return s; 
 }
 
-// builds string representing what to fill in table for "Correct" column
-function correctString(trial_index){
-    let correct = ""
-    if(!playerState.is_copying) {
-        if(isPlayerCorrect(trial_index)) correct = "Yes!";
-        else correct = "No";
-    }
-    else { 
-        if(isDummyCorrect(playerState.player_copying_id, trial_index)) correct = "Yes!";
-        else correct = "No";
-    }
-    return correct;
-}
-
-// builds the first columns of the self row of the table: name, avatar, money
+// builds the first columns of the self row of the table: name, avatar
 function selfBasic(){
     s = `<tr id = "self"><td>${player.name}</td>\
-    <td><img src =${player.avatar_filepath} width = 50vh height = 50vh></img></td>\
-    <td>${player.money}</td>`;
+    <td><img src =${player.avatar_filepath} width = 50vh height = 50vh></img></td>`;
     return s; 
 }
 
-// builds first columns of other rows of the table: name, avatar, money
+// builds first columns of other rows of the table: name, avatar
 function otherBasic(p) { 
-    let addName = `<tr><td>${p.name}</td>`;
+    let addName = `<tr id = player_${p.id}><td>${p.name}</td>`;
     let addAvatar = `<td><img src =${p.avatar_filepath} width = 50vh height = 50vh></img></td>`;
-    let addMoney = `<td>${p.money}</td>`;
 
-    return (addName + addAvatar + addMoney);
+    return (addName + addAvatar);
 }
 
 /* --- functions for each condition ---- */ 
 /* each return the HTML for a table with columns Name and Avatar, with additional columns depending on condition, to be displayed as a stimulus*/
 
-// columns: money, correct, number of people who copied them
-// for condition = "easy"
-function buildTable_MoneyCorrectCopied(trial_index){
-    let table = introString() + "<th> Correct </th>" + "<th> chosen # times</th>";
-    const addRowEnd = "</tr>";
-
-    // build first row of table (yourself)
-    let correct = correctString(trial_index);
-    let was_copied = player.numWasCopied;
-    
-    table += selfBasic(); 
-    table += `<td>${correct}</td>`;
-    table += `<td>${was_copied}</td></tr>`
-
-    // build row of table for each player
-    for(i = 0; i < numPlayers; i++) {
-        let addBasic = otherBasic(dummyPlayers[i]);
-        let correct = isDummyCorrect(dummyPlayers[i].id, trial_index);
-        let was_copied = dummyPlayers[i].numWasCopied;
-
-        let addCorrect = "";
-        if(correct) addCorrect = `<td>Yes!</td>`;
-        else addCorrect = '<td>No</td>';
-
-        let addCopied = `<td>${was_copied}</td>`;
-
-        table += (addBasic + addCorrect + addCopied + addRowEnd);
-    }
-    table += "</table></div><br></br>";
-
-    return table; 
-}
-
-// conditions: money, correct
-// for condition "medium"
-function buildTable_MoneyCorrect(trial_index){
-    let table = introString();
-    table += "<th> Correct </th>";
-
-    const addRowEnd = "</tr>";
-
-    // build first row of table (yourself)
-    let correct = correctString(trial_index);
-    
-    table += selfBasic(); 
-    table += `<td>${correct}</td></tr>`;
-
-    // build row of table for each player
-    for(i = 0; i < numPlayers; i++) {
-        let correct = isDummyCorrect(dummyPlayers[i].id, trial_index);
-        let addBasic = otherBasic(dummyPlayers[i]);
-
-        let addCorrect = "";
-        if(correct) addCorrect = `<td>Yes!</td>`;
-        else addCorrect = '<td>No</td>';
-
-        table += (addBasic + addCorrect + addRowEnd);
-    }
-    table += "</table></div><br></br>";
-    return table; 
-}
-
-// columns: money
-// for condition "hard"
-function buildTable_Money(trial_index){
-    let table = introString();
+// third column: total payoff 
+function buildTable_TotalPayoff(){
+    let table = introString() + "<th> Total Money </th>";
     const addRowEnd = "</tr>";
 
     // build first row of table (yourself)    
-    table += selfBasic(); 
+    table += selfBasic() + `<td>${player.money}</td` + addRowEnd; 
 
     // build row of table for each player
     for(i = 0; i < numPlayers; i++) {
-        table += (otherBasic(dummyPlayers[i]) + addRowEnd);
+        table += (otherBasic(dummyPlayers[i]) + `<td>${dummyPlayers[i].money}</td`+ addRowEnd);
+    }
+    table += "</table></div><br></br>";
+    return table; ; 
+}
+
+
+// third column: direct payoff (from correctness)
+function buildTable_DirectPayoff(){
+    let table = introString() + "<th> Rewards Earned for Correctness</th>";
+    const addRowEnd = "</tr>";
+
+    // build first row of table (yourself)    
+    table += selfBasic() + `<td>${player.numCorrect * rewardForCorrect}</td` + addRowEnd; 
+
+    // build row of table for each player
+    for(i = 0; i < numPlayers; i++) {
+        table += (otherBasic(dummyPlayers[i]) + `<td>${dummyPlayers[i].numCorrect * rewardForCorrect}</td`+ addRowEnd);
     }
     table += "</table></div><br></br>";
     return table; 
 }
 
+// third column: # copied
+function buildTable_NumWasCopied(){
+    let table = introString() + "<th> Total Times Copied </th>";
+    const addRowEnd = "</tr>";
+
+    // build first row of table (yourself)    
+    table += selfBasic() + `<td>${player.numWasCopied}</td` + addRowEnd; 
+
+    // build row of table for each player
+    for(i = 0; i < numPlayers; i++) {
+        table += (otherBasic(dummyPlayers[i]) + `<td>${dummyPlayers[i].numWasCopied}</td`+ addRowEnd);
+    }
+    table += "</table></div><br></br>";
+    return table; 
+}
