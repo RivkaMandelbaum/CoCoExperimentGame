@@ -54,7 +54,7 @@ function buildTable_TotalPayoff(){
 
 // third column: direct payoff (from correctness)
 function buildTable_DirectPayoff(){
-    let table = introString() + "<th> Rewards Earned for Correctness</th>";
+    let table = introString() + "<th> $ earned for correct answer </th>";
     const addRowEnd = "</tr>";
 
     // build first row of table (yourself)    
@@ -69,16 +69,16 @@ function buildTable_DirectPayoff(){
 }
 
 // third column: # copied
-function buildTable_NumWasCopied(){
-    let table = introString() + "<th> Total Times Copied </th>";
+function buildTable_CopyPayoff(){
+    let table = introString() + "<th> $ earned from being copied </th>";
     const addRowEnd = "</tr>";
 
     // build first row of table (yourself)    
-    table += selfBasic() + `<td>${player.numWasCopied}</td` + addRowEnd; 
+    table += selfBasic() + `<td>${player.numWasCopied * payToCopy}</td` + addRowEnd; 
 
     // build row of table for each player
     for(i = 0; i < numPlayers; i++) {
-        table += (otherBasic(dummyPlayers[i]) + `<td>${dummyPlayers[i].numWasCopied}</td`+ addRowEnd);
+        table += (otherBasic(dummyPlayers[i]) + `<td>${dummyPlayers[i].numWasCopied * payToCopy}</td`+ addRowEnd);
     }
     table += "</table></div><br></br>";
     return table; 

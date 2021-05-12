@@ -26,7 +26,7 @@ The functions are defined in func-defs files:
 	const conditionLookup = { 
 		0: buildTable_TotalPayoff,
 		1: buildTable_DirectPayoff,
-		2: buildTable_NumWasCopied,
+		2: buildTable_CopyPayoff,
 	}
 
 	/* quantities of parts of experiment*/           
