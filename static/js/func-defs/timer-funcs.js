@@ -7,17 +7,9 @@ function startTimer(timeLimit) {
     let timeLeft = timeLimit; 
 
     document.getElementById("countdown-timer").innerHTML = 
-            `<svg class = "timer" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-                    <g class = "timer-circle">
-                        <circle class = "timer-elapsed" cx = "50" cy = "50" r = "45" />
-                    </g>
-                </svg>
-            <span id = "timer-label-id" class = "timer-label">
+            `<div id = "timer-label-id" class = "timer-label">
                     ${formatTime(timeLeft)}
-            </span>`;
-    // document.getElementById("countdown-timer").innerHTML = 
-    //     `<span class = "circle"></span>
-    //     <span id = "timer-label-id" class = "timer-label"> ${formatTime(timeLeft)}</span>`;
+            </div>`;
 
     let timePassed = 0; 
     timerInterval = setInterval(function() {

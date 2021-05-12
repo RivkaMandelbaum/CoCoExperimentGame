@@ -87,22 +87,20 @@ td, th {
     stroke: black;
 } 
 
+#countdown-timer{
+    border: 1px solid black;
+    border-radius: 50%;
+    width: 100%;
+}
 .timer-label{
-    position: absolute; 
-    top: 15%;
-    left: 45%; 
-    
-    translate: transform(-50%, -50%); 
-
-    width:30px;
-    height:30px;
-
-    display: flex; 
-    align-items:center;
+    width: 4vh;
+    height: 4vh;
+    display: flex;
     justify-content: center;
-
-    font-size: 14px;
-    font-family:Arial, Helvetica, sans-serif;
+    align-content: center;
+    font-size: 65%;
+    font-family: Arial, Helvetica, sans-serif;
+    flex-wrap: wrap;
 }
 
 /* money amount */ 
