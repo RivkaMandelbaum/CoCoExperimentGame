@@ -60,33 +60,6 @@ td, th {
     margin: 2%;
 }
 
-/* .circle{
-    border-radius: 50%;
-    border: 1px solid black;
-    position: relative;
-    background-color: black;
-    height: 50px;
-    width: 50px;
-
-} */
-
-.timer { 
-    position: relative;
-    /* height:100%;
-    width: 100%; */
-    max-height: 5%;
-} 
- 
-.timer-circle {
-    fill: none;
-    stroke: none;
-}
-
-.timer-elapsed{
-    stroke-width: 3px;
-    stroke: black;
-} 
-
 #countdown-timer{
     border: 1px solid black;
     border-radius: 50%;
