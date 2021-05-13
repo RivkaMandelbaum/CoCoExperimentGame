@@ -184,6 +184,11 @@ let artDisplayCopyChoice = {
     
             return st; 
     }, 
+    // stimulus_html: "height: 30vh; width: 30vh",
+    stimulus_height: 30,
+    stimulus_width: 30,
+    stimulus_height_units: "vh",
+    stimulus_width_units: "vh",
     render_on_canvas: false,
     prompt: "Click <strong> continue </strong> to see what choice was made.", 
     choices: ["Continue"],

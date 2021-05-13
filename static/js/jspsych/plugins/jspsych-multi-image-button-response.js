@@ -32,6 +32,18 @@ jsPsych.plugins["multi-image-button-response"] = (function() {
         default: null,
         description: 'Set the image width in pixels'
       },
+      stimulus_height_units: { 
+        type: jsPsych.plugins.parameterType.STRING,
+        pretty_name: 'Stimulus height units',
+        default: "px", 
+        description: 'The units to use for stimulus height, if it is provided'
+      },
+      stimulus_width_units: { 
+        type: jsPsych.plugins.parameterType.STRING,
+        pretty_name: 'Stimulus width units',
+        default: "px", 
+        description: 'The units to use for stimulus width, if it is provided'
+      },
       maintain_aspect_ratio: {
         type: jsPsych.plugins.parameterType.BOOL,
         pretty_name: 'Maintain aspect ratio',
@@ -274,8 +286,9 @@ jsPsych.plugins["multi-image-button-response"] = (function() {
         if (trial.stimulus !== null) {
           for (let i = 0; i < trial.stimulus.length; i++) {
             html += `<img src = "${trial.stimulus[i]}" class = "multi-image-stimulus" id="jspsych-multi-image-button-response-stimulus-${i}">`;
-          }
+          }  
         }
+        console.log(html);
         // add buttons (using trial.button_html if applicable)
         // first get button_html into array:
         var buttons = []; // html for each button
@@ -322,17 +335,7 @@ jsPsych.plugins["multi-image-button-response"] = (function() {
               width = img.naturalWidth * (trial.stimulus_height/img.naturalHeight);
             }
           } else {
-              // if(img.src.search("img4.jpg") != -1){
-              //   img.onload = function() {
-              //       console.log("I am within the onload thingy. Height, width: " + img.naturalHeight + ", " + img.naturalWidth);
-              //       height = img.naturalHeight;
-              //       width = img.naturalWidth;
-              //   };
-              // }
-              // else {
-              //   height = img.naturalHeight;
-              // }
-              // console.log(img.src.search('img4.jpg'));
+              
               height = img.naturalHeight;
           }
           if (trial.stimulus_width !== null) {
@@ -341,23 +344,11 @@ jsPsych.plugins["multi-image-button-response"] = (function() {
               height = img.naturalHeight * (trial.stimulus_width/img.naturalWidth);
             }
           } else if (!(trial.stimulus_height !== null & trial.maintain_aspect_ratio)) {
-            // if stimulus width is null, only use the image's natural width if the width value wasn't set 
-            // in the if statement above, based on a specified height and maintain_aspect_ratio = true
-              // if(img.src.search("img4.jpg") != -1){
-              //   console.log("Yo")
-              //   img.onload(function() {
-              //       console.log("I am within the onload thingy. Width: " + img.naturalWidth);
-              //       width = img.naturalWidth;
-              //   })
-              // }
-              // else {
-              //   width = img.naturalWidth;
-              // }
-              // // console.log(img)
               width = img.naturalWidth;
           }
-          img.style.height = height.toString() + "px";
-          img.style.width = width.toString() + "px";
+
+          img.style.height = height.toString() + trial.stimulus_height_units;
+          img.style.width = width.toString() + trial.stimulus_width_units;  
         }
         
           

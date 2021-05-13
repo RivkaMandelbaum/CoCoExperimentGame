@@ -13,6 +13,14 @@
     border: 1px solid transparent;
     border-radius: 4px;
     border-color: #ccc;
+    height: 30vh; 
+    width: 30vh;
+}
+
+/* to standardize size when the buttons are images */
+.jspsych-btn img {
+    width: 30vh;
+    height: 30vh;
 }
 
 /* --- table --- */
