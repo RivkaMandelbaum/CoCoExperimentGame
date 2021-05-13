@@ -39,6 +39,7 @@ let startWait = {
         // define player 
         let self = initObject.self_info; 
         player = new createPlayer(self.id, self.name, self.avatar_filepath, self.condition);
+        showSidebarInfo(); 
 
         // define dummy players 
         for(i = 0; i < numPlayers; i++) {
@@ -136,7 +137,8 @@ let artDisplaySelectionWait = {
         if(isPlayerCorrect(trial_index)) {
             player.money += rewardForCorrect;
             player.numCorrect++;
-            document.getElementById("money-amount").innerHTML = "Your total amount of money is: " + player.money.toString();
+            showSidebarInfo();
+
         }
         //console.log(`${player.name}: ${testPlayer(player)}`); 
 
@@ -223,7 +225,7 @@ let artDisplayCopyWait = {
         if(isDummyCorrect(playerState.player_copying_id, trial_index)) {
             player.money += rewardForCorrect;
             player.numCorrect++;
-            document.getElementById("money-amount").innerHTML = "Your total amount of money is: " + player.money.toString();
+            showSidebarInfo();
         }
         //console.log(`${player.name}: ${testPlayer(player)}`); 
 

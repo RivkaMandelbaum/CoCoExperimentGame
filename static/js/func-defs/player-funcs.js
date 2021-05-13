@@ -65,7 +65,7 @@ function updateCopying(copyingInfo) {
 
             player.money += currObj.delta_money;
 
-            document.getElementById("money-amount").innerHTML = "Your total amount of money is: " + player.money.toString();
+            showSidebarInfo();
 
             if (currObj.copying) player.numCopyingOther++; 
 
@@ -89,4 +89,10 @@ function updateCopying(copyingInfo) {
 function convertIdToPlayer(id) { 
     pos = idLookup[id]; 
     return dummyPlayers[pos]; 
+}
+
+function showSidebarInfo() {
+    document.getElementById("money-amount").innerHTML = "Your total amount of money is: " + player.money.toString();
+    document.getElementById("player-name").innerHTML = player.name;
+    document.getElementById("player-avatar").innerHTML = "<img src = " + player.avatar_filepath + " style = 'height: 4vh; width: 4vh;'" + "/>";
 }
