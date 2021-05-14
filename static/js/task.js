@@ -94,8 +94,12 @@ The functions are defined in func-defs files:
 /* define trials on timeline                                    */     
 /* ------------------------------------------------------------ */ 
 	/* add experiment setup trial*/ 
-	let timeline = [{timeline: startTrial}]; // timeline for experiment 
+	let timeline = []; // timeline for experiment 
+	timeline.push(intro);
+	timeline.push({timeline: mechanism_rounds});
+	//timeline.push({timeline: information_rounds});
 
+	timeline.push({timeline: startTrial});
 	/* define welcome message as a trial */
 	let welcome = {
 		type: "html-keyboard-response",

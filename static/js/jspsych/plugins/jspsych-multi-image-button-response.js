@@ -288,7 +288,6 @@ jsPsych.plugins["multi-image-button-response"] = (function() {
             html += `<img src = "${trial.stimulus[i]}" class = "multi-image-stimulus" id="jspsych-multi-image-button-response-stimulus-${i}">`;
           }  
         }
-        console.log(html);
         // add buttons (using trial.button_html if applicable)
         // first get button_html into array:
         var buttons = []; // html for each button

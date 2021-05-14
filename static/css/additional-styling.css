@@ -23,6 +23,11 @@
     height: 30vh;
 }
 
+/* border around incorrect responses during training */
+#incorrect-response-btn {
+    border: 5px solid red;
+}
+
 /* --- table --- */
 #table-content { 
     padding: 0.5rem;

@@ -61,7 +61,7 @@ let startWait = {
     function_ends_trial: true,  
 }
 
-let startTrial = [startChoice, startWait]
+let startTrial = [startWait]
 
 /* ---- art selection ---- */ 
 let intervalID = null; // for timer functions
@@ -181,7 +181,7 @@ let artDisplayCopyChoice = {
     
             // add the order that images appeared to the orderLookup object
             orderLookup[jsPsych.progress().current_trial_global] = ord;
-    
+     
             return st; 
     }, 
     // stimulus_html: "height: 30vh; width: 30vh",

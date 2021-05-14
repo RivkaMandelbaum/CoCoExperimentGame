@@ -120,9 +120,11 @@ function backendArtSelections(trial_index, offlineMode) {
 
         trial_data.dummy_choices = new Array(numPlayers).fill({art: null, correct: null});
  
-        // if first round, no one is copying, so decide other players' choices and return 
         copying_trial_index = trial_index - 2; 
-        if(copying_trial_index <= 1) { 
+        copying_trial_data = jsPsych.data.get().filter({'trial_index': copying_trial_index}).values()[0]
+
+        // if first round, no one is copying, so decide other players' choices and return 
+        if(copying_trial_data.trial_type !== "html-button-response") { 
             // update dummy choices
             for (i = 0; i < numPlayers; i++) {
                 let dummy_art = rand_art();
@@ -133,13 +135,15 @@ function backendArtSelections(trial_index, offlineMode) {
             return; 
         }
         // otherwise, get players who are copying
-        dummy_copying_choices = jsPsych.data.get().filter({'trial_index': copying_trial_index}).values()[0].dummy_choices; // {copying: bool, copying_id: null/int}, sorted in dummyChoices order
+        dummy_copying_choices = copying_trial_data.dummy_choices; // {copying: bool, copying_id: null/int}, sorted in dummyChoices order
+
 
         // figure out everyone's choices (when online, the backend should do this)
 
         // initialize "visited" array for search
         let visited = new Array(numPlayers);
         for(p = 0; p < numPlayers; p++) { 
+
             visited[p] = !dummy_copying_choices[p].copying;
             
             // since it's offline, if they're choosing, make their choice and add it to dummy_choices at this point 
