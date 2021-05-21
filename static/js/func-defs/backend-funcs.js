@@ -1,7 +1,7 @@
 /* -------------------------------------------------------------------------- */
 /* Functions that send and receive data from backend. In offline mode, these  */
 /* functions return dummy values, which are hard-coded.                       */
-/* Most of this code contains placeholders which will be updated when the     */
+/* Much of this code contains placeholders which will be updated when the     */
 /* backend has been completed.                                                */
 /* Author: Rivka Mandelbaum                                                   */
 /* -------------------------------------------------------------------------- */
@@ -116,15 +116,14 @@ function backendArtSelections(trial_index, offlineMode) {
     if(offlineMode) {  
         // update correct choice (random), overwrite dummy_choices placeholder
         trial_data.correct = rand_art();
-        console.log("correct choice: img" + trial_data.correct.id)
 
         trial_data.dummy_choices = new Array(numPlayers).fill({art: null, correct: null});
  
         copying_trial_index = trial_index - 2; 
         copying_trial_data = jsPsych.data.get().filter({'trial_index': copying_trial_index}).values()[0]
 
-        // if first round, no one is copying, so decide other players' choices and return 
-        if(copying_trial_data.trial_type !== "html-button-response") { 
+        // if first round (or first training round), no one is copying, so decide other players' choices and return 
+        if(copying_trial_data.trial_type !== "html-button-response" || copying_trial_data.prompt !== "Which player would you like to copy?") { 
             // update dummy choices
             for (i = 0; i < numPlayers; i++) {
                 let dummy_art = rand_art();
@@ -158,7 +157,6 @@ function backendArtSelections(trial_index, offlineMode) {
 
         // dfs-type search to give each of them the choosing information here 
         for(p = 0; p < numPlayers; p++) { 
-            console.log("player " + p);
             if (!visited[p]){
                 find_art(p);
             }

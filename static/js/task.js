@@ -31,7 +31,8 @@ The functions are defined in func-defs files:
 
 	/* quantities of parts of experiment*/           
 	const numImages = 5; // the number of artworks displayed (used in offline mode)
-	const numDecisions = 6; // number of times you choose to copy, also needed to calculate start amount and skip last "choice" buttons
+	const numDecisions = 10; // number of times you choose to copy, also needed to calculate start amount and skip last "choice" buttons
+
 
 	/* money-related */
 	const payToCopy = 2; // amount you need to pay someone to copy their choices
@@ -44,27 +45,27 @@ The functions are defined in func-defs files:
 	/* placeholders */  
 	const img1 = {
 		id: 1,
-		name: "red",
+		name: "water with mountain",
 		filepath: "../static/images/img1.jpg"
 	};
 	const img2 = {
 		id: 2,
-		name: "orange",
+		name: "people on beach",
 		filepath: '../static/images/img2.jpg',
 	};
 	const img3 = {
 		id: 3,
-		name: "yellow",
+		name: "blue blob",
 		filepath: '../static/images/img3.jpg'
 	};
 	const img4 = {
 		id: 4, 
-		name: "green",
+		name: "red land with sunset and water",
 		filepath: '../static/images/img4.jpg'
 	};
 	const img5 = {
 		id: 5, 
-		name: "blue",
+		name: "mountains with river",
 		filepath: '../static/images/img5.jpg'
 	};
 	
@@ -86,6 +87,7 @@ The functions are defined in func-defs files:
 	/* related to your point in the experiment */ 
 	let numExecutions = 0; // number of rounds thru timeline 
 	let numTimeRanOut = 0; // number of times you didn't make a choice before the time ran out
+
 	
 	/* data structures for mapping */ 
 	let idLookup = {}; // maps player ids to position in dummyPlayers
@@ -96,10 +98,11 @@ The functions are defined in func-defs files:
 	/* add experiment setup trial*/ 
 	let timeline = []; // timeline for experiment 
 	timeline.push(intro);
-	timeline.push({timeline: mechanism_rounds});
-	//timeline.push({timeline: information_rounds});
-
 	timeline.push({timeline: startTrial});
+	timeline.push({timeline: mechanism_rounds});
+	timeline.push({timeline: training_rounds});
+	timeline.push({timeline: [quiz_round]});
+
 	/* define welcome message as a trial */
 	let welcome = {
 		type: "html-keyboard-response",

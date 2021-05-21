@@ -16,6 +16,14 @@ function createPlayer(id, name, avatar_filepath, condition) {
     this.numCopyingOther = 0; 
 }
 
+// resets player stats (money and number correct, copied, and copying other)
+function resetPlayerStats(p) {
+    p.money = startAmount;
+    p.numCorrect = 0;
+    p.numWasCopied = 0;
+    p.numCopyingOther = 0; 
+}
+
 // tests whether the player object is consistent and returns the player's stats as an array of strings 
 function testPlayer(p) {
     if(!'money' in p || !'numCorrect' in p || !'numWasCopied' in p || !'numCopyingOther' in p) console.warn("Error! Parameter does not have correct fields.");

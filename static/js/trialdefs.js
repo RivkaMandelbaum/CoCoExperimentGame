@@ -46,7 +46,7 @@ let startWait = {
             let other_info = initObject.player_info[i];
             let otherPlayer = new createPlayer(other_info.id, other_info.name, other_info.avatar_filepath, other_info.condition);
 
-            dummyPlayers.push(otherPlayer);
+            dummyPlayers[i] = otherPlayer;
             idLookup[otherPlayer.id] = i; 
         }
     }, 
@@ -253,13 +253,12 @@ let chooseToCopyChoice = {
         intervalID = startTimer(trialDuration / 1000);
     },
     stimulus: function() { 
-        let index_param = jsPsych.progress().current_trial_global - 2;
         let s = "";
 
         // build table (based on the different conditions)
         let tablefunc = conditionLookup[player.condition];
         if (typeof(tablefunc) === "function") { 
-            s = tablefunc(index_param);
+            s = tablefunc();
         }
         else { 
             console.warn("Inconsistent condition names! Please check getPlayerInfo, createPlayer, and chooseToCopyChoice stimulus.");
