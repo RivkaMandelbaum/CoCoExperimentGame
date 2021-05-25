@@ -133,7 +133,7 @@ let transition_screen = {
     choices: ["Continue"],
 }
 
-let realistic_training_trials = { 
+let realistic_training_trials = {
     timeline: [
 			// if not copying: display art and allow selection; update money of all players
 			{
@@ -141,7 +141,7 @@ let realistic_training_trials = {
 				conditional_function: function() { 
 					// return true when the player will select 
 					return !playerState.is_copying;  
-				}, 
+                }, 
 			},
 			// if copying: display art and disallow selection; update money of all players 
 			{

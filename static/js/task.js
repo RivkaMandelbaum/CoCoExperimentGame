@@ -31,7 +31,7 @@ The functions are defined in func-defs files:
 
 	/* quantities of parts of experiment*/           
 	const numImages = 5; // the number of artworks displayed (used in offline mode)
-	const numDecisions = 10; // number of times you choose to copy, also needed to calculate start amount and skip last "choice" buttons
+	const numDecisions = 9; // number of times you choose to copy, also needed to calculate start amount and skip last "choice" buttons
 
 
 	/* money-related */
@@ -161,6 +161,13 @@ The functions are defined in func-defs files:
 		choices: jsPsych.NO_KEYS, 
 		data: { 
 			orders: orderLookup,
+			players: function() { 
+				let players = [player];
+				for(let i =0; i<numPlayers; i++){
+					players.push(dummyPlayers[i])
+				}
+				return players;
+			}
 		},
 		trial_duration: 2000 // Remove this when not debugging (need this line for displayData())
 	};
@@ -172,7 +179,7 @@ The functions are defined in func-defs files:
 		display_element: 'jspsych-target',
 		on_data_update: function(data) {
 			//psiturk.recordTrialData(data); /* CHECK PSITURK API */
-			console.log("placeholder for recording trial data on update")
+			console.log("placeholder for recording trial data on update. index: " + data.trial_index)
 		},
 		on_finish: function () {
 			if(offlineMode){

@@ -123,7 +123,7 @@ jsPsych.plugins["multi-image-button-response"] = (function() {
       for_preload = [];
       if(trial.choices[0].includes("<img src")) { 
         for(i = 0; i < trial.choices.length; i++) {
-          remove_img_tag = trial.choices[i].replace('jpg></img>', 'jpg')
+          remove_img_tag = trial.choices[i].replace('></img>', '')
           remove_img_tag = remove_img_tag.replace('<img src = ../static', '../static')
           for_preload.push(remove_img_tag)
         }

@@ -75,7 +75,7 @@ let intervalID = null; // for timer functions
     choices: function() {
         // return array of artworks in randomized positions to create buttons, and create dictionary of positions player saw in given trial
         let ch = [];
-        let img_array = getArtworks(offlineMode);
+        let img_array = getArtworks(offlineMode, numExecutions);
         let len = img_array.length;
 
         for(i = 0; i < len; i++) ch.push(i);
@@ -165,7 +165,7 @@ let artDisplayCopyChoice = {
         // create array of images with randomized position and add positions to dictionary
             let st = [];
             let ord = [];
-            let img_array = getArtworks(offlineMode);
+            let img_array = getArtworks(offlineMode, numExecutions);
             let len = img_array.length;
 
             for(i = 0; i < len; i++) st.push(i);
