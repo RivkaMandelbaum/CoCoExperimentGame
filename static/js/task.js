@@ -35,7 +35,7 @@ The functions are defined in func-defs files:
 
 
 	/* money-related */
-	const payToCopy = 2; // amount you need to pay someone to copy their choices
+	const payToCopy = 1; // amount you need to pay someone to copy their choices
 	const startAmount = payToCopy * numDecisions; // amount of money you start with
 	
 	/* mode */
@@ -101,7 +101,7 @@ The functions are defined in func-defs files:
 /* ------------------------------------------------------------ */ 
 	/* add experiment setup trial*/ 
 	let timeline = []; // timeline for experiment 
-	timeline.push(intro);
+	timeline.push(instructions_explanation);
 	timeline.push({timeline: startTrial});
 	timeline.push({timeline: mechanism_rounds});
 	timeline.push({timeline: training_rounds});

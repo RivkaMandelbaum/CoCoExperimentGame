@@ -5,17 +5,67 @@
 /* ------------------------------------------------------------ */
 const trainingTrialDuration = (60 * 1000);
 const trainingNumDecisions = 3; 
-/* two pages of text to introduce the game*/
-let instruction_text = "<div id='instructions'>hello</div>";
-let intro = {
-    type: "instructions",
-    on_load: function() { 
-        document.getElementById("instructions").innerHTML = `<div id="instructions-welcome" style="font-weight: bold; margin-bottom: 3vh;">Welcome to the game!</div><ul id="instructions-bullets" style="text-align: left"><li id="game-goal">The <strong>goal</strong> of the game is to find the <strong>highest-value artworks</strong>, either on your own or by copying a teammate, to earn money.</li><li id="two-parts">Each round has two parts:</li><ol id="parts"><li id="first-part">First, you'll be shown ${numImages} artworks. Each artwork is worth between $1 and $10</strong>. <ul id="if-correct"><li id="if-correct">In each round, you will get a reward of <strong>the value of the artwork you chose</strong>.</li><li id="if-wrong">There is no penalty for guessing wrong.</li></ul><li id="second-part">Next, you'll see how you and others did, and you'll be able to choose whether you would like to find the highest-value artwork <strong>on your own</strong> in the next round, or whether you would like to <strong>copy someone else</strong> by paying them $${payToCopy}.</li><ul id="if-copy"><li id="if-copy-reward">If you copy someone, you receive the same reward that they do.</li><li id="if-copy-see">You will be able to see the artworks while copying, but you will not select an artwork on your own.</li></ul></ol><li id="sidebar-info">Each round must be completed in the amount of time shown in the bottom left of the screen. Your total amount of money earned can be found on the bottom right of the screen.</li>`;
-    },
-    pages: [instruction_text, "You'll now be shown a few practice rounds, with which you can interact. Press next to begin practice."], 
-    show_clickable_nav: true,
-    show_page_number: true,
-}
+
+/* pages of text to introduce the game*/
+let game_goal = "<div id='game-goal'>placeholder</div>";
+let copy_fee = "<div id='copy-fee'>placeholder</div>";
+
+let instructions_explanation = {
+    timeline: [
+        {
+            type: "instructions",
+            on_start: function() { 
+                intervalID = startTimer(trainingTrialDuration/ 1000);
+                document.getElementById("money-amount").innerHTML = "Your total amount of money is: " + startAmount.toString();
+            },
+            show_clickable_nav: true,
+            pages: ["<div id = 'instructions-welcome'><h1>Welcome to the game of Art Connoisseur!</h1></div>"],
+            on_finish: function() { 
+                clearInterval(intervalID);
+            }
+        },
+        {
+            type: "instructions",
+            on_start: function() { 
+                intervalID = startTimer(trainingTrialDuration * 3 / 1000);
+            },
+            show_clickable_nav: true,
+            pages: [
+                game_goal,
+                "<div id = 'art-values'><h1>The arts and their values</h1><p>The artwork values can be $1, $2, $3, $4, $5, $6, $7, $8, $9, or $10.</p><p>The artwork you selected and its value will become your bonus.</p><p>That is, if the art you selected is worth $1, you will earn 1 cent; if it is worth $10, you will earn 10 cents.</div>",
+                "<div id= 'copy-explanation'><h1>Learn from an art conneoisseur</h1><p>You will see how you and others did after each round.</p><p>In each round you can either select the artwork on your own, or you can learn from others.</p><p>If you think there is a player who is really good at the game, you can choose to copy their selections.</p></div>",
+        
+            ],
+            // the game only accesses these constants during actual gameplay
+            on_load: function() { 
+                document.getElementById("game-goal").innerHTML = `<div id='game-goal-wrapper'><h1>A chance to earn bonus money</h1><p>Imagine you are invited to an art museum with ${numPlayers} other players.</p><p>In each round, all players will be shown ${numImages} artworks. </p><p>You will be asked to choose the art that you think is the most expensive.</p></div>`;
+            },
+            on_finish: function() { 
+                clearInterval(intervalID);
+            }
+        },
+        {
+            type: "instructions",
+            on_start: function() { 
+                intervalID = startTimer(trainingTrialDuration * 3 / 1000);
+            },
+            show_clickable_nav: true,
+            pages: [
+                copy_fee,
+                "<div id='time'><h1>Let's keep it in time</h1><p>Please complete your decision within the designated time at each round.</p><p>Your total amount of money earned can be found on the bottom right of the screen.</p></div>",
+                "<div id = 'practice'><h1>Practice</h1><p>Hope you will enjoy this game!</p><p>Let's first practice a little bit.</p><p>Press next to begin practice.</p></div>",
+            ],
+            // the game only accesses these constants during actual gameplay
+            on_load: function() { 
+                document.getElementById("copy-fee").innerHTML = `<div id='copy-fee-wrapper'><h1>Pay $${payToCopy} to learn from others</h1><p>If you decide to copy, all you need to do is pay $1 (worth 1 real cent) to that player.</p><p>If you copy someone, you receive the same reward as they do.</p><p>If you copy, you will be able to see the artworks, but you will not select on your own.</p></div>`;
+            },
+            on_finish: function() { 
+                clearInterval(intervalID);
+            }
+        }]
+    }
+          
+
 /* first practice round: showing images */
 let first_mechanism_trial = { 
     type: "multi-image-button-response", 
