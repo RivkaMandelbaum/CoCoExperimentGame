@@ -138,7 +138,6 @@ let artDisplaySelectionWait = {
             player.money += rewardForCorrect;
             player.numCorrect++;
             showSidebarInfo();
-
         }
         //console.log(`${player.name}: ${testPlayer(player)}`); 
 
