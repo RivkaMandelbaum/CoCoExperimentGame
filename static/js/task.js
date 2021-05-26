@@ -36,7 +36,6 @@ The functions are defined in func-defs files:
 
 	/* money-related */
 	const payToCopy = 2; // amount you need to pay someone to copy their choices
-	const rewardForCorrect = 10; // amount you get when you choose the right answer
 	const startAmount = payToCopy * numDecisions; // amount of money you start with
 	
 	/* mode */
@@ -46,27 +45,32 @@ The functions are defined in func-defs files:
 	const img1 = {
 		id: 1,
 		name: "water with mountain",
-		filepath: "../static/images/img1.jpg"
+		filepath: "../static/images/img1.jpg", 
+		value: 1,
 	};
 	const img2 = {
 		id: 2,
 		name: "people on beach",
 		filepath: '../static/images/img2.jpg',
+		value: 2,
 	};
 	const img3 = {
 		id: 3,
 		name: "blue blob",
-		filepath: '../static/images/img3.jpg'
+		filepath: '../static/images/img3.jpg',
+		value: 3,
 	};
 	const img4 = {
 		id: 4, 
 		name: "red land with sunset and water",
-		filepath: '../static/images/img4.jpg'
+		filepath: '../static/images/img4.jpg',
+		value: 4,
 	};
 	const img5 = {
 		id: 5, 
 		name: "mountains with river",
-		filepath: '../static/images/img5.jpg'
+		filepath: '../static/images/img5.jpg',
+		value: 5
 	};
 	
 

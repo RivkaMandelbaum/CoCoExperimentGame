@@ -11,7 +11,7 @@ function createPlayer(id, name, avatar_filepath, condition) {
     this.condition = condition;
 
     this.money = startAmount;
-    this.numCorrect = 0;
+    this.total_reward = 0;
     this.numWasCopied = 0;
     this.numCopyingOther = 0; 
 }
@@ -19,7 +19,7 @@ function createPlayer(id, name, avatar_filepath, condition) {
 // resets player stats (money and number correct, copied, and copying other)
 function resetPlayerStats(p) {
     p.money = startAmount;
-    p.numCorrect = 0;
+    p.total_reward = 0;
     p.numWasCopied = 0;
     p.numCopyingOther = 0; 
 }
@@ -28,27 +28,14 @@ function resetPlayerStats(p) {
 function testPlayer(p) {
     if(!'money' in p || !'numCorrect' in p || !'numWasCopied' in p || !'numCopyingOther' in p) console.warn("Error! Parameter does not have correct fields.");
 
-    let expected_amount = startAmount + (p.numWasCopied * payToCopy) + (p.numCorrect * rewardForCorrect) - (p.numCopyingOther * payToCopy);
+    let expected_amount = startAmount + (p.numWasCopied * payToCopy) + (p.total_reward) - (p.numCopyingOther * payToCopy);
 
     if (p.money != expected_amount) console.warn("Player error! ID and name: " + p.id + " " + p.name);
     
-    let stats = [`id: ${p.id}`, `$: ${p.money}`, `cor: ${p.numCorrect}`, `was_cop: ${p.numWasCopied}`, `copied: ${p.numCopyingOther}`, `condition: ${p.condition}`];
+    let stats = [`id: ${p.id}`, `$: ${p.money}`, `reward: ${p.total_reward}`, `was_cop: ${p.numWasCopied}`, `copied: ${p.numCopyingOther}`, `condition: ${p.condition}`];
 
     return stats;  
 }     
-
-// update the stats of players who were correct in a given round
-// assumes up-to-date timeline variables, tests each player and logs to console 
-function updateCorrect(trial_index) { 
-    for (i = 0; i < numPlayers; i++) { 
-        let currentPlayer = dummyPlayers[i];
-        if(isDummyCorrect(currentPlayer.id, trial_index)) {
-            currentPlayer.money += rewardForCorrect;
-            currentPlayer.numCorrect ++;
-        }
-        //console.log(`${currentPlayer.name}: ${testPlayer(currentPlayer)}`); 
-    }
-}
 
 /* update the stats of players based on who is copying in a given round
 copyingInfo object should be an array of objects received from the server

@@ -54,15 +54,15 @@ function buildTable_TotalPayoff(){
 
 // third column: direct payoff (from correctness)
 function buildTable_DirectPayoff(){
-    let table = introString() + "<th> $ earned for correct answer </th>";
+    let table = introString() + "<th> total $ from artworks </th>";
     const addRowEnd = "</tr>";
 
     // build first row of table (yourself)    
-    table += selfBasic() + `<td>${player.numCorrect * rewardForCorrect}</td` + addRowEnd; 
+    table += selfBasic() + `<td>${player.total_reward}</td` + addRowEnd; 
 
     // build row of table for each player
     for(i = 0; i < numPlayers; i++) {
-        table += (otherBasic(dummyPlayers[i]) + `<td>${dummyPlayers[i].numCorrect * rewardForCorrect}</td`+ addRowEnd);
+        table += (otherBasic(dummyPlayers[i]) + `<td>${dummyPlayers[i].total_reward}</td`+ addRowEnd);
     }
     table += "</table></div><br></br>";
     return table; 

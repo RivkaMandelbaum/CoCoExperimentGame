@@ -10,7 +10,7 @@ let instruction_text = "<div id='instructions'>hello</div>";
 let intro = {
     type: "instructions",
     on_load: function() { 
-        document.getElementById("instructions").innerHTML = `<div id="instructions-welcome" style="font-weight: bold; margin-bottom: 3vh;">Welcome to the game!</div><ul id="instructions-bullets" style="text-align: left"><li id="game-goal">The <strong>goal</strong> of the game is to find the <strong>highest-value artworks</strong>, either on your own or by copying a teammate, to earn money.</li><li id="two-parts">Each round has two parts:</li><ol id="parts"><li id="first-part">First, you'll be shown ${numImages} artworks and you'll be asked to <strong>click the highest-value artwork</strong>. <ul id="if-correct"><li id="if-correct">If you are correct, you'll get <strong>$${rewardForCorrect}</strong>.</li><li id="if-wrong">There is no penalty for guessing wrong.</li></ul><li id="second-part">Next, you'll see how you and others did, and you'll be able to choose whether you would like to find the highest-value artwork <strong>on your own</strong> in the next round, or whether you would like to <strong>copy someone else</strong> by paying them $${payToCopy}.</li><ul id="if-copy"><li id="if-copy-reward">If you copy someone, you receive the same reward that they do.</li><li id="if-copy-see">You will be able to see the artworks while copying, but you will not select an artwork on your own.</li></ul></ol><li id="sidebar-info">Each round must be completed in the amount of time shown in the bottom left of the screen. Your total amount of money earned can be found on the bottom right of the screen.</li>`;
+        document.getElementById("instructions").innerHTML = `<div id="instructions-welcome" style="font-weight: bold; margin-bottom: 3vh;">Welcome to the game!</div><ul id="instructions-bullets" style="text-align: left"><li id="game-goal">The <strong>goal</strong> of the game is to find the <strong>highest-value artworks</strong>, either on your own or by copying a teammate, to earn money.</li><li id="two-parts">Each round has two parts:</li><ol id="parts"><li id="first-part">First, you'll be shown ${numImages} artworks. Each artwork is worth between $1 and $10</strong>. <ul id="if-correct"><li id="if-correct">In each round, you will get a reward of <strong>the value of the artwork you chose</strong>.</li><li id="if-wrong">There is no penalty for guessing wrong.</li></ul><li id="second-part">Next, you'll see how you and others did, and you'll be able to choose whether you would like to find the highest-value artwork <strong>on your own</strong> in the next round, or whether you would like to <strong>copy someone else</strong> by paying them $${payToCopy}.</li><ul id="if-copy"><li id="if-copy-reward">If you copy someone, you receive the same reward that they do.</li><li id="if-copy-see">You will be able to see the artworks while copying, but you will not select an artwork on your own.</li></ul></ol><li id="sidebar-info">Each round must be completed in the amount of time shown in the bottom left of the screen. Your total amount of money earned can be found on the bottom right of the screen.</li>`;
     },
     pages: [instruction_text, "You'll now be shown a few practice rounds, with which you can interact. Press next to begin practice."], 
     show_clickable_nav: true,
@@ -197,8 +197,6 @@ let realistic_training_trials = {
 			{
 				timeline: [chooseToCopyWait],
 				conditional_function: function() {
-                    console.log("Executions: " + numExecutions);
-                    console.log("Decisions: " + trainingNumDecisions)
 					let is_last = numExecutions >= trainingNumDecisions;
 					if (is_last) {
 						console.log(`${player.name}: ${testPlayer(player)}`);
@@ -234,7 +232,7 @@ let quiz_round = {
         // define each trial
         let competence = { 
             name: "competence",
-            prompt: "Which player is the best at choosing artworks correctly? If two players are equal, you may select either.",
+            prompt: "Which player is the best at choosing high-value artworks? If two players are equal, you may select either.",
             options: quiz_answers,
             required: true,    
         }

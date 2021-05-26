@@ -3,62 +3,28 @@
 /* Author: Rivka Mandelbaum                                                   */
 /* -------------------------------------------------------------------------- */
 
-
-// Returns what the correct answer was in the trial with given index
-// Answers are in the format of an artwork object, with id, name, and filepath
-function getCorrectArtwork (index) { 
-    return jsPsych.data.get().filter({'trial_index':index}).select('correct').values[0];
-}
-// Returns the button selected in trial with given index 
-// Buttons are based on indices in the 'choices' array and (if selection in given trial was of artwork) should be converted to artwork
+// Returns the button selected in trial with given index, represented as the button's index in the "choices" array
 function getPlayerSelection(index) {  
     let trial_data = jsPsych.data.get().filter({'trial_index': index});
     return trial_data.select('button_pressed').values[0];  
 }; 
 
-// Returns whether player was correct in trial with given index.
-function isPlayerCorrect(index) { 
+/* ---- For art display wait trials ---- */
+// Returns the player's reward in a given trial (based on the artwork they selected)
+function getPlayerReward(index) { 
     let pos = getPlayerSelection(index);
-    if (pos === null) return false; // time ran out
+    if (pos === null) return 0; // time ran out 
 
-    let artwork_id = orderLookup[index][pos].id;
-    return(getCorrectArtwork(index).id === artwork_id);    
-  
+    let artwork = orderLookup[index][pos];
+    return artwork.value; 
 }
 
-/* ---- Functions for dummy correctness are separated because they're based on timeline variables rather than on previous trial. ---- */ 
+// Returns the dummy's reward in a given trial (based on the artwork they selected)
+function getDummyReward(player_id, trial_index) { 
+    let pos = idLookup[player_id];
+    let art_choice = jsPsych.data.get().filter({'trial_index': trial_index}).select('dummy_choices').values[0][pos];
 
-// Returns the art object that dummy player with given id selected in given trial 
-// CURRENTLY NOT IN USE, but could be an interesting condition
-function getDummySelection(id, trial_index) { 
-    let i = idLookup[id];
-
-    let data = jsPsych.data.get().filter({'trial_index': trial_index}).select('dummy_choices').values[0]; 
-
-    if(data === null) { 
-        console.warn("dummy choices cannot be null!");
-        return null;
-    }
-    else {
-        return data[i].art;
-    }
-
-}
-
-// Returns whether dummy player with given id was correct in trial with given index
-function isDummyCorrect(player_id, trial_index) { 
-    let i = idLookup[player_id];
-
-    let d_choices = jsPsych.data.get().filter({'trial_index': trial_index}).select('dummy_choices').values[0];
-
-    if(d_choices === null){
-        console.warn("dummy_choices cannot be null!");
-        return null;
-    }
-    else{
-        return d_choices[i].correct;
-    }
-    
+    return art_choice.value;
 }
 
 /* ---- For choose to copy trial ---- */ 

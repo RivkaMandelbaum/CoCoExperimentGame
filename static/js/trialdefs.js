@@ -98,8 +98,7 @@ let intervalID = null; // for timer functions
     }, 
     prompt: "Please select what you think is the <strong> highest-value </strong> artwork.",
     data: {
-        correct: "Placeholder to be updated in waiting trial through backendArtSelections function",
-        dummy_choices: "Placeholder to be updated in waiting trial through backendArtSelections function", 
+        dummy_choices: "Placeholder to be updated in waiting trial through backendArtSelections function. Array of Artwork objects.", 
         order: "Placeholder to be updated in the on_finish function."
     }, 
     on_finish: function() {
@@ -133,17 +132,19 @@ let artDisplaySelectionWait = {
         // send and collect responses and update previous trial data
         backendArtSelections(trial_index, offlineMode);
 
-        // check self correctness and update money/display
-        if(isPlayerCorrect(trial_index)) {
-            player.money += rewardForCorrect;
-            player.numCorrect++;
-            showSidebarInfo();
-        }
-        //console.log(`${player.name}: ${testPlayer(player)}`); 
+        // update self money and update display to match
+        let reward = getPlayerReward(trial_index);
+        player.money += reward;
+        player.total_reward += reward;
+        showSidebarInfo();
 
         // update players (uses data from previous trial)
-        updateCorrect(trial_index);
-
+        for (i = 0; i < numPlayers; i++) { 
+            let reward = getDummyReward(dummyPlayers[i].id, trial_index);
+            dummyPlayers[i].money += reward;
+            dummyPlayers[i].total_reward += reward;
+        }
+    
         jsPsych.resumeExperiment();
     },
     max_trial_duration: function() { return duration(offlineMode); },
@@ -192,8 +193,7 @@ let artDisplayCopyChoice = {
     prompt: "Click <strong> continue </strong> to see what choice was made.", 
     choices: ["Continue"],
     data: { 
-        correct: "Placeholder to be updated in waiting trial through backendArtSelections function",
-        dummy_choices: "Placeholder to be updated in waiting trial through backendArtSelections function",
+        dummy_choices: "Placeholder to be updated in waiting trial through backendArtSelections function. Array of Artwork objects.",
         order: "Placeholder to be updated in the on_finish function."
     }, 
     on_finish: function() {
@@ -226,15 +226,17 @@ let artDisplayCopyWait = {
 
         // using responses, update player stats
         // self:
-        if(isDummyCorrect(playerState.player_copying_id, trial_index)) {
-            player.money += rewardForCorrect;
-            player.numCorrect++;
-            showSidebarInfo();
-        }
-        //console.log(`${player.name}: ${testPlayer(player)}`); 
+        let reward = getDummyReward(playerState.player_copying_id, trial_index);
+        player.money += reward;
+        player.total_reward += reward;
+        showSidebarInfo();
 
         // others: 
-        updateCorrect(trial_index);
+        for (i = 0; i < numPlayers; i++) { 
+            let reward = getDummyReward(dummyPlayers[i].id, trial_index);
+            dummyPlayers[i].money += reward;
+            dummyPlayers[i].total_reward += reward;
+        }
 
         jsPsych.resumeExperiment(); 
     }, 
@@ -316,11 +318,11 @@ let chooseToCopyWait = {
 
         // information related to previous choice
         let curr_trial_index = jsPsych.progress().current_trial_global;
-        let choice = getPlayerSelection(curr_trial_index - 1);
+        let button = getPlayerSelection(curr_trial_index - 1);
 
         // update relevant variables
-        playerState.is_copying = didPlayerCopy(choice); 
-        if(playerState.is_copying) playerState.player_copying_id = dummyPlayers[choice-1].id; // button labels are created by iteration thrugh dummyPlayers array in order
+        playerState.is_copying = didPlayerCopy(button); 
+        if(playerState.is_copying) playerState.player_copying_id = dummyPlayers[button-1].id; // button labels are created by iteration thrugh dummyPlayers array in order
 
         // get others' choices and update players
         currInfo = backendPlayersCopying(offlineMode, playerState, curr_trial_index);

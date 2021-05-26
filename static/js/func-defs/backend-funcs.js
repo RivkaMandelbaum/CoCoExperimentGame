@@ -87,11 +87,9 @@ function getPlayerInfo(offlineMode){
 
 // When online, does the following:
 //  1) sends message containing self choices in format described below
-//  2) gets the correct choice from server and updates trial data
-//  3) gets others' choices from server and updates trial data, assuming format:
+//  2) gets others' choices from server and updates trial data, assuming format:
     /* {
         id: int,
-        correct: bool,
         copying: bool,
         copying_id: int or null,
         artwork_chosen_id: int,
@@ -103,48 +101,39 @@ function getPlayerInfo(offlineMode){
     */
 // If the player is copying, artwork_chosen information is updated based on
 // what the player they are copying chose
+// When offline, dummy values of those
 function backendArtSelections(trial_index, offlineMode) { 
     let trial_data = jsPsych.data.get().filter({'trial_index': trial_index}).values()[0];
 
     // in offline mode, fill with dummy values
     if(offlineMode) {  
-        // update correct choice (random), overwrite dummy_choices placeholder
-        trial_data.correct = rand_art(trial_index);
-
-        trial_data.dummy_choices = new Array(numPlayers).fill({art: null, correct: null});
+        trial_data.dummy_choices = new Array(numPlayers).fill(null);
  
+        // if first round (or first training round), no one is copying, so decide other players' choices and return 
         copying_trial_index = trial_index - 2; 
         copying_trial_data = jsPsych.data.get().filter({'trial_index': copying_trial_index}).values()[0]
 
-        // if first round (or first training round), no one is copying, so decide other players' choices and return 
         if(copying_trial_data.trial_type !== "html-button-response" || copying_trial_data.prompt !== "Which player would you like to copy?") { 
             // update dummy choices
             for (i = 0; i < numPlayers; i++) {
-                let dummy_art = rand_art(trial_index);
-                let dummy_correct = (trial_data.correct.id == dummy_art.id);
-
-                trial_data.dummy_choices[i] = {art: dummy_art, correct: dummy_correct};
+                trial_data.dummy_choices[i] = rand_art(trial_index);
              }
             return; 
         }
+
         // otherwise, get players who are copying
         dummy_copying_choices = copying_trial_data.dummy_choices; // {copying: bool, copying_id: null/int}, sorted in dummyChoices order
 
 
         // figure out everyone's choices (when online, the backend should do this)
-
         // initialize "visited" array for search
         let visited = new Array(numPlayers);
         for(p = 0; p < numPlayers; p++) { 
-
             visited[p] = !dummy_copying_choices[p].copying;
             
             // since it's offline, if they're choosing, make their choice and add it to dummy_choices at this point 
             if(!dummy_copying_choices[p].copying) { 
-                let dummy_art = rand_art(trial_index);//eval(`img${(p % numImages) + 1}`);
-                let dummy_correct = (trial_data.correct.id == dummy_art.id);
-
-                trial_data.dummy_choices[p] = {art: dummy_art, correct: dummy_correct};
+                trial_data.dummy_choices[p] = rand_art(trial_index);
             }
 
         }
@@ -163,16 +152,13 @@ function backendArtSelections(trial_index, offlineMode) {
             // base cases: make a decision (set artwork choice) which can propogate back to the first person who copied
             if(visited[next_pos]) { 
                 // if the person p is copying didn't copy, or they did but they've already been assigned a choice, assign p their info
-                if(trial_data.dummy_choices[next_pos].art != null) { 
+                if(trial_data.dummy_choices[next_pos] != null) { 
                     trial_data.dummy_choices[p] = trial_data.dummy_choices[next_pos];
                 }
                 // if the person p is copying did copy (art is initialized to null) but they haven't been assigned a choice (art remains null), there's a loop - randomly assign a choice value
                 else { 
                     // make random choice
-                    let art_choice = rand_art(trial_index);
-                    let iscor = (trial_data.correct.id == art_choice.id);
-
-                    trial_data.dummy_choices[p] = {art: art_choice, correct: iscor};
+                    trial_data.dummy_choices[p] = rand_art(trial_index);
                 }
                 return trial_data.dummy_choices[p];
             }
@@ -194,7 +180,6 @@ function backendArtSelections(trial_index, offlineMode) {
         }
         let send_message = { 
             id: player.id, 
-            correct: null,
             copying: playerState.is_copying, 
             copying_id: playerState.player_copying_id, 
             artwork_chosen_id: chosen_id,
@@ -210,9 +195,6 @@ function backendArtSelections(trial_index, offlineMode) {
         */ 
 
         // update correct choice to be the id of the correct artwork in this round
-        updated_correct_choice = "THIS IS A PLACEHOLDER!" /* PLACEHOLDER - SHOULD GET THIS FROM THE SERVER*/ 
-
-        jsPsych.data.get().filter({'trial_index': trial_index}).values()[0].correct = updated_correct_choice; 
 
         /* RECEIVE ARRAY OF MESSAGES
         SHOULD BE OBJECT WITH SAME FIELDS AS send_message ABOVE 
@@ -223,22 +205,18 @@ function backendArtSelections(trial_index, offlineMode) {
             {
                 id: dummyPlayers[0].id,
                 artwork_chosen_id: response,
-                correct: (updated_correct_choice == response)
             },
             {
                 id: dummyPlayers[1].id,
                 artwork_chosen_id: response,
-                correct: (updated_correct_choice == response)
             },
             {
                 id: dummyPlayers[2].id,
                 artwork_chosen_id: response,
-                correct: (updated_correct_choice == response)
             },
             {
                 id: dummyPlayers[3].id,
                 artwork_chosen_id: response,
-                correct: (updated_correct_choice == response)
             }
         ];
         
@@ -247,7 +225,7 @@ function backendArtSelections(trial_index, offlineMode) {
         // update data
         for (i = 0; i < numPlayers; i++) {
             let pos = idLookup[response_array[i].id];
-            jsPsych.data.get().filter({'trial_index': trial_index}).values()[0].dummy_choices[pos] = {art: response_array[i].artwork_chosen_id, correct: response_array[i].correct};
+            jsPsych.data.get().filter({'trial_index': trial_index}).values()[0].dummy_choices[pos] = response_array[i].artwork_chosen_id;
         }
     }
 }
@@ -256,8 +234,6 @@ function backendArtSelections(trial_index, offlineMode) {
 function rand_copy(pos) { 
     let rand_range = Math.random() * numPlayers; //+ 1); // including yourself
     let rand_choice = Math.floor(rand_range);
-    console.log(rand_choice)
-    console.log(rand_range)
 
     if (rand_choice == pos) { // player copies self
         return { copying: false, copying_id: null }
