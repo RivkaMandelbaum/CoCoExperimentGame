@@ -45,33 +45,33 @@ function getPlayerInfo(offlineMode){
             players: numPlayers,
             self_info: {
                 id: uniqueId,
-                name: "Me",
-                avatar_filepath: "../static/images/avatar-self.png",
+                name: "Aima",
+                avatar_filepath: "../static/images/aima.png",
                 condition: mycondition
             }, 
             player_info: [
                 { 
                     id: 10, 
-                    name: "Bart",
-                    avatar_filepath: "../static/images/avatar1.png",
+                    name: "Kabu",
+                    avatar_filepath: "../static/images/kabu.png",
                     condition: default_condition
                 }, 
                 { 
                     id: 2,
-                    name: "Ed", 
-                    avatar_filepath: "../static/images/avatar2.png",
+                    name: "Reku", 
+                    avatar_filepath: "../static/images/reku.png",
                     condition: default_condition
                 },
                 {
                     id: 30, 
-                    name: "Claire", 
-                    avatar_filepath: "../static/images/avatar3.png",
+                    name: "Tufa", 
+                    avatar_filepath: "../static/images/Tufa.png",
                     condition: default_condition
                 },
                 {
                     id: 4, 
-                    name: "Ida", 
-                    avatar_filepath: "../static/images/avatar4.png",
+                    name: "Weki", 
+                    avatar_filepath: "../static/images/weki.png",
                     condition: default_condition
                 }
             ]

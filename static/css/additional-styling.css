@@ -44,12 +44,35 @@ table{
 
 td, th {
     border: 1px solid black; 
-    padding: 0.5rem; 
+    padding: 0.5rem;     
     text-align: center;
 }
 
 #self{
     background-color:bisque;
+}
+
+.player-name{
+    margin: 15px;
+    display: inline;
+}
+
+.player-info{
+    text-align: left;
+}
+
+.avatar{
+    width: 50vh;
+    height: 50vh;
+}
+
+#congratulations {
+    font-weight: bold;
+}
+#amount-earned{
+    color: green;
+    font-weight: bold;
+    display: inline;
 }
 
 /* -- sidebar -- */ 

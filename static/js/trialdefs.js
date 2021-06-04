@@ -299,6 +299,7 @@ let chooseToCopyChoice = {
     },
     data: { 
         dummy_choices: "Placeholder to be updated in waiting trial through backendPlayersCopying function",
+        player_money: function() { return player.money},
     }, 
     on_finish: function() {
         clearInterval(intervalID);
@@ -311,6 +312,7 @@ let chooseToCopyWait = {
     type: "waiting",
     on_start: function() { 
         document.getElementById("countdown-timer").innerHTML = "";
+        console.log(jsPsych.data.get().filter({'trial_index':jsPsych.progress().current_trial_global-1}).values()[0]);
     }, 
     prompt: "Please wait for other players.", 
     trial_function: function() {

@@ -8,28 +8,63 @@
 /* ---- helper functions ---- */ 
 // builds string representing html for intro string and table (up to "Player Pic")
 function introString(){
-    let s = "Here are players' results. <br> </br>";
+    let s = ""
+    let trial_data = jsPsych.data.get().filter({'trial_index':jsPsych.progress().current_trial_global-2}).values()[0];
+
+    let previous_money_index = jsPsych.progress().current_trial_global-4;
+    let amount_earned = calculateAmountEarned(previous_money_index);
+
+    // EDGE CASE FOR INSTRUCTIONS BEING REPEATED NEEDED HERE 
+    if(trial_data.order != undefined) { 
+        if(playerState.is_copying){
+            let pos = idLookup[playerState.player_copying_id]; 
+            s = `<div id=congratulations>Good choice copying ${dummyPlayers[pos].name}! You earned $${amount_earned} in the previous round.</div>`;
+        }
+        else { 
+            s = `<div id=congratulations>Good choice! You earned $${amount_earned} in the previous round!</div>`;    
+        }
+    }
+
+    s += "Here are all the players' results. <br>";
 
     s += "<div id = 'table-content'><table>\
-                        <th> Player Name</th>\
-                        <th> Player Pic</th>";
+                        <th> Player </th>";
 
     return s; 
 }
 
 // builds the first columns of the self row of the table: name, avatar
 function selfBasic(){
-    s = `<tr id = "self"><td>${player.name}</td>\
-    <td><img src =${player.avatar_filepath} width = 50vh height = 50vh></img></td>`;
+    s = `<tr id = "self"><td class="player-info"><img src =${player.avatar_filepath} width="50vh" height="50vh"></img><div id = "self-name" class="player-name">${player.name}</div></td>`;
     return s; 
 }
 
 // builds first columns of other rows of the table: name, avatar
 function otherBasic(p) { 
-    let addName = `<tr id = player_${p.id}><td>${p.name}</td>`;
-    let addAvatar = `<td><img src =${p.avatar_filepath} width = 50vh height = 50vh></img></td>`;
+    let rowStart = `<tr id = player-${p.id}>`;
+    let addContent = `<td class="player-info"><img src =${p.avatar_filepath} width="50vh" height="50vh"></img><div id=player-${p.id}-name class="player-name">${p.name}</div>`;
 
-    return (addName + addAvatar);
+    return (rowStart + addContent + "</td>");
+}
+
+// calculate the amount player earned between this and previous round
+function calculateAmountEarned(index) {
+    // find trial data where it saved player_money in previous round
+    let trial_data = jsPsych.data.get().filter({'trial_index':index}).values()[0];
+    let amount_earned = "If you see this, there's an error";
+
+    // edge case for training (mechanism) round
+    if(trial_data.trial_type != "html-button-response") { 
+        amount_earned = player.money - startAmount; 
+    }
+    else { 
+        let previous_money = trial_data.player_money; 
+        if (previous_money === undefined) previous_money = startAmount; // edge case for first training round
+        amount_earned = player.money - previous_money;
+        
+    }
+
+    return amount_earned;
 }
 
 /* --- functions for each condition ---- */ 
@@ -40,8 +75,13 @@ function buildTable_TotalPayoff(){
     let table = introString() + "<th> Total Money </th>";
     const addRowEnd = "</tr>";
 
+    // find change between this trial and last trial
+    let previous_money_index = jsPsych.progress().current_trial_global-4;
+        // DEAL WITH EDGE CASES: mechanism round (where it says +0), fixed first round with the if undefined logic above
+    let amount_earned = calculateAmountEarned(previous_money_index);
+    
     // build first row of table (yourself)    
-    table += selfBasic() + `<td>${player.money}</td` + addRowEnd; 
+    table += selfBasic() + `<td><div id=money-total>${player.money}</div><div id=amount-earned>+${amount_earned}!</div></td` + addRowEnd; 
 
     // build row of table for each player
     for(i = 0; i < numPlayers; i++) {
@@ -65,6 +105,9 @@ function buildTable_DirectPayoff(){
         table += (otherBasic(dummyPlayers[i]) + `<td>${dummyPlayers[i].total_reward}</td`+ addRowEnd);
     }
     table += "</table></div><br></br>";
+
+    console.log(jsPsych.data.get().filter({'trial_index':jsPsych.progress().current_trial_global-4}))
+
     return table; 
 }
 
@@ -75,6 +118,7 @@ function buildTable_CopyPayoff(){
 
     // build first row of table (yourself)    
     table += selfBasic() + `<td>${player.numWasCopied * payToCopy}</td` + addRowEnd; 
+    
 
     // build row of table for each player
     for(i = 0; i < numPlayers; i++) {

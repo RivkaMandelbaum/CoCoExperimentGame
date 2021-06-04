@@ -235,7 +235,9 @@ let realistic_training_trials = {
                     }
                 }, 
                 data: {
-                    dummy_choices: "Placeholder"
+                    dummy_choices: "Placeholder",        
+                    player_money: function() { return player.money},
+
                 },
                 on_finish: function() { 
                     clearInterval(intervalID)
@@ -268,7 +270,7 @@ let training_rounds = [transition_screen, realistic_training_trials];
 let quiz_round = {
     type: "survey-multi-choice",
     preamble: function(){ 
-        return conditionLookup[player.condition]() + "Please answer these questions before continuing to the game."},
+        return conditionLookup[player.condition]() + "Please scroll to answer these questions before continuing to the game."},
     questions: function() { 
         let questions = [];
 
@@ -279,23 +281,7 @@ let quiz_round = {
         }
         quiz_answers.push("Not enough information");
 
-        // define each trial
-        let competence = { 
-            name: "competence",
-            prompt: "Which player is the best at choosing high-value artworks? If two players are equal, you may select either.",
-            options: quiz_answers,
-            required: true,    
-        }
-        questions.push(competence);
-
-        let copied = { 
-            name: "copied",
-            prompt: "Which player has been copied the most times? If two players are equal, you may select either.",
-            options: quiz_answers,
-            required: true, 
-        }
-        questions.push(copied);
-
+        // define each question
         let money = { 
             name: "money",
             prompt: "Which player has the most money? If two players are equal, you may select either.",
@@ -303,6 +289,23 @@ let quiz_round = {
             required: true,
         }
         questions.push(money);
+
+        let best = -1;
+        let most_money = 0;
+        for(let i = 0; i < numPlayers; i++) { 
+            if (dummyPlayers[i].money > most_money) {
+                most_money = dummyPlayers[i].money;
+                best = i;
+            }
+        }
+        let best_name = dummyPlayers[best].name;
+        
+        let copy_fee = { 
+            name: "copy_fee",
+            prompt: `If you wanted to copy ${best_name}, how much money would you have to pay?`,
+            options: ["$0.5", "$1", "$2", "$3", "$4", "Other"]
+        }
+        questions.push(copy_fee);
 
         return questions;
     },
