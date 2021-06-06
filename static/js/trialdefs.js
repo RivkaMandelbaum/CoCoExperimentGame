@@ -52,7 +52,8 @@ let startWait = {
     }, 
     on_finish: function() { 
         // update participant condition data
-        jsPsych.data.get().values()[jsPsych.progress().current_trial_global].participant_condition = player.condition; 
+        //jsPsych.data.get().values()[jsPsych.progress().current_trial_global].participant_condition = player.condition; 
+        getDataAtIndex(jsPsych.progress().current_trial_global).participant_condition = player.condition; 
     }, 
     data: {
         participant_condition: "placeholder", // to be updated when player.condition is received from backend
@@ -104,7 +105,8 @@ let intervalID = null; // for timer functions
     on_finish: function() {
         // update order data to be correct
         let index = jsPsych.progress().current_trial_global;
-        jsPsych.data.get().values()[index].order = orderLookup[index];
+        //jsPsych.data.get().values()[index].order = orderLookup[index];
+        getDataAtIndex(index).order = orderLookup[index];
 
         // clear timer
         clearInterval(intervalID);
@@ -199,7 +201,9 @@ let artDisplayCopyChoice = {
     on_finish: function() {
         // update order data to be correct
         let index = jsPsych.progress().current_trial_global;
-        jsPsych.data.get().values()[index].order = orderLookup[index];
+        //jsPsych.data.get().values()[index].order = orderLookup[index];
+        getDataAtIndex(index).order = orderLookup[index];
+
 
         // clear timer
         clearInterval(intervalID);
@@ -312,7 +316,6 @@ let chooseToCopyWait = {
     type: "waiting",
     on_start: function() { 
         document.getElementById("countdown-timer").innerHTML = "";
-        console.log(jsPsych.data.get().filter({'trial_index':jsPsych.progress().current_trial_global-1}).values()[0]);
     }, 
     prompt: "Please wait for other players.", 
     trial_function: function() {

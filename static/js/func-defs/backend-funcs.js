@@ -103,7 +103,7 @@ function getPlayerInfo(offlineMode){
 // what the player they are copying chose
 // When offline, dummy values of those
 function backendArtSelections(trial_index, offlineMode) { 
-    let trial_data = jsPsych.data.get().filter({'trial_index': trial_index}).values()[0];
+    let trial_data = getDataAtIndex(trial_index);
 
     // in offline mode, fill with dummy values
     if(offlineMode) {  
@@ -111,7 +111,7 @@ function backendArtSelections(trial_index, offlineMode) {
  
         // if first round (or first training round), no one is copying, so decide other players' choices and return 
         copying_trial_index = trial_index - 2; 
-        copying_trial_data = jsPsych.data.get().filter({'trial_index': copying_trial_index}).values()[0]
+        copying_trial_data = getDataAtIndex(copying_trial_index);//jsPsych.data.get().filter({'trial_index': copying_trial_index}).values()[0]
 
         if(copying_trial_data.trial_type !== "html-button-response" || copying_trial_data.prompt !== "Which player would you like to copy?") { 
             // update dummy choices
@@ -220,12 +220,14 @@ function backendArtSelections(trial_index, offlineMode) {
             }
         ];
         
-        jsPsych.data.get().filter({'trial_index': trial_index}).values()[0].dummy_choices = []; 
-        
+        //jsPsych.data.get().filter({'trial_index': trial_index}).values()[0].dummy_choices = []; 
+        getDataAtIndex(trial_index).dummy_choices = [];
+
         // update data
         for (i = 0; i < numPlayers; i++) {
             let pos = idLookup[response_array[i].id];
-            jsPsych.data.get().filter({'trial_index': trial_index}).values()[0].dummy_choices[pos] = response_array[i].artwork_chosen_id;
+            //jsPsych.data.get().filter({'trial_index': trial_index}).values()[0].dummy_choices[pos] = response_array[i].artwork_chosen_id;
+            getDataAtIndex(trial_index).dummy_choices[pos] = response_array[i].artwork_chosen_id;
         }
     }
 }
@@ -337,12 +339,14 @@ function backendPlayersCopying(offlineMode, playerState, trial_index) {
 
         // update data for the previous trial (to use in offline mode in backendArtSelections)
         let prev_trial_index = trial_index - 1;
-        jsPsych.data.get().filter({'trial_index': prev_trial_index}).values()[0].dummy_choices = []; 
+        //jsPsych.data.get().filter({'trial_index': prev_trial_index}).values()[0].dummy_choices = []; 
+        getDataAtIndex(prev_trial_index).dummy_choices = [];
 
         for (i = 0; i < numPlayers; i++) { 
             // this uses the assumption that the hard-coded "placeholder" is sorted in order of the dummyChoices array
 
-            jsPsych.data.get().filter({'trial_index': prev_trial_index}).values()[0].dummy_choices[i] = {copying: placeholder[i+1].copying, copying_id: placeholder[i+1].copying_id};
+            //jsPsych.data.get().filter({'trial_index': prev_trial_index}).values()[0].dummy_choices[i] = {copying: placeholder[i+1].copying, copying_id: placeholder[i+1].copying_id};
+            getDataAtIndex(prev_trial_index).dummy_choices[i] = {copying: placeholder[i+1].copying, copying_id: placeholder[i+1].copying_id};
         }
 
         return placeholder;

@@ -14,7 +14,7 @@ function Artwork(name, id, filepath, value) {
 // returns a random artwork from the given trial
 function rand_art(trial_index) { 
     let random_choice = Math.floor((Math.random() * numImages));
-    let arts = jsPsych.data.get().filter({'trial_index':trial_index}).values()[0].order;
+    let arts = getDataAtIndex(trial_index).order;
     return arts[random_choice];
 }
 

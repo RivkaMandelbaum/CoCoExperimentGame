@@ -9,7 +9,7 @@
 // builds string representing html for intro string and table (up to "Player Pic")
 function introString(){
     let s = ""
-    let trial_data = jsPsych.data.get().filter({'trial_index':jsPsych.progress().current_trial_global-2}).values()[0];
+    let trial_data = getDataAtIndex(jsPsych.progress().current_trial_global-2);//jsPsych.data.get().filter({'trial_index':jsPsych.progress().current_trial_global-2}).values()[0];
 
     let previous_money_index = jsPsych.progress().current_trial_global-4;
     let amount_earned = calculateAmountEarned(previous_money_index);
@@ -50,7 +50,7 @@ function otherBasic(p) {
 // calculate the amount player earned between this and previous round
 function calculateAmountEarned(index) {
     // find trial data where it saved player_money in previous round
-    let trial_data = jsPsych.data.get().filter({'trial_index':index}).values()[0];
+    let trial_data = getDataAtIndex(index);//jsPsych.data.get().filter({'trial_index':index}).values()[0];
     let amount_earned = "If you see this, there's an error";
 
     // edge case for training (mechanism) round
@@ -105,8 +105,6 @@ function buildTable_DirectPayoff(){
         table += (otherBasic(dummyPlayers[i]) + `<td>${dummyPlayers[i].total_reward}</td`+ addRowEnd);
     }
     table += "</table></div><br></br>";
-
-    console.log(jsPsych.data.get().filter({'trial_index':jsPsych.progress().current_trial_global-4}))
 
     return table; 
 }
