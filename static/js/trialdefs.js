@@ -52,7 +52,6 @@ let startWait = {
     }, 
     on_finish: function() { 
         // update participant condition data
-        //jsPsych.data.get().values()[jsPsych.progress().current_trial_global].participant_condition = player.condition; 
         getDataAtIndex(jsPsych.progress().current_trial_global).participant_condition = player.condition; 
     }, 
     data: {
@@ -105,7 +104,6 @@ let intervalID = null; // for timer functions
     on_finish: function() {
         // update order data to be correct
         let index = jsPsych.progress().current_trial_global;
-        //jsPsych.data.get().values()[index].order = orderLookup[index];
         getDataAtIndex(index).order = orderLookup[index];
 
         // clear timer
@@ -201,7 +199,6 @@ let artDisplayCopyChoice = {
     on_finish: function() {
         // update order data to be correct
         let index = jsPsych.progress().current_trial_global;
-        //jsPsych.data.get().values()[index].order = orderLookup[index];
         getDataAtIndex(index).order = orderLookup[index];
 
 

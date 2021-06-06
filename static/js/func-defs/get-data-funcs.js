@@ -19,8 +19,6 @@ function getDataAtIndex(index) {
 
 // Returns the button selected in trial with given index, represented as the button's index in the "choices" array
 function getPlayerSelection(index) {  
-    // let trial_data = jsPsych.data.get().filter({'trial_index': index});
-    // return trial_data.select('button_pressed').values[0];  
     return getDataAtIndex(index).button_pressed;
 }; 
 
@@ -37,7 +35,6 @@ function getPlayerReward(index) {
 // Returns the dummy's reward in a given trial (based on the artwork they selected)
 function getDummyReward(player_id, trial_index) { 
     let pos = idLookup[player_id];
-    //let art_choice = jsPsych.data.get().filter({'trial_index': trial_index}).select('dummy_choices').values[0][pos];
     let art_choice = getDataAtIndex(trial_index).dummy_choices[pos];
 
     return art_choice.value;
@@ -65,7 +62,6 @@ function didPlayerCopy(buttonPressed) {
     // if they tried to copy but don't have enough money, reset their choice to be not copying
     // this shouldn't occur, but is here in case it happens somehow
     if(buttonPressed != 0 && player.money < payToCopy) {
-        //jsPsych.data.get().filter({'trial_index': jsPsych.progress().current_trial_global - 1}).select('button_pressed').values[0] = 0; 
         getDataAtIndex(jsPsych.progress().current_trial_global - 1).button_pressed = 0;
         return false; 
     }

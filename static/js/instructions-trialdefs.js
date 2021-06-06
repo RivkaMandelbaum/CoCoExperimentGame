@@ -85,7 +85,6 @@ let first_mechanism_trial = {
         let default_html = '<button class="jspsych-btn">%choice%</button>';
         
         let last_data = getDataAtIndex(jsPsych.progress().current_trial_global-1);
-        //let last_data = jsPsych.data.get().filter({'trial_index':jsPsych.progress().current_trial_global-1}).values()[0];
         let was_wrong = last_data.trial_type == "multi-image-button-response";
         
         if(was_wrong){
@@ -144,7 +143,6 @@ let second_mechanism_round = {
         let default_html = '<button class="jspsych-btn">%choice%</button>';
         
         let last_data = getDataAtIndex(jsPsych.progress().current_trial_global-1);
-        //let last_data = jsPsych.data.get().filter({'trial_index':jsPsych.progress().current_trial_global-1}).values()[0];
         let was_wrong = last_data.trial_type == "html-button-response";
         
         if(was_wrong){
