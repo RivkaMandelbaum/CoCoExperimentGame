@@ -71,6 +71,28 @@ function didPlayerCopy(buttonPressed) {
     else return false; 
 }
 
+// returns whether the button number is valid for choose to copy trial
 function isValidButton(button) { 
     return (button >= 0) && (button <= numPlayers); 
+}
+
+/* --- No longer in use --- */ 
+// calculate the amount player earned between this and previous round
+function calculateAmountEarned(index) {
+    // find trial data where it saved player_money in previous round
+    let trial_data = getDataAtIndex(index);
+    let amount_earned = "If you see this, there's an error";
+
+    // edge case for training (mechanism) round
+    if(trial_data.trial_type != "html-button-response") { 
+        amount_earned = player.money - startAmount; 
+    }
+    else { 
+        let previous_money = trial_data.player_money; 
+        if (previous_money === undefined) previous_money = startAmount; // edge case for first training round
+        amount_earned = player.money - previous_money;
+        
+    }
+
+    return amount_earned;
 }

@@ -212,13 +212,13 @@ let realistic_training_trials = {
                     let s = conditionLookup[player.condition]();
 
                     if(numExecutions < numDecisions) { 
-                        s += (`In the next round, you may either choose the highest-value artwork on your own or pay another player $${payToCopy} to copy their choice.`);
+                        s += (`<div id='next-round-instructions'>In the next round, you may either choose the highest-value artwork on your own or pay another player $${payToCopy} to copy their choice.</div></div>`);
                     }
                     return s;
                 },
                 prompt: function() { 
                     if (numExecutions < trainingNumDecisions) { 
-                        return "Which player would you like to copy?";
+                        return "<div class='prompt'>Which player would you like to copy?</div>";
                     }
                     else return; 
                 },
@@ -309,7 +309,7 @@ let quiz_round = {
 
         return questions;
     },
-    randomize_question_order: true,
+    randomize_question_order: false,
     button_label: "Continue to the game",
     on_finish: function() { 
         resetPlayerStats(player);

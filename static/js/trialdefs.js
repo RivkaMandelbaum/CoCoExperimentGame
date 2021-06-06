@@ -270,7 +270,7 @@ let chooseToCopyChoice = {
 
         // in all but last round, add explanation about being allowed to copy
         if (numExecutions < numDecisions) {
-            return s + (`In the next round, you may either choose the highest-value artwork on your own or pay another player $${payToCopy} to copy their choice.`);
+            return s + (`<div id='next-round-instructions'>In the next round, you may either choose the highest-value artwork on your own or pay another player $${payToCopy} to copy their choice.</div></div>`);
         }
         else { 
             return s;
@@ -279,7 +279,7 @@ let chooseToCopyChoice = {
     },
     prompt: function() { 
         if (numExecutions < numDecisions) {
-            return "Which player would you like to copy?";
+            return "<div class='prompt'>Which player would you like to copy?</div>";
         }
         else { 
             return;

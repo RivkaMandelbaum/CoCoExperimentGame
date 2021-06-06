@@ -32,9 +32,15 @@
 #table-content { 
     padding: 0.5rem;
 }
+
 #table-content th{
     text-align: center;
 }
+
+#stimulus-content{
+    margin: 15px;
+}
+
 table{ 
     margin: auto;
     width: 90%;
@@ -68,12 +74,18 @@ td, th {
 
 #congratulations {
     font-weight: bold;
+    color: green;
 }
-#amount-earned{
+
+#self-money-total, #self-reward-total { 
     color: green;
     font-weight: bold;
-    display: inline;
 }
+
+.prompt { 
+    margin: 15px;
+}
+
 
 /* -- sidebar -- */ 
 .sidebar{

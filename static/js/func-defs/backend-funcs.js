@@ -113,7 +113,7 @@ function backendArtSelections(trial_index, offlineMode) {
         copying_trial_index = trial_index - 2; 
         copying_trial_data = getDataAtIndex(copying_trial_index);
 
-        if(copying_trial_data.trial_type !== "html-button-response" || copying_trial_data.prompt !== "Which player would you like to copy?") { 
+        if(copying_trial_data.trial_type !== "html-button-response" || copying_trial_data.prompt !== "<div class='prompt'>Which player would you like to copy?</div>") { 
             // update dummy choices
             for (i = 0; i < numPlayers; i++) {
                 trial_data.dummy_choices[i] = rand_art(trial_index);

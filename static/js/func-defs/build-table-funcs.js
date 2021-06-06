@@ -7,29 +7,9 @@
 
 /* ---- helper functions ---- */ 
 // builds string representing html for intro string and table (up to "Player Pic")
-function introString(){
-    let s = ""
-    let trial_data = getDataAtIndex(jsPsych.progress().current_trial_global-2);
-
-    let previous_money_index = jsPsych.progress().current_trial_global-4;
-    let amount_earned = calculateAmountEarned(previous_money_index);
-
-    // EDGE CASE FOR INSTRUCTIONS BEING REPEATED NEEDED HERE 
-    if(trial_data.order != undefined) { 
-        if(playerState.is_copying){
-            let pos = idLookup[playerState.player_copying_id]; 
-            s = `<div id=congratulations>Good choice copying ${dummyPlayers[pos].name}! You earned $${amount_earned} in the previous round.</div>`;
-        }
-        else { 
-            s = `<div id=congratulations>Good choice! You earned $${amount_earned} in the previous round!</div>`;    
-        }
-    }
-
-    s += "Here are all the players' results. <br>";
-
-    s += "<div id = 'table-content'><table>\
-                        <th> Player </th>";
-
+function introString(s){
+    s += "Here are all the players' results. ";
+    s += "<div id = 'table-content'><table><th> Player </th>";
     return s; 
 }
 
@@ -47,71 +27,64 @@ function otherBasic(p) {
     return (rowStart + addContent + "</td>");
 }
 
-// calculate the amount player earned between this and previous round
-function calculateAmountEarned(index) {
-    // find trial data where it saved player_money in previous round
-    let trial_data = getDataAtIndex(index);
-    let amount_earned = "If you see this, there's an error";
-
-    // edge case for training (mechanism) round
-    if(trial_data.trial_type != "html-button-response") { 
-        amount_earned = player.money - startAmount; 
-    }
-    else { 
-        let previous_money = trial_data.player_money; 
-        if (previous_money === undefined) previous_money = startAmount; // edge case for first training round
-        amount_earned = player.money - previous_money;
-        
-    }
-
-    return amount_earned;
-}
-
 /* --- functions for each condition ---- */ 
 /* each return the HTML for a table with columns Name and Avatar, with additional columns depending on condition, to be displayed as a stimulus*/
 
 // third column: total payoff 
 function buildTable_TotalPayoff(){
-    let table = introString() + "<th> Total Money </th>";
-    const addRowEnd = "</tr>";
+    let s = "<div id='stimulus-content'><div id=congratulations>";
+    if (playerState.is_copying) { 
+        let pos = idLookup[playerState.player_copying_id];
+        s += `Good choice copying <span id='congrats-player-name'>${dummyPlayers[pos].name}</span>! `;
+    }
+    s += `Your total money is now <span id='congrats-player-money'>${player.money}</span>!</div>`
 
-    // find change between this trial and last trial
-    let previous_money_index = jsPsych.progress().current_trial_global-4;
-        // DEAL WITH EDGE CASES: mechanism round (where it says +0), fixed first round with the if undefined logic above
-    let amount_earned = calculateAmountEarned(previous_money_index);
+    
+    let table = introString(s) + "<th> Total Money </th>";
+    const addRowEnd = "</tr>";
     
     // build first row of table (yourself)    
-    table += selfBasic() + `<td><div id=money-total>${player.money}</div><div id=amount-earned>+${amount_earned}!</div></td` + addRowEnd; 
+    table += selfBasic() + `<td id=self-money-total>${player.money}</td` + addRowEnd; 
 
     // build row of table for each player
     for(i = 0; i < numPlayers; i++) {
         table += (otherBasic(dummyPlayers[i]) + `<td>${dummyPlayers[i].money}</td`+ addRowEnd);
     }
-    table += "</table></div><br></br>";
+    table += "</table></div>";
     return table; ; 
 }
 
 
 // third column: direct payoff (from correctness)
 function buildTable_DirectPayoff(){
-    let table = introString() + "<th> total $ from artworks </th>";
+    let s = "<div id='stimulus-content'>";
+    if(player.total_reward != 0) { 
+        s += "<div id=congratulations>";
+        if (playerState.is_copying) { 
+            let pos = idLookup[playerState.player_copying_id];
+            s += `Good choice copying <span id='congrats-player-name'>${dummyPlayers[pos].name}</span>! `;
+        }
+        s += `Your total reward from artworks is now <span id='congrats-player-money'>${player.total_reward}</span>!</div>`    
+    }
+
+    let table = introString(s) + "<th> Total Reward from Artworks </th>";
     const addRowEnd = "</tr>";
 
     // build first row of table (yourself)    
-    table += selfBasic() + `<td>${player.total_reward}</td` + addRowEnd; 
+    table += selfBasic() + `<td id=self-reward-total>${player.total_reward}</td` + addRowEnd; 
 
     // build row of table for each player
     for(i = 0; i < numPlayers; i++) {
         table += (otherBasic(dummyPlayers[i]) + `<td>${dummyPlayers[i].total_reward}</td`+ addRowEnd);
     }
-    table += "</table></div><br></br>";
+    table += "</table></div>";
 
     return table; 
 }
 
-// third column: # copied
+// --- Not currently in use --- third column: # copied
 function buildTable_CopyPayoff(){
-    let table = introString() + "<th> $ earned from being copied </th>";
+    let table = introString("<div id='stimulus-content'>") + "<th> $ earned from being copied </th>";
     const addRowEnd = "</tr>";
 
     // build first row of table (yourself)    
@@ -122,6 +95,6 @@ function buildTable_CopyPayoff(){
     for(i = 0; i < numPlayers; i++) {
         table += (otherBasic(dummyPlayers[i]) + `<td>${dummyPlayers[i].numWasCopied * payToCopy}</td`+ addRowEnd);
     }
-    table += "</table></div><br></br>";
+    table += "</table></div>";
     return table; 
 }
