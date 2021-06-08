@@ -8,6 +8,7 @@
    Must be placed here so that trialdefs.js can access during creation. */ 
 const trialDuration = (3600 * 1000); // force end of decision after this time
 const waitDuration = 10 * 1000; // when offline, and function_ends_trial is false in waiting trials, waiting trials end after this amount of time
+let intervalID = null; // for timer functions
 
 function duration(offlineMode) { 
     // finish this screen after waitDuration ms when offline
@@ -16,8 +17,32 @@ function duration(offlineMode) {
     else return null;
 }
 
+/* --- welcome --- */ 
+	/* define welcome message as a trial */
+	let welcome = {
+		type: "html-keyboard-response",
+		stimulus: function() { return `Welcome to the experiment. <br> </br> You will begin with $${startAmount}, as will other players. <br> </br> Press any key to begin.`},
+		on_start: function() { 
+            intervalID = startTimer(trialDuration / 1000); 
+
+			resetPlayerStats(player);
+			console.log("reset player stats")
+			showSidebarInfo();
+
+			for(let i = 0; i < numPlayers; i++) { 
+				resetPlayerStats(dummyPlayers[i]);
+			}
+
+			playerState.is_copying = false;
+			playerState.player_copying_id = -1; 
+			numExecutions = 0; 		
+        },
+        on_finish: function() { 
+            clearInterval(intervalID);
+        }
+	}; 
+
 /* ---- art selection ---- */ 
-let intervalID = null; // for timer functions
 
  // display art and allow player to choose highest-value image
  let artDisplaySelectionChoice = {

@@ -120,6 +120,12 @@ let intro_mechanism_trial = {
     prompt: "Press any key to continue.",
     trial_duration: 10 * trainingTrialDuration,
     response_ends_trial: true,
+    on_start: function() { 
+        intervalID = startTimer(trainingTrialDuration / 1000);
+    },
+    on_finish: function() { 
+        clearInterval(intervalID);
+    }
 }
 
 /* first practice round: showing images */
@@ -255,6 +261,13 @@ let transition_screen = {
     type: "html-button-response", 
     stimulus: "Nice job! You'll play a few more practice rounds, then answer some questions before moving to the real game.",
     choices: ["Continue"],
+    on_start: function() { 
+        intervalID = startTimer(trainingTrialDuration / 1000);
+    },
+    on_finish: function() { 
+        clearInterval(intervalID);
+    }
+
 }
 
 let realistic_training_trials = {
@@ -341,31 +354,26 @@ let realistic_training_trials = {
 
 let training_rounds = [transition_screen, realistic_training_trials];
 
-let correct_answers = [];
+let correct_answers = {};
 let correctness = [true, true, true];
-
 
 let quiz_round = {
     type: "survey-multi-choice",
     on_load: function() { 
-        if (!correctness[0]) {
-            let money_question_html = document.querySelector('.money-question-text');
-            money_question_html.id = "incorrect-response";
+        for (let i = 0; i < 3; i++) { 
+            if (!correctness[i]) { 
+                let html = document.querySelector(`.question-${i}-text`);
+                html.id = "incorrect-response";
+            }
         }
-        if(!correctness[1]) { 
-            let copy_question_html = document.querySelector('.copy-question-text');
-            copy_question_html.id = "incorrect-response"
-        }
-        if(!correctness[2]) { 
-            let meaning_question_html = document.querySelector('.meaning-question-text');
-            meaning_question_html.id = "incorrect-response"
-        }
+
     },
     preamble: function(){ 
         let build_table_func = conditionLookup[player.condition];
         return build_table_func() + "Please scroll to answer these questions before continuing to the game."},
     questions: function() { 
         let questions = [];
+        correct_answers = [];
 
         // define answers for first question
         let quiz_answers = [player.name];
@@ -377,7 +385,7 @@ let quiz_round = {
         // define first question
         let money = { 
             name: "money",
-            prompt: "<span class='money-question-text'>Which player has the most money? If two players are equal, you may select either.</span>",
+            prompt: "<span class='question-0-text'>Which player has the most money? If two players are equal, you may select either.</span>",
             options: quiz_answers,
             required: true,
         }
@@ -400,31 +408,31 @@ let quiz_round = {
                 if (dummyPlayers[i].money == most_money) best_player_names.push(dummyPlayers[i].name);
             }
         }
-        correct_answers.push(best_player_names)
+        correct_answers.money = best_player_names;
        
         // define second question
         let copy_fee = { 
             name: "copy_fee",
-            prompt: `<span class='copy-question-text'>If you wanted to copy ${best_dummy_player}, how much money would you have to pay?</span>`,
+            prompt: `<span class='question-1-text'>If you wanted to copy ${best_dummy_player}, how much money would you have to pay?</span>`,
             options: ["$0.5", "$1", "$2", "$3", "$4", "Other"]
         }
         questions.push(copy_fee);
-        correct_answers.push(`$${payToCopy}`);
+        correct_answers.copy_fee = `$${payToCopy}`;
 
         // define strings for third question
-        let direct_payoff_condition = "Only art value";
-        let copy_payoff_condition = "Only copy fee";
-        let total_payoff_condition = "Both art value and copy fee"
+        const direct_payoff_condition = "Only art value";
+        const copy_payoff_condition = "Only copy fee";
+        const total_payoff_condition = "Both art value and copy fee"
 
         // define third question
         let total_meaning = { 
             name: "total_meaning",
-            prompt: "<span class='meaning-question-text'>What is included in the value shown in the right-hand (money) column?</span>",
+            prompt: "<span class='question-2-text'>What is included in the value shown in the right-hand (money) column?</span>",
             options: [direct_payoff_condition, copy_payoff_condition, total_payoff_condition, "Neither art value nor copy fee", "I don't know"]
         }
         questions.push(total_meaning);
-        if(player.condition == 0) correct_answers.push(total_payoff_condition);
-        else if(player.condition == 1) correct_answers.push(direct_payoff_condition);
+        if(player.condition == 0) correct_answers.total_meaning = total_payoff_condition;
+        else if(player.condition == 1) correct_answers.total_meaning = direct_payoff_condition;
         else console.warn("Inconsistent conditions");
 
         return questions;
@@ -439,10 +447,25 @@ let quiz_timeline = {
         // return true when it should loop 
         let data = JSON.parse(getDataAtIndex(jsPsych.progress().current_trial_global-1).responses);
 
-        if(!correct_answers[0].includes(data.money)) correctness[0] = false;
-        if(data.copy_fee != correct_answers[1]) correctness[1] = false;
-        if(data.total_meaning != correct_answers[2]) correctness[2] = false;
+        if(!correct_answers.money.includes(data.money)) correctness[0] = false;
+        else { 
+            if(!correctness[0]) correctness[0] = true;
+        }
+        if(data.copy_fee != correct_answers.copy_fee) correctness[1] = false;
+        else { 
+            if(!correctness[1]) correctness[1] = true;
+        }
+        if(data.total_meaning != correct_answers.total_meaning) correctness[2] = false;
+        else { 
+            if(!correctness[2])correctness[2] = true;
+        }
 
         return correctness.includes(false);
     },
+    on_start: function() { 
+        intervalID = startTimer(trainingTrialDuration * 2 / 1000);
+    },
+    on_finish: function() { 
+        clearInterval(intervalID);
+    }
 }

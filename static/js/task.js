@@ -101,30 +101,15 @@ The functions are defined in func-defs files:
 /* ------------------------------------------------------------ */ 
 	/* add experiment setup trial*/ 
 	let timeline = []; // timeline for experiment 
+
+	// add instruction trials
 	timeline.push(instructions_explanation);
 	timeline.push({timeline: startTrial});
 	timeline.push({timeline: mechanism_rounds});
 	timeline.push({timeline: training_rounds});
 	timeline.push(quiz_timeline);
 
-	/* define welcome message as a trial */
-	let welcome = {
-		type: "html-keyboard-response",
-		stimulus: `Welcome to the experiment. <br> </br> You will begin with $${startAmount}, as will other players. <br> </br> Press any key to begin.`,
-		on_start: function() { 
-			resetPlayerStats(player);
-			console.log("reset player stats")
-			showSidebarInfo();
-
-			for(let i = 0; i < numPlayers; i++) { 
-				resetPlayerStats(dummyPlayers[i]);
-			}
-
-			playerState.is_copying = false;
-			playerState.player_copying_id = -1; 
-			numExecutions = 0; 		
-		}
-	}; 
+	// add welcome message for real trials
 	timeline.push(welcome); 
 
 	/* define art_decision_procedure as three trials: art display and selection, displaying player results, and choice to copy */ 
