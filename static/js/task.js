@@ -105,12 +105,25 @@ The functions are defined in func-defs files:
 	timeline.push({timeline: startTrial});
 	timeline.push({timeline: mechanism_rounds});
 	timeline.push({timeline: training_rounds});
-	timeline.push({timeline: [quiz_round]});
+	timeline.push(quiz_timeline);
 
 	/* define welcome message as a trial */
 	let welcome = {
 		type: "html-keyboard-response",
-		stimulus: `Welcome to the experiment. <br> </br> You will begin with $${startAmount}, as will other players. <br> </br> Press any key to begin.`
+		stimulus: `Welcome to the experiment. <br> </br> You will begin with $${startAmount}, as will other players. <br> </br> Press any key to begin.`,
+		on_start: function() { 
+			resetPlayerStats(player);
+			console.log("reset player stats")
+			showSidebarInfo();
+
+			for(let i = 0; i < numPlayers; i++) { 
+				resetPlayerStats(dummyPlayers[i]);
+			}
+
+			playerState.is_copying = false;
+			playerState.player_copying_id = -1; 
+			numExecutions = 0; 		
+		}
 	}; 
 	timeline.push(welcome); 
 

@@ -16,53 +16,6 @@ function duration(offlineMode) {
     else return null;
 }
 
-/* ---- experiment setup timeline ---- */ 
-let startChoice = { 
-    type: "instructions",
-    pages: ["INSTRUCTIONS PAGE PLACEHOLDER! <br> Please make your browser window as large as possible.<br>Press the right arrow key on your keyboard to continue to the experiment."], 
-}
-
-// functionality to perform after players have all joined
-// plus waiting screen 
-let startWait = { 
-    type: "waiting",
-    prompt: "Please wait for other players.", 
-    trial_function: function() { 
-        // display initial amount of money 
-        document.getElementById("money-amount").innerHTML = "Your total amount of money is: " + startAmount.toString();
-
-        // returns object with numPlayers, self id, and other ids as array 
-        // if offline, will return dummy values of those 
-        let initObject = getPlayerInfo(offlineMode); 
-        numPlayers = initObject.players; 
-
-        // define player 
-        let self = initObject.self_info; 
-        player = new createPlayer(self.id, self.name, self.avatar_filepath, self.condition);
-        showSidebarInfo(); 
-
-        // define dummy players 
-        for(i = 0; i < numPlayers; i++) {
-            let other_info = initObject.player_info[i];
-            let otherPlayer = new createPlayer(other_info.id, other_info.name, other_info.avatar_filepath, other_info.condition);
-
-            dummyPlayers[i] = otherPlayer;
-            idLookup[otherPlayer.id] = i; 
-        }
-    }, 
-    on_finish: function() { 
-        // update participant condition data
-        getDataAtIndex(jsPsych.progress().current_trial_global).participant_condition = player.condition; 
-    }, 
-    data: {
-        participant_condition: "placeholder", // to be updated when player.condition is received from backend
-    },
-    max_trial_duration: function() { return duration(offlineMode)},
-    function_ends_trial: true,  
-}
-
-let startTrial = [startWait]
-
 /* ---- art selection ---- */ 
 let intervalID = null; // for timer functions
 

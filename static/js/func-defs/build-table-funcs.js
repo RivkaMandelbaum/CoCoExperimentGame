@@ -39,7 +39,6 @@ function buildTable_TotalPayoff(){
     }
     s += `Your total money is now <span id='congrats-player-money'>${player.money}</span>!</div>`
 
-    
     let table = introString(s) + "<th> Total Money </th>";
     const addRowEnd = "</tr>";
     
@@ -48,7 +47,9 @@ function buildTable_TotalPayoff(){
 
     // build row of table for each player
     for(i = 0; i < numPlayers; i++) {
-        table += (otherBasic(dummyPlayers[i]) + `<td>${dummyPlayers[i].money}</td`+ addRowEnd);
+        let to_add = (otherBasic(dummyPlayers[i]) + `<td>${dummyPlayers[i].money}</td`+ addRowEnd);
+
+        table += to_add;
     }
     table += "</table></div>";
     return table; ; 

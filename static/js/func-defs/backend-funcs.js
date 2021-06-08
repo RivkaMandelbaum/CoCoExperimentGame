@@ -45,7 +45,7 @@ function getPlayerInfo(offlineMode){
             players: numPlayers,
             self_info: {
                 id: uniqueId,
-                name: "Aima",
+                name: "Aima (you)",
                 avatar_filepath: "../static/images/aima.png",
                 condition: mycondition
             }, 
