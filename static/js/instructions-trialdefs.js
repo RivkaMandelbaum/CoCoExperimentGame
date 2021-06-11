@@ -165,7 +165,8 @@ let first_mechanism_trial = {
             return default_html;
         }
     },
-    prompt: "Training Round 1: To show that you understand the mechanism, select the <strong>first</strong> (leftmost) artwork. You will move to the next screen only when you have made the correct choice",
+    preamble: "<p>This is how you will see artworks in future rounds. Please select the <strong>first (leftmost)</strong> artwork and <strong>ignore</strong> the instruction below.</p>",
+    prompt: "Please select what you think is the <strong> highest-value </strong> artwork.",
     response_ends_trial: true,
     trial_duration: function() { return trainingTrialDuration},
     on_finish: function() { 
@@ -197,20 +198,25 @@ let second_mechanism_round = {
         intervalID = startTimer(trainingTrialDuration / 1000);
     },
     stimulus: function() {
-        let tablefunc = conditionLookup[mycondition]; 
-        let s = tablefunc();
-
         // set a random correct player for this round (only if correct_player has not yet been set, so the player remains the same if they get it wrong the first time)
         if(correct_player === -1) { 
             let rand_player = Math.floor(Math.random() * numPlayers);
             correct_player = rand_player;
         }
 
-        let explanation_string = `This screen provides information about each player. In a normal round, you may choose to continue deciding on your own, or to pay $${payToCopy} to copy another player. In this round, to show that you understand, please choose to copy <strong>${dummyPlayers[correct_player].name}</strong>.`;
+        let explanation_string = `<p>This screen provides information about each player. In a normal round, you may choose to continue deciding on your own, or to pay $${payToCopy} to copy another player. In this round, to show that you understand, please choose to copy <strong>${dummyPlayers[correct_player].name}</strong>.</p>`;
 
-        return s + explanation_string;
+
+        // create table with preamble, prompt to return
+        let tablefunc = conditionLookup[mycondition]; 
+        let s = explanation_string + tablefunc();
+
+        s += (`<p id='next-round-instructions'>In the next round, you may either choose the highest-value artwork on your own or pay another player $${payToCopy} to copy their choice.</p></div>`);
+
+
+        return s;
     },
-    prompt: `You will move to the next screen when you choose to copy the correct player`,
+    prompt: "<div class='prompt'>Which player would you like to copy?</div>",
     choices: function() { 
         let ch = ["None, I would like to make my own choice."];
         for (i = 0; i < numPlayers; i++) { 
@@ -318,7 +324,7 @@ let realistic_training_trials = {
                         return ch; 
                     }
                     else {
-                        return ["Continue to end of experiment."];
+                        return ["Continue to end of practice."];
                     }
                 }, 
                 data: {
@@ -380,7 +386,8 @@ let quiz_round = {
     },
     preamble: function(){ 
         let build_table_func = conditionLookup[player.condition];
-        return build_table_func() + "Please scroll to answer these questions before continuing to the game."},
+        return build_table_func() + "Please scroll to answer these questions before continuing to the game."
+    },
     questions: function() { 
         let questions = [];
         correct_answers = [];

@@ -154,6 +154,11 @@ jsPsych.plugins["multi-image-button-response"] = (function() {
             display_element.removeChild(display_element.firstChild);
           }
         }
+
+        if (trial.preamble != null) {
+          display_element.innerHTML += trial.preamble;
+        }
+
         // create canvas element 
         var canvas = document.createElement("canvas");
         canvas.id = "multi-stimulus";

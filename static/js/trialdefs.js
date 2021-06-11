@@ -174,7 +174,7 @@ let artDisplayCopyChoice = {
         if (playerState.is_copying) { 
             let pos = idLookup[playerState.player_copying_id];
             let name = dummyPlayers[pos].name;
-            return `<p id='copying-no-choice-explanation'>Because you're copying ${name}, you can't choose an artwork in this round. Here are the artworks that ${name} is choosing from. Press continue to see the results. </p>`   
+            return `<p id='copying-no-choice-explanation'>Because you're copying ${name}, you can't choose an artwork in this round. Here are the artworks that ${name} is choosing from.</p>`   
         }
         else {
             console.warn("Art display copy trial reached, but playerState.is_copying is false!");
