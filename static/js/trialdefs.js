@@ -21,7 +21,9 @@ function duration(offlineMode) {
 	/* define welcome message as a trial */
 	let welcome = {
 		type: "html-keyboard-response",
-		stimulus: function() { return `Welcome to the experiment. <br> </br> You will begin with $${startAmount}, as will other players. <br> </br> Press any key to begin.`},
+		stimulus: function() { 
+            return `<h1>Now let's do it for real!</h1><p>Good job on the practice rounds!</p><p>We're going to reset each player's money and start the real game.</p><p>You will begin with $${startAmount}, as will other players.</p><p>Press any key to begin.</p>`
+        },
 		on_start: function() { 
             intervalID = startTimer(trialDuration / 1000); 
 
@@ -168,7 +170,17 @@ let artDisplayCopyChoice = {
     stimulus_height_units: "vh",
     stimulus_width_units: "vh",
     render_on_canvas: false,
-    prompt: "Click <strong> continue </strong> to see what choice was made.", 
+    preamble: function() { 
+        if (playerState.is_copying) { 
+            let pos = idLookup[playerState.player_copying_id];
+            let name = dummyPlayers[pos].name;
+            return `<p id='copying-no-choice-explanation'>Because you're copying ${name}, you can't choose an artwork in this round. Here are the artworks that ${name} is choosing from. Press continue to see the results. </p>`   
+        }
+        else {
+            console.warn("Art display copy trial reached, but playerState.is_copying is false!");
+        }
+    },
+    prompt: "<p id='press-continue-copy-screen'.>Press <strong> continue </strong> to see the results.</p>", 
     choices: ["Continue"],
     data: { 
         dummy_choices: "Placeholder to be updated in waiting trial through backendArtSelections function. Array of Artwork objects.",
@@ -291,6 +303,10 @@ let chooseToCopyWait = {
     type: "waiting",
     on_start: function() { 
         document.getElementById("countdown-timer").innerHTML = "";
+        console.log(jsPsych.progress().current_trial_global)
+        console.log(player)
+        console.log(dummyPlayers)
+
     }, 
     prompt: "Please wait for other players.", 
     trial_function: function() {

@@ -70,6 +70,12 @@ jsPsych.plugins["multi-image-button-response"] = (function() {
         array: true,
         description: 'The html of the button. Can create own style.'
       },
+      preamble: {
+        type: jsPsych.plugins.parameterType.STRING,
+        pretty_name: 'Preamble',
+        default: null,
+        description: 'Any content here will be displayed before the stimuli and buttons.'
+      },
       prompt: {
         type: jsPsych.plugins.parameterType.STRING,
         pretty_name: 'Prompt',
@@ -281,6 +287,10 @@ jsPsych.plugins["multi-image-button-response"] = (function() {
       else {
         // use html variable to build html of: stimuli, buttons, and prompt if applicable
         let html = ""; 
+
+        if (trial.preamble !== null) { 
+          html += trial.preamble;
+        }
 
         // add stimuli to html as image elements (if applicable)
         if (trial.stimulus !== null) {

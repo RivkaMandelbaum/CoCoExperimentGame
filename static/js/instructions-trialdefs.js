@@ -35,12 +35,12 @@ let instructions_explanation = {
             pages: [
                 game_goal,
                 "<div id = 'art-values'><h1>The arts and their values</h1><p>The artwork values can be $1, $2, $3, $4, $5, $6, $7, $8, $9, or $10.</p><p>The value of the artwork you selected will become your bonus.</p><p>That is, if the art you selected is worth $1, you will earn 1 cent; if it is worth $10, you will earn 10 cents.</div>",
-                "<div id= 'copy-explanation'><h1>Learn from an art conneoisseur</h1><p>You will see how you and others did after each round.</p><p>In each round you can either select the artwork on your own, or you can learn from others.</p><p>If you think there is a player who is really good at the game, you can choose to copy their selections.</p></div>",
+                "<div id= 'copy-explanation'><h1>Learn from an art connoisseur</h1><p>You will see how you and others did after each round.</p><p>In each round you can either select the artwork on your own, or you can learn from others.</p><p>If you think there is a player who is really good at the game, you can choose to copy their selections.</p></div>",
         
             ],
             // the game only accesses these constants during actual gameplay
             on_load: function() { 
-                document.getElementById("game-goal").innerHTML = `<div id='game-goal-wrapper'><h1>A chance to earn bonus money</h1><p>Imagine you are invited to an art museum with ${numPlayers} other players.</p><p>In each round, all players will be shown ${numImages} artworks. </p><p>You will be asked to choose the art that you think is the most expensive.</p></div>`;
+                document.getElementById("game-goal").innerHTML = `<div id='game-goal-wrapper'><h1>A chance to earn bonus money</h1><p>Imagine you are invited to an art museum with ${numPlayers} other players.</p><p>In each round, all players will be shown ${numImages} randomly selected artworks. </p><p>You will be asked to choose the art that you think is the most expensive.</p></div>`;
             },
             on_finish: function() { 
                 clearInterval(intervalID);
@@ -55,8 +55,8 @@ let instructions_explanation = {
             allow_backward: false,
             pages: [
                 copy_fee,
-                "<div id='time'><h1>Let's keep it in time</h1><p>Please complete your decision within the designated time at each round.</p><p>Your total amount of money earned can be found on the bottom right of the screen.</p></div>",
-                "<div id = 'practice'><h1>Practice</h1><p>Hope you will enjoy this game!</p><p>Let's first practice a little bit.</p><p>Press next to begin practice.</p></div>",
+                "<div id='time'><h1>Let's keep it in time</h1><p>Please complete your decision within the designated time at each round. If you do not finish in time, your choice will be made for you, and if you run out of time in three rounds, you will be removed from the game.</p><p>Your total amount of money earned can be found on the bottom right of the screen.</p></div>",
+                "<div id = 'practice'><h1>Practice</h1><p>We hope you will enjoy this game!</p><p>Let's first practice a little bit.</p><p>Press next to begin practice.</p></div>",
             ],
             // the game only accesses these constants during actual gameplay
             on_load: function() { 
@@ -298,7 +298,7 @@ let realistic_training_trials = {
                 stimulus: function() { 
                     let s = conditionLookup[player.condition]();
 
-                    if(numExecutions < numDecisions) { 
+                    if(numExecutions < trainingNumDecisions) { 
                         s += (`<div id='next-round-instructions'>In the next round, you may either choose the highest-value artwork on your own or pay another player $${payToCopy} to copy their choice.</div></div>`);
                     }
                     return s;
@@ -334,19 +334,29 @@ let realistic_training_trials = {
 			},
 			// update stats for all players, playerState.is_copying, playerState.player_copying_id if copying (except last round)
 			{
-				timeline: [chooseToCopyWait],
-				conditional_function: function() {
-					let is_last = numExecutions >= trainingNumDecisions;
-					if (is_last) {
-						console.log(`${player.name}: ${testPlayer(player)}`);
-						for(i = 0; i < numPlayers; i++){
-							let d = dummyPlayers[i];
-							console.log(`${d.name}: ${testPlayer(d)}`);
-						}
-					}
+                timeline: [chooseToCopyWait],
+                on_start: function() { 
+                    console.log("hello")
+                    console.log(jsPsych.progress().current_trial_global)
+                    console.log(player)
+                    console.log(dummyPlayers)
+                },
+                on_finish: function() { 
+                    console.log(player)
+                    console.log(dummyPlayers)
+                }
+				// conditional_function: function() {
+				// 	let is_last = numExecutions >= trainingNumDecisions;
+				// 	if (is_last) {
+				// 		console.log(`${player.name}: ${testPlayer(player)}`);
+				// 		for(i = 0; i < numPlayers; i++){
+				// 			let d = dummyPlayers[i];
+				// 			console.log(`${d.name}: ${testPlayer(d)}`);
+				// 		}
+				// 	}
 					
-					return !is_last;
-				}
+				// 	return !is_last;
+				// }
 			}
         ],
         repetitions: 3
@@ -395,19 +405,30 @@ let quiz_round = {
         let best_player_names = [];
         let best_dummy_player = "another player";
         let most_money = 0;
-        for(let i = 0; i < numPlayers; i++) { 
-            if (dummyPlayers[i].money > most_money) {
-                most_money = dummyPlayers[i].money;
+
+        // make the sort happen by different properties depending on condition
+        let dummy_players_attribute = dummyPlayers.map(function(p) { 
+            if (player.condition == 0) return p.money;
+            else if (player.condition == 1) return p.total_reward;
+        })
+        let player_attribute = player.money;
+        if (player.condition == 1) player_attribute = player.total_reward;
+
+        // find best dummy player
+        for (let i = 0; i < numPlayers; i++) { 
+            let curr_money = dummy_players_attribute[i];
+            if (curr_money> most_money) { 
+                most_money = curr_money;
                 best_dummy_player = dummyPlayers[i].name;
             }
         }
-        if(player.money > most_money) best_player_names.push(player.name);
-        else { 
-            if(player.money == most_money) best_player_names.push(player.name);
-            for (let i = 0; i < numPlayers; i++) { 
-                if (dummyPlayers[i].money == most_money) best_player_names.push(dummyPlayers[i].name);
-            }
+
+        // find list of players with the most amount of money
+        if (player_attribute >= most_money) best_player_names.push(player.name);
+        for (let i = 0; i < numPlayers; i++) { 
+            if (dummy_players_attribute[i] == most_money) best_player_names.push(dummyPlayers[i].name);
         }
+
         correct_answers.money = best_player_names;
        
         // define second question

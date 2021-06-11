@@ -28,6 +28,15 @@
     border: 5px solid red;
 }
 
+/* padding around preamble and prompt in copy screens */
+#copying-no-choice-explanation{
+    margin-bottom: 2vh;
+} 
+
+#press-continue-copy-screen { 
+    margin-top: 2vh;
+}
+
 /* --- table --- */
 #table-content { 
     padding: 0.5rem;
