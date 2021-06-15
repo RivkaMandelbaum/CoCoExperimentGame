@@ -115,7 +115,7 @@ let startTrial = [startWait];
 let intro_mechanism_trial = {
     type: "html-keyboard-response",
     stimulus: function() { 
-        return `<h1>Welcome!</h1><p>To other players, you will appear as: <div id='player-name-avatar'><img src=${player.avatar_filepath} id ='intro-player-avatar' />${player.name}</div>`;
+        return `<h1>Welcome!</h1><p>To other players, you will appear as: <div id='player-name-avatar'><img src=${player.avatar_filepath} id ='intro-player-avatar' />${player.name.replace("(you)", "")}</div>`;
     }, 
     prompt: "Press any key to continue.",
     trial_duration: 10 * trainingTrialDuration,
