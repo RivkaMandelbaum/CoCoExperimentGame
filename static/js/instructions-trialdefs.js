@@ -10,6 +10,55 @@ const trainingNumDecisions = 3;
 let game_goal = "<div id='game-goal'>placeholder</div>";
 let copy_fee = "<div id='copy-fee'>placeholder</div>";
 
+// let art_test = {
+//     type: "multi-image-button-response",
+//     on_start: function() { 
+//         intervalID = startTimer(trialDuration / 1000);
+//     },
+//     choices: function() {
+//         // return array of artworks in randomized positions to create buttons, and create dictionary of positions player saw in given trial
+//         let ch = [];
+//         let img_array = getArtworks(offlineMode, numExecutions);
+//         let len = img_array.length;
+
+//         for(i = 0; i < len; i++) ch.push(i);
+//         let shuffled = jsPsych.randomization.shuffle(ch); 
+
+//         let order = [];
+
+//         // add images to the array in the order they will appear in
+//         for(i = 0; i < len; i++){
+//             pos = shuffled[i];
+
+//             ch[i] = `<img src = ${img_array[pos].filepath}></img>`;
+//             order.push(img_array[pos]);
+//         }
+
+//         // add the order that images appeared to the orderLookup object
+//         orderLookup[jsPsych.progress().current_trial_global] = order;
+
+//         return ch; 
+//     }, 
+//     prompt: "Please select what you think is the <strong> highest-value </strong> artwork.",
+//     data: {
+//         dummy_choices: "Placeholder to be updated in waiting trial through backendArtSelections function. Array of Artwork objects.", 
+//         order: "Placeholder to be updated in the on_finish function."
+//     }, 
+//     on_finish: function() {
+//         // update order data to be correct
+//         let index = jsPsych.progress().current_trial_global;
+//         getDataAtIndex(index).order = orderLookup[index];
+
+//         // clear timer
+//         clearInterval(intervalID);
+//     }, 
+//     response_ends_trial: true,
+//     trial_duration: trialDuration,
+// };
+
+// let test_trial_2 = Object.assign({}, art_test);
+// test_trial_2.preamble= "Practice round";
+
 let instructions_explanation = {
     timeline: [
         {
@@ -276,11 +325,30 @@ let transition_screen = {
 
 }
 
+let instructions_artDisplaySelectionChoice = Object.assign({}, artDisplaySelectionChoice);
+instructions_artDisplaySelectionChoice.preamble = "<p id='practice-explanation'>This is a practice round. Your choices in this round do not impact your final bonus.</p>";
+let instructions_artDisplaySelection = [instructions_artDisplaySelectionChoice, artDisplaySelectionWait];
+
+let instructions_artDisplayCopyChoice = Object.assign({}, artDisplayCopyChoice);
+instructions_artDisplayCopyChoice.preamble =  function() { 
+    if (playerState.is_copying) { 
+        let pos = idLookup[playerState.player_copying_id];
+        let name = dummyPlayers[pos].name;
+        return `<p id='practice-explanation'>This is a practice round. Your choices in this round do not impact your final bonus.</p><p id='copying-no-choice-explanation'>Because you're copying ${name}, you can't choose an artwork in this round. Here are the artworks that ${name} is choosing from.</p>`   
+    }
+    else {
+        console.warn("Art display copy trial reached, but playerState.is_copying is false!");
+    }
+}
+let instructions_artDisplayCopy = [instructions_artDisplayCopyChoice, artDisplayCopyWait];
+
+
 let realistic_training_trials = {
     timeline: [
 			// if not copying: display art and allow selection; update money of all players
 			{
-				timeline: artDisplaySelection, 
+                // timeline: instructions_artDisplaySelection, 
+                timeline: instructions_artDisplaySelection,
 				conditional_function: function() { 
 					// return true when the player will select 
 					return !playerState.is_copying;  
@@ -288,7 +356,7 @@ let realistic_training_trials = {
 			},
 			// if copying: display art and disallow selection; update money of all players 
 			{
-				timeline: artDisplayCopy, 
+				timeline: instructions_artDisplayCopy, 
 				conditional_function: function() { 
 					// return true when the player does not select
 					return playerState.is_copying; 
@@ -302,7 +370,9 @@ let realistic_training_trials = {
                     intervalID = startTimer(trainingTrialDuration / 1000);
                 },
                 stimulus: function() { 
-                    let s = conditionLookup[player.condition]();
+                    let s = "<p id='practice-explanation'>This is a practice round. Your choices in this round do not impact your final bonus.</p>"
+                    
+                    s += conditionLookup[player.condition]();
 
                     if(numExecutions < trainingNumDecisions) { 
                         s += (`<div id='next-round-instructions'>In the next round, you may either choose the highest-value artwork on your own or pay another player $${payToCopy} to copy their choice.</div></div>`);
