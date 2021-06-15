@@ -290,7 +290,10 @@ let chooseToCopyChoice = {
     },
     data: { 
         dummy_choices: "Placeholder to be updated in waiting trial through backendPlayersCopying function",
-        player_money: function() { return player.money},
+        player_money: function() { return player.money },
+        player_reward: function() { return player.total_reward },
+        dummy_money: function() { return dummyPlayers.map(p => p.money) },
+        dummy_reward: function() { return dummyPlayers.map(p => p.total_reward) }
     }, 
     on_finish: function() {
         clearInterval(intervalID);

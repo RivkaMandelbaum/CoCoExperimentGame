@@ -76,21 +76,29 @@ function isValidButton(button) {
     return (button >= 0) && (button <= numPlayers); 
 }
 
-/* --- No longer in use --- */ 
-// calculate the amount player earned between this and previous round
-function calculateAmountEarned(index) {
+// calculate the amount player with given id earned between this and previous round
+function getAmountEarned(index, id) {
     // find trial data where it saved player_money in previous round
     let trial_data = getDataAtIndex(index);
     let amount_earned = "If you see this, there's an error";
+    let p = "Error";
+
+    // find player object
+    if (id == player.id) p = player; 
+    else p = dummyPlayers[idLookup[id]];
 
     // edge case for training (mechanism) round
-    if(trial_data.trial_type != "html-button-response") { 
-        amount_earned = player.money - startAmount; 
+    if(trial_data.trial_type != "html-button-response" || (trial_data.stimulus != undefined && trial_data.stimulus.includes("please choose to copy"))){ 
+        amount_earned = p.money - startAmount; 
     }
     else { 
-        let previous_money = trial_data.player_money; 
+        console.log(trial_data);
+        let previous_money = "error";
+        if (id == player.id) previous_money = trial_data.player_money; 
+        else previous_money = trial_data.dummy_money[idLookup[id]];
+
         if (previous_money === undefined) previous_money = startAmount; // edge case for first training round
-        amount_earned = player.money - previous_money;
+        amount_earned = p.money - previous_money;
         
     }
 

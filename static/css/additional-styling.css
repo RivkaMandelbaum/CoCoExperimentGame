@@ -86,6 +86,14 @@ td, th {
     color: green;
 }
 
+#amount-earned{
+    color: green;
+    font-weight: bold;
+    display: inline;
+    margin: 10px;
+    font-size: small;
+}
+
 #self-money-total, #self-reward-total { 
     color: green;
     font-weight: bold;

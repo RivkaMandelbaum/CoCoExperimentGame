@@ -42,12 +42,18 @@ function buildTable_TotalPayoff(){
     let table = introString(s) + "<th> Total Money </th>";
     const addRowEnd = "</tr>";
     
+    // find change between this trial and last trial
+    let previous_money_index = jsPsych.progress().current_trial_global-4;
+        // DEAL WITH EDGE CASES: mechanism round (where it says +0), fixed first round with the if undefined logic above
+    let amount_earned = getAmountEarned(previous_money_index, player.id);
+
     // build first row of table (yourself)    
-    table += selfBasic() + `<td id=self-money-total>${player.money}</td` + addRowEnd; 
+    table += selfBasic() + `<td><span id=money-total>${player.money}</span><span id=amount-earned>+${amount_earned} this round</span></td` + addRowEnd;
 
     // build row of table for each player
     for(i = 0; i < numPlayers; i++) {
-        let to_add = (otherBasic(dummyPlayers[i]) + `<td>${dummyPlayers[i].money}</td`+ addRowEnd);
+        let amount_earned = getAmountEarned(previous_money_index, dummyPlayers[i].id);
+        let to_add = (otherBasic(dummyPlayers[i]) + `<td>${dummyPlayers[i].money}<span id=amount-earned>+${amount_earned} this round</span></td`+ addRowEnd);
 
         table += to_add;
     }

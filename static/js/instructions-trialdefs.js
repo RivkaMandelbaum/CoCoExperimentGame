@@ -10,55 +10,6 @@ const trainingNumDecisions = 3;
 let game_goal = "<div id='game-goal'>placeholder</div>";
 let copy_fee = "<div id='copy-fee'>placeholder</div>";
 
-// let art_test = {
-//     type: "multi-image-button-response",
-//     on_start: function() { 
-//         intervalID = startTimer(trialDuration / 1000);
-//     },
-//     choices: function() {
-//         // return array of artworks in randomized positions to create buttons, and create dictionary of positions player saw in given trial
-//         let ch = [];
-//         let img_array = getArtworks(offlineMode, numExecutions);
-//         let len = img_array.length;
-
-//         for(i = 0; i < len; i++) ch.push(i);
-//         let shuffled = jsPsych.randomization.shuffle(ch); 
-
-//         let order = [];
-
-//         // add images to the array in the order they will appear in
-//         for(i = 0; i < len; i++){
-//             pos = shuffled[i];
-
-//             ch[i] = `<img src = ${img_array[pos].filepath}></img>`;
-//             order.push(img_array[pos]);
-//         }
-
-//         // add the order that images appeared to the orderLookup object
-//         orderLookup[jsPsych.progress().current_trial_global] = order;
-
-//         return ch; 
-//     }, 
-//     prompt: "Please select what you think is the <strong> highest-value </strong> artwork.",
-//     data: {
-//         dummy_choices: "Placeholder to be updated in waiting trial through backendArtSelections function. Array of Artwork objects.", 
-//         order: "Placeholder to be updated in the on_finish function."
-//     }, 
-//     on_finish: function() {
-//         // update order data to be correct
-//         let index = jsPsych.progress().current_trial_global;
-//         getDataAtIndex(index).order = orderLookup[index];
-
-//         // clear timer
-//         clearInterval(intervalID);
-//     }, 
-//     response_ends_trial: true,
-//     trial_duration: trialDuration,
-// };
-
-// let test_trial_2 = Object.assign({}, art_test);
-// test_trial_2.preamble= "Practice round";
-
 let instructions_explanation = {
     timeline: [
         {
@@ -342,7 +293,6 @@ instructions_artDisplayCopyChoice.preamble =  function() {
 }
 let instructions_artDisplayCopy = [instructions_artDisplayCopyChoice, artDisplayCopyWait];
 
-
 let realistic_training_trials = {
     timeline: [
 			// if not copying: display art and allow selection; update money of all players
@@ -399,8 +349,11 @@ let realistic_training_trials = {
                 }, 
                 data: {
                     dummy_choices: "Placeholder",        
-                    player_money: function() { return player.money},
-
+                    player_money: function() { return player.money },
+                    player_reward: function() { return player.total_reward },
+                    dummy_money: function() { return dummyPlayers.map(p => p.money) },
+                    dummy_reward: function() { return dummyPlayers.map(p => p.total_reward) }
+            
                 },
                 on_finish: function() { 
                     clearInterval(intervalID)
