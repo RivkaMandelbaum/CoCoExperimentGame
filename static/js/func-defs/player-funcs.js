@@ -40,8 +40,6 @@ function testPlayerStats(p) {
 // returns true if the player should remain in the game and false if the player should be removed from the game
 // criteria for removal: time ran out twice, or failed attention checks
 function isValidPlayer() { 
-    console.log("the player is valid")
-    if(jsPsych.progress().current_trial_global > 1) failedAttentionCheck = true;
     return (numTimeRanOut <= 2) && !failedAttentionCheck; 
 }
 

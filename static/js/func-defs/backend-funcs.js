@@ -191,7 +191,7 @@ function backendArtSelections(trial_index, offlineMode) {
 
         /* SEND MESSAGES:
             send_message as above
-            numTimeRanOut variable
+            result of isValidPlayer at this point
         */ 
 
         // update correct choice to be the id of the correct artwork in this round

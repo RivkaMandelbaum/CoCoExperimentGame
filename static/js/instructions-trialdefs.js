@@ -128,6 +128,8 @@ let intro_mechanism_trial = {
     }
 }
 
+let attempts_first = 0; 
+
 /* first practice round: showing images */
 let first_mechanism_trial = { 
     type: "multi-image-button-response", 
@@ -150,7 +152,10 @@ let first_mechanism_trial = {
         let was_wrong = last_data.trial_type == "multi-image-button-response";
         
         if(was_wrong){
-            btn_html = []
+            attempts_first++;
+            if (attempts_first > 2) failedAttentionCheck = true;
+
+            btn_html = [];
             for(i = 0; i < numImages; i++) { 
                 if(i == last_data.button_pressed) {
                     btn_html.push('<button class="jspsych-btn" id="incorrect-response">%choice%</button>')
@@ -191,6 +196,7 @@ let first_mechanism_timeline = {
 }
 
 let correct_player = -1;
+let attempts_second = 0;
 
 let second_mechanism_round = { 
     type: "html-button-response",
@@ -232,7 +238,10 @@ let second_mechanism_round = {
         let was_wrong = last_data.trial_type == "html-button-response";
         
         if(was_wrong){
-            btn_html = []
+            attempts_second++;
+            if (attempts_second > 2) failedAttentionCheck = true;
+
+            btn_html = [];
             for(i = 0; i < numImages; i++) { 
                 if(i == last_data.button_pressed) {
                     btn_html.push('<button class="jspsych-btn" id="incorrect-response">%choice%</button>')
@@ -395,6 +404,7 @@ let training_rounds = [transition_screen, realistic_training_trials];
 
 let correct_answers = {};
 let correctness = [true, true, true];
+let attempts_quiz = 0;
 
 let quiz_round = {
     type: "survey-multi-choice",
@@ -511,7 +521,11 @@ let quiz_timeline = {
             if(!correctness[2])correctness[2] = true;
         }
 
-        return correctness.includes(false);
+        let redo_questions = correctness.includes(false);
+        if (redo_questions) attempts_quiz++;
+        if (attempts_quiz > 2) failedAttentionCheck = true; s
+
+        return redo_questions;
     },
     on_start: function() { 
         intervalID = startTimer(trainingTrialDuration * 2 / 1000);
