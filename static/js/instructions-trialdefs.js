@@ -3,7 +3,7 @@
 /* Experiment.                                                  */   
 /* Author: Rivka Mandelbaum                                     */  
 /* ------------------------------------------------------------ */
-const trainingTrialDuration = (60 * 1000);
+const trainingTrialDuration = (3600 * 1000);
 const trainingNumDecisions = 3; 
 
 /* ---- pages of text to introduce the game ---- */

@@ -1,14 +1,14 @@
 /* This file contains the wrapper for experiment logic for Artwork Selection Experiment. 
 It declares a number of constants, sets up the experiment, and 
 adds trials to timeline. 
-The trials are defined in trialdefs.js. 
+The trials are defined in trialdefs.js. The training trials are defined in instructions-trialdefs.js.
 The functions are defined in func-defs files: 
 	- backend-funcs.js deals with sending/receiving responses
 	- get-data-funcs.js deals with getting/using data saved by trials
 	- player-funcs.js contains functions updating or creating players
 	- build-table-funcs.js contains functions that build table of players' results in different conditions. 
 	- timer-funcs.js contains functions that work on the countdown timer
-	--> 
+	- art-funcs.js deals with functions relating to Artwork objects 
 */ 
 
 
@@ -97,6 +97,7 @@ The functions are defined in func-defs files:
 	/* data structures for mapping */ 
 	let idLookup = {}; // maps player ids to position in dummyPlayers
 	let orderLookup = {}; // keys = trial index, values = order of images as shown to player 
+	
 /* ------------------------------------------------------------ */ 
 /* define trials on timeline                                    */     
 /* ------------------------------------------------------------ */ 

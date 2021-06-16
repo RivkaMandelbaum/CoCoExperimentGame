@@ -48,7 +48,6 @@ function didPlayerCopy(buttonPressed) {
 
     // if time ran out, update counter and return not copying
     if (buttonPressed === null) {
-        numTimeRanOut++;
         return false; 
     }
 

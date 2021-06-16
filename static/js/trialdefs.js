@@ -102,9 +102,6 @@ let artDisplaySelectionWait = {
     prompt: "Please wait for other players.", 
     trial_function: function() {
         let trial_index = jsPsych.progress().current_trial_global - 1;
-
-        // check if time ran out and update counter if it did
-        if(getPlayerSelection(trial_index) === null) numTimeRanOut++;
         
         // update players' money:
         jsPsych.pauseExperiment(); 
@@ -206,9 +203,6 @@ let artDisplayCopyWait = {
     prompt: "Please wait for other players.", 
     trial_function: function() {
         let trial_index = jsPsych.progress().current_trial_global - 1;
-
-        // check if time ran out and update counter if it did
-        if(getPlayerSelection(trial_index) === null) numTimeRanOut++;
 
         jsPsych.pauseExperiment(); 
 

@@ -13,8 +13,13 @@ function startTimer(timeLimit) {
 
     let timePassed = 0; 
     timerInterval = setInterval(function() {
-        if (timeLeft <= 0) clearInterval(timerInterval);
+        // clear interval (don't become negative), time ran out counter
+        if (timeLeft <= 0) { 
+            clearInterval(timerInterval);
+            numTimeRanOut++;
+        }
 
+        // normal timer functionality
         timePassed++; 
         timeLeft = timeLimit - timePassed; 
 
