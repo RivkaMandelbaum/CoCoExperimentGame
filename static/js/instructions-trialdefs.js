@@ -377,10 +377,10 @@ let realistic_training_trials = {
 				// conditional_function: function() {
 				// 	let is_last = numExecutions >= trainingNumDecisions;
 				// 	if (is_last) {
-				// 		console.log(`${player.name}: ${testPlayer(player)}`);
+				// 		console.log(`${player.name}: ${testPlayerStats(player)}`);
 				// 		for(i = 0; i < numPlayers; i++){
 				// 			let d = dummyPlayers[i];
-				// 			console.log(`${d.name}: ${testPlayer(d)}`);
+				// 			console.log(`${d.name}: ${testPlayerStats(d)}`);
 				// 		}
 				// 	}
 					

@@ -25,7 +25,7 @@ function resetPlayerStats(p) {
 }
 
 // tests whether the player object is consistent and returns the player's stats as an array of strings 
-function testPlayer(p) {
+function testPlayerStats(p) {
     if(!'money' in p || !'numCorrect' in p || !'numWasCopied' in p || !'numCopyingOther' in p) console.warn("Error! Parameter does not have correct fields.");
 
     let expected_amount = startAmount + (p.numWasCopied * payToCopy) + (p.total_reward) - (p.numCopyingOther * payToCopy);
@@ -35,7 +35,15 @@ function testPlayer(p) {
     let stats = [`id: ${p.id}`, `$: ${p.money}`, `reward: ${p.total_reward}`, `was_cop: ${p.numWasCopied}`, `copied: ${p.numCopyingOther}`, `condition: ${p.condition}`];
 
     return stats;  
-}     
+}
+
+// returns true if the player should remain in the game and false if the player should be removed from the game
+// criteria for removal: time ran out twice, or failed attention checks
+function isValidPlayer() { 
+    console.log("the player is valid")
+    if(jsPsych.progress().current_trial_global > 1) failedAttentionCheck = true;
+    return (numTimeRanOut <= 2) && !failedAttentionCheck; 
+}
 
 /* update the stats of players based on who is copying in a given round
 copyingInfo object should be an array of objects received from the server
@@ -64,7 +72,7 @@ function updateCopying(copyingInfo) {
 
             if (currObj.copying) player.numCopyingOther++; 
 
-            //console.log(`${player.name}: ${testPlayer(player)}`);
+            //console.log(`${player.name}: ${testPlayerStats(player)}`);
         }
         // updating others
         else { 
@@ -75,7 +83,7 @@ function updateCopying(copyingInfo) {
 
             if(currObj.copying) currPlayer.numCopyingOther++;
 
-            //console.log(`${currPlayer.name}: ${testPlayer(currPlayer)}`)
+            //console.log(`${currPlayer.name}: ${testPlayerStats(currPlayer)}`)
         }
     }
 }

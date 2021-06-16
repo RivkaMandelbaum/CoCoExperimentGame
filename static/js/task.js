@@ -91,6 +91,7 @@ The functions are defined in func-defs files:
 	/* related to your point in the experiment */ 
 	let numExecutions = 0; // number of rounds thru timeline 
 	let numTimeRanOut = 0; // number of times you didn't make a choice before the time ran out
+	let failedAttentionCheck = false; // whether they failed attention checks
 
 	
 	/* data structures for mapping */ 
@@ -99,18 +100,24 @@ The functions are defined in func-defs files:
 /* ------------------------------------------------------------ */ 
 /* define trials on timeline                                    */     
 /* ------------------------------------------------------------ */ 
-	/* add experiment setup trial*/ 
-	let timeline = []; // timeline for experiment 
+	/* add instruction trials */
+	let timeline = []; // timeline for experiment
 
-	// add instruction trials
-	timeline.push(instructions_explanation);
-	timeline.push({timeline: startTrial});
-	timeline.push({timeline: mechanism_rounds});
-	timeline.push({timeline: training_rounds});
-	timeline.push(quiz_timeline);
+	instructions_explanation.conditional_function = isValidPlayer; 
+	quiz_timeline.conditional_function = isValidPlayer; 
 
-	// add welcome message for real trials
-	timeline.push(welcome); 
+	let instruction_trials = {
+		timeline: [
+			instructions_explanation, 
+			{timeline: startTrial, conditional_function: isValidPlayer}, 
+			{timeline: mechanism_rounds, conditional_function: isValidPlayer}, 
+			{timeline: training_rounds, conditional_function: isValidPlayer}, 
+			quiz_timeline
+		]
+	};
+
+	timeline.push(instruction_trials);
+	timeline.push({timeline:welcome, conditional_function: isValidPlayer});
 
 	/* define art_decision_procedure as three trials: art display and selection, displaying player results, and choice to copy */ 
 	let art_decision_procedure = { 
@@ -141,10 +148,10 @@ The functions are defined in func-defs files:
 				conditional_function: function() {
 					let is_last = numExecutions >= numDecisions;
 					if (is_last) {
-						console.log(`${player.name}: ${testPlayer(player)}`);
+						console.log(`${player.name}: ${testPlayerStats(player)}`);
 						for(i = 0; i < numPlayers; i++){
 							let d = dummyPlayers[i];
-							console.log(`${d.name}: ${testPlayer(d)}`);
+							console.log(`${d.name}: ${testPlayerStats(d)}`);
 						}
 					}
 					
@@ -153,8 +160,25 @@ The functions are defined in func-defs files:
 			}
 		],
 		repetitions: numDecisions+1,
+		conditional_function: isValidPlayer,
 	}
 	timeline.push(art_decision_procedure);
+
+	/* Page to add if they get kicked out of the experiment */ 
+	let kicked_out = { 
+		type: "html-keyboard-response", 
+		stimulus: "You have been removed from the experiment for one of the following reasons: ran out of time; failed attention check. If you believe this is in error, please contact us.",
+		choices: jsPsych.NO_KEYS, 
+		trial_duration: 2000,
+	}
+
+	let kicked_out_node = { 
+		timeline: [kicked_out], 
+		conditional_function: function() { 
+			return !(isValidPlayer());
+		}
+	}
+	timeline.push(kicked_out_node);
 
 	/* End of experiment page as trial */ 
 	let goodbye = { 
@@ -173,7 +197,7 @@ The functions are defined in func-defs files:
 		},
 		trial_duration: 2000 // Remove this when not debugging (need this line for displayData())
 	};
-	timeline.push(goodbye);  
+	timeline.push({timeline: goodbye, conditional_function: isValidPlayer});  
 
 	/* start the experiment */ 
 	jsPsych.init({
