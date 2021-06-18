@@ -231,18 +231,24 @@ function backendArtSelections(trial_index, offlineMode) {
 }
 
 // picks whether and who the player is copying
-function rand_copy(pos) { 
-    let rand_range = Math.random() * numPlayers; //+ 1); // including yourself
-    let rand_choice = Math.floor(rand_range);
+function rand_copy(player_pos) { 
+    let rand = Math.random() * (numPlayers + 1); // including yourself
+    let rand_int = Math.floor(rand);
 
-    if (rand_choice == pos) { // player copies self
+    // return copying: false if the player is not copying (chose self)
+    if (rand_int == player_pos) { 
         return { copying: false, copying_id: null }
     }
-    // else if (rand_choice == numPlayers) { // player copies you
-    //     return { copying: true, copying_id: player.id }
-    // }
-    else { // player copies other dummy
-        return { copying: true, copying_id: dummyPlayers[rand_choice].id}
+    // else the player is copying; determine copying_id and return
+    else { 
+        let curr_copying_id = null;
+        if (rand_int == dummyPlayers.length) { 
+            curr_copying_id = player.id;
+        }
+        else {
+            curr_copying_id = dummyPlayers[rand_int].id;
+        }
+        return { copying: true, copying_id: curr_copying_id};
     }
 }
 
@@ -250,7 +256,7 @@ function rand_copy(pos) {
 /* 
     {
         id: int,
-        num_who_copied: int (number who copied you),
+        num_was_copied: int,
         delta_money: int,
         copying: bool,
         copying_id: int, 
@@ -263,7 +269,7 @@ function backendPlayersCopying(offlineMode, playerState, trial_index) {
     if(!offlineMode) { 
         let msg = { 
             id: player.id,
-            num_who_copied: null,
+            num_was_copied: null,
             delta_money: null,
             copying: playerState.is_copying, 
             copying_id: playerState.player_copying_id,
@@ -275,12 +281,6 @@ function backendPlayersCopying(offlineMode, playerState, trial_index) {
         /* RECEIVE array of objects with same fields as above */ 
     }
     else { 
-        let delta_self = 0, delta_other = 0;
-        if(playerState.is_copying) {
-            delta_self -= payToCopy; 
-            delta_other += payToCopy;
-        }
-
         // determine others' choices randomly
         let copying_info = [];
         for(let i = 0; i < numPlayers; i++) { 
@@ -288,26 +288,47 @@ function backendPlayersCopying(offlineMode, playerState, trial_index) {
             copying_info.push(copy_choice);
         }
 
-        // determine their money changes and num_who_copied
-        let delta_others = new Array(numPlayers).fill(0);
-        let num_who_copied_others = new Array(numPlayers).fill(0);
+        // determine money changes and num_was_copied in this round
+            // if a player is copying, change: (1) their money, (2) the money of the person they're copying, (3) num_was_copied for the person they copied
+            // use arrays in order of dummyPlayers with player at last index
+        let delta_money = new Array(numPlayers+1).fill(0); 
+        let delta_num_was_copied = new Array(numPlayers+1).fill(0); 
+        let player_index = numPlayers;
+
+        // player:
+        if(playerState.is_copying) { 
+            delta_money[player_index] -= payToCopy;
+
+            let player_copying_pos = playerState.player_copying_id;
+            delta_money[player_copying_pos] += payToCopy;
+            delta_num_was_copied[player_copying_pos]++; 
+        }
+
+        // dummy players:
         for(let i = 0; i < numPlayers; i++) { 
             let curr = copying_info[i]; 
-            if (curr.copying) {
-                delta_others[i] -= payToCopy; 
+            
+            if (curr.copying) { 
+                delta_money[i] -= payToCopy; 
 
-                let copying_pos = idLookup[curr.copying_id];
-                delta_others[copying_pos] += payToCopy;
-                num_who_copied_others[copying_pos]++;
+                if(curr.copying_id == player.id) { 
+                    delta_money[player_index] += payToCopy; 
+                    delta_num_was_copied[player_index]++;
+                }
+                else { 
+                    let copying_pos = idLookup[curr.copying_id];
+                    delta_money[copying_pos] += payToCopy;
+                    delta_num_was_copied[copying_pos]++;
+                }
             }
         }
 
-        // create placeholder that assumes: player 1 copied player 2, player 3 copied player 0, and deals with your copy choice as well
+        // create array of objects with information about the given round, based on above choices
         let placeholder = [
             {
                 id: player.id, 
-                num_who_copied: 0, 
-                delta_money: delta_self,
+                num_was_copied: delta_num_was_copied[player_index], 
+                delta_money: delta_money[player_index],
                 copying: playerState.is_copying,
                 copying_id: playerState.player_copying_id,
                 trial_type: "copy",
@@ -316,8 +337,8 @@ function backendPlayersCopying(offlineMode, playerState, trial_index) {
         for (let i = 0; i < numPlayers; i++) { 
             let player_copying_info = { 
                 id: dummyPlayers[i].id,
-                num_who_copied: num_who_copied_others[i],
-                delta_money: delta_others[i],
+                num_was_copied: delta_num_was_copied[i],
+                delta_money: delta_money[i],
                 copying: copying_info[i].copying,
                 copying_id: copying_info[i].copying_id, 
                 trial_type: "copy",
@@ -326,15 +347,6 @@ function backendPlayersCopying(offlineMode, playerState, trial_index) {
             placeholder.push(player_copying_info);
         };
             
-
-        // update the dummy that you are copying
-        if(playerState.is_copying){
-            let pos = idLookup[playerState.player_copying_id]+1;
-
-            placeholder[pos].num_who_copied++;
-            placeholder[pos].delta_money += delta_other; 
-        } 
-
         // update data for the previous trial (to use in offline mode in backendArtSelections)
         let prev_trial_index = trial_index - 1;
         getDataAtIndex(prev_trial_index).dummy_choices = [];

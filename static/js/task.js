@@ -118,7 +118,7 @@ The functions are defined in func-defs files:
 	};
 
 	timeline.push(instruction_trials);
-	timeline.push({timeline:welcome, conditional_function: isValidPlayer});
+	timeline.push({timeline: [welcome], conditional_function: isValidPlayer});
 
 	/* define art_decision_procedure as three trials: art display and selection, displaying player results, and choice to copy */ 
 	let art_decision_procedure = { 

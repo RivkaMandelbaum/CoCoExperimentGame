@@ -47,7 +47,7 @@ function isValidPlayer() {
 copyingInfo object should be an array of objects received from the server
 with the following fields: {
     id: int,
-    num_who_copied: int,
+    num_was_copied: int,
     delta_money: int, 
     copying: bool,
     copying_id: int or null if not copying,
@@ -62,7 +62,7 @@ function updateCopying(copyingInfo) {
 
         // updating self is separate because not in dummyPlayers array
         if (currObj.id == player.id) {
-            player.numWasCopied += currObj.num_who_copied; 
+            player.numWasCopied += currObj.num_was_copied; 
 
             player.money += currObj.delta_money;
 
@@ -76,7 +76,7 @@ function updateCopying(copyingInfo) {
         else { 
             currPlayer = convertIdToPlayer(currObj.id);
 
-            currPlayer.numWasCopied += currObj.num_who_copied;
+            currPlayer.numWasCopied += currObj.num_was_copied;
             currPlayer.money += currObj.delta_money;
 
             if(currObj.copying) currPlayer.numCopyingOther++;
