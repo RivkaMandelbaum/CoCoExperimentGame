@@ -345,6 +345,7 @@ let realistic_training_trials = {
                     else return; 
                 },
                 choices: function() { 
+                    console.log("exec: " + numExecutions + " tnd: " + trainingNumDecisions);
                     if (numExecutions < trainingNumDecisions) { 
                         let ch = ["None, I would like to make my own choice."];
                         for (i = 0; i <numPlayers; i++) { 
@@ -373,28 +374,18 @@ let realistic_training_trials = {
 			// update stats for all players, playerState.is_copying, playerState.player_copying_id if copying (except last round)
 			{
                 timeline: [chooseToCopyWait],
-                on_start: function() { 
-                    console.log("hello")
-                    console.log(jsPsych.progress().current_trial_global)
-                    console.log(player)
-                    console.log(dummyPlayers)
-                },
-                on_finish: function() { 
-                    console.log(player)
-                    console.log(dummyPlayers)
-                }
-				// conditional_function: function() {
-				// 	let is_last = numExecutions >= trainingNumDecisions;
-				// 	if (is_last) {
-				// 		console.log(`${player.name}: ${testPlayerStats(player)}`);
-				// 		for(i = 0; i < numPlayers; i++){
-				// 			let d = dummyPlayers[i];
-				// 			console.log(`${d.name}: ${testPlayerStats(d)}`);
-				// 		}
-				// 	}
+                conditional_function: function() {
+					let is_last = numExecutions >= trainingNumDecisions;
+					if (is_last) {
+						console.log(`${player.name}: ${testPlayerStats(player)}`);
+						for(i = 0; i < numPlayers; i++){
+							let d = dummyPlayers[i];
+							console.log(`${d.name}: ${testPlayerStats(d)}`);
+						}
+					}
 					
-				// 	return !is_last;
-				// }
+					return !is_last;
+				}
 			}
         ],
         repetitions: 3

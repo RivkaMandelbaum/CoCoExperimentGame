@@ -8,9 +8,7 @@
 /* ---- helper functions ---- */ 
 // builds string representing html for intro string and table (up to "Player Pic")
 function introString(s){
-    s += "Here are all the players' results. ";
-    s += "<div id = 'table-content'><table><th> Player </th>";
-    return s; 
+    return (s + "<div id = 'table-content'><table><th> Player </th>"); 
 }
 
 // builds the first columns of the self row of the table: name, avatar

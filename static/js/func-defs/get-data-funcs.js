@@ -79,27 +79,28 @@ function isValidButton(button) {
 function getAmountEarned(index, id) {
     // find trial data where it saved player_money in previous round
     let trial_data = getDataAtIndex(index);
-    let amount_earned = "If you see this, there's an error";
-    let p = "Error";
+    console.log("Current index: " + jsPsych.progress().current_trial_global)
+    console.log("Index given: " + index)
 
-    // find player object
-    if (id == player.id) p = player; 
-    else p = dummyPlayers[idLookup[id]];
+    // find player's current amount of money
+    let curr_money = "Error";
+ 
+    if (id == player.id) curr_money = player.money; 
+    else curr_money = dummyPlayers[idLookup[id]].money;
 
-    // edge case for training (mechanism) round
-    if(trial_data.trial_type != "html-button-response" || (trial_data.stimulus != undefined && trial_data.stimulus.includes("please choose to copy"))){ 
-        amount_earned = p.money - startAmount; 
+    // find player's previous amount of money 
+    let previous_money = "Error";
+
+    // edge case for first rounds
+    if(trial_data.player_money === undefined) { 
+        console.log(trial_data)
+        previous_money = startAmount;
     }
+    // all other trials
     else { 
-        console.log(trial_data);
-        let previous_money = "error";
         if (id == player.id) previous_money = trial_data.player_money; 
-        else previous_money = trial_data.dummy_money[idLookup[id]];
-
-        if (previous_money === undefined) previous_money = startAmount; // edge case for first training round
-        amount_earned = p.money - previous_money;
-        
+        else previous_money = trial_data.dummy_money[idLookup[id]];  
     }
 
-    return amount_earned;
+    return (curr_money - previous_money);
 }
