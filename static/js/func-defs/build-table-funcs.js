@@ -35,9 +35,9 @@ function buildTable_TotalPayoff(){
         let pos = idLookup[playerState.player_copying_id];
         s += `Good choice copying <span id='congrats-player-name'>${dummyPlayers[pos].name}</span>! `;
     }
-    s += `Your total money is now <span id='congrats-player-money'>${player.money}</span>!</div>`
+    s += `Your total bonus earned from artworks and being copied is now <span id='congrats-player-money'>${player.money}</span>!</div>`
 
-    let table = introString(s) + "<th> Total Money </th>";
+    let table = introString(s) + "<th> Total Bonus from Artworks and Copies </th>";
     const addRowEnd = "</tr>";
     
     // find change between this trial and last trial
@@ -69,10 +69,10 @@ function buildTable_DirectPayoff(){
             let pos = idLookup[playerState.player_copying_id];
             s += `Good choice copying <span id='congrats-player-name'>${dummyPlayers[pos].name}</span>! `;
         }
-        s += `Your total reward from artworks is now <span id='congrats-player-money'>${player.total_reward}</span>!</div>`    
+        s += `Your total bonus from from artworks is now <span id='congrats-player-money'>${player.total_reward}</span>!</div>`    
     }
 
-    let table = introString(s) + "<th> Total Reward from Artworks </th>";
+    let table = introString(s) + "<th> Total Bonus from Artworks </th>";
     const addRowEnd = "</tr>";
 
     // build first row of table (yourself)    
@@ -93,12 +93,12 @@ function buildTable_CopyPayoff(){
     const addRowEnd = "</tr>";
 
     // build first row of table (yourself)    
-    table += selfBasic() + `<td>${player.numWasCopied * payToCopy}</td` + addRowEnd; 
+    table += selfBasic() + `<td>${player.numWasCopied * COPY_FEE}</td` + addRowEnd; 
     
 
     // build row of table for each player
     for(i = 0; i < numPlayers; i++) {
-        table += (otherBasic(dummyPlayers[i]) + `<td>${dummyPlayers[i].numWasCopied * payToCopy}</td`+ addRowEnd);
+        table += (otherBasic(dummyPlayers[i]) + `<td>${dummyPlayers[i].numWasCopied * COPY_FEE}</td`+ addRowEnd);
     }
     table += "</table></div>";
     return table; 

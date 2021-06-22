@@ -200,7 +200,7 @@ function backendArtSelections(trial_index, offlineMode) {
         SHOULD BE OBJECT WITH SAME FIELDS AS send_message ABOVE 
         THE PLACEHOLDER BELOW IS NOT IN THE CORRECT FORMAT */
 
-        let response = 2; // Math.floor(Math.random() * numImages);
+        let response = 2; // Math.floor(Math.random() * NUM_IMAGES);
         let response_array = /* PLACEHOLDER */ [
             {
                 id: dummyPlayers[0].id,
@@ -297,10 +297,10 @@ function backendPlayersCopying(offlineMode, playerState, trial_index) {
 
         // player:
         if(playerState.is_copying) { 
-            delta_money[player_index] -= payToCopy;
+            delta_money[player_index] -= COPY_FEE;
 
             let player_copying_pos = playerState.player_copying_id;
-            delta_money[player_copying_pos] += payToCopy;
+            delta_money[player_copying_pos] += COPY_FEE;
             delta_num_was_copied[player_copying_pos]++; 
         }
 
@@ -309,15 +309,15 @@ function backendPlayersCopying(offlineMode, playerState, trial_index) {
             let curr = copying_info[i]; 
             
             if (curr.copying) { 
-                delta_money[i] -= payToCopy; 
+                delta_money[i] -= COPY_FEE; 
 
                 if(curr.copying_id == player.id) { 
-                    delta_money[player_index] += payToCopy; 
+                    delta_money[player_index] += COPY_FEE; 
                     delta_num_was_copied[player_index]++;
                 }
                 else { 
                     let copying_pos = idLookup[curr.copying_id];
-                    delta_money[copying_pos] += payToCopy;
+                    delta_money[copying_pos] += COPY_FEE;
                     delta_num_was_copied[copying_pos]++;
                 }
             }

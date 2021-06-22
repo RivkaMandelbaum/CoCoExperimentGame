@@ -3,14 +3,14 @@
 /* Author: Rivka Mandelbaum                                                   */
 /* -------------------------------------------------------------------------- */
 
-// creates a player with startAmount of money and numCorrect, numWasCopied, numCopyingOther all set to 0. numCorrect and numWasCopied are useful for testing and in case we want to display those later
-function createPlayer(id, name, avatar_filepath, condition) { 
+// creates a player with START_MONEY of money and numCorrect, numWasCopied, numCopyingOther all set to 0. numCorrect and numWasCopied are useful for testing and in case we want to display those later
+function Player(id, name, avatar_filepath, condition) { 
     this.id = id;   
     this.name = name; 
     this.avatar_filepath = avatar_filepath;
     this.condition = condition;
 
-    this.money = startAmount;
+    this.money = START_MONEY;
     this.total_reward = 0;
     this.numWasCopied = 0;
     this.numCopyingOther = 0; 
@@ -18,7 +18,7 @@ function createPlayer(id, name, avatar_filepath, condition) {
 
 // resets player stats (money and number correct, copied, and copying other)
 function resetPlayerStats(p) {
-    p.money = startAmount;
+    p.money = START_MONEY;
     p.total_reward = 0;
     p.numWasCopied = 0;
     p.numCopyingOther = 0; 
@@ -28,7 +28,7 @@ function resetPlayerStats(p) {
 function testPlayerStats(p) {
     if(!'money' in p || !'numCorrect' in p || !'numWasCopied' in p || !'numCopyingOther' in p) console.warn("Error! Parameter does not have correct fields.");
 
-    let expected_amount = startAmount + (p.numWasCopied * payToCopy) + (p.total_reward) - (p.numCopyingOther * payToCopy);
+    let expected_amount = START_MONEY + (p.numWasCopied * COPY_FEE) + (p.total_reward) - (p.numCopyingOther * COPY_FEE);
 
     if (p.money != expected_amount) console.warn("Player error! ID and name: " + p.id + " " + p.name);
     

@@ -60,7 +60,7 @@ function didPlayerCopy(buttonPressed) {
     // at this point only valid button choices should be possible
     // if they tried to copy but don't have enough money, reset their choice to be not copying
     // this shouldn't occur, but is here in case it happens somehow
-    if(buttonPressed != 0 && player.money < payToCopy) {
+    if(buttonPressed != 0 && player.money < COPY_FEE) {
         getDataAtIndex(jsPsych.progress().current_trial_global - 1).button_pressed = 0;
         return false; 
     }
@@ -94,7 +94,7 @@ function getAmountEarned(index, id) {
     // edge case for first rounds
     if(trial_data.player_money === undefined) { 
         console.log(trial_data)
-        previous_money = startAmount;
+        previous_money = START_MONEY;
     }
     // all other trials
     else { 

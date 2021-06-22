@@ -23,6 +23,23 @@
     height: 30vh;
 }
 
+/* change title size in instructions screens from bootstrap default */
+h1 { 
+    font-size: 30px !important;
+    margin-bottom: 20px !important;
+}
+
+/* practice explanation */ 
+#practice-explanation { 
+    border: 1px solid black;
+    position: absolute;
+    top: 5vh;
+    right: 25vh;
+    left: 25vh;
+    margin: 0 auto;
+    min-width: fit-content;
+}
+
 /* border around incorrect responses during training */
 #incorrect-response {
     border: 5px solid red;

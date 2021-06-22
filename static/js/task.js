@@ -22,58 +22,49 @@ The functions are defined in func-defs files:
 	var mycondition = condition;  // these two variables are passed by the psiturk server process
 	// var mycounterbalance = counterbalance;  // they tell you which condition you have been assigned to 
 
-	// condition code lookup 
-	const conditionLookup = { 
-		0: buildTable_TotalPayoff,
-		1: buildTable_DirectPayoff,
-		2: buildTable_CopyPayoff, // not currently in use
-	}
-
 	/* quantities of parts of experiment*/           
-	const numImages = 5; // the number of artworks displayed (used in offline mode)
-	const numDecisions = 9; // number of times you choose to copy, also needed to calculate start amount and skip last "choice" buttons
-
+	const NUM_IMAGES = 5; // the number of artworks displayed (used in offline mode)
+	const NUM_DECISIONS = 9; // number of times you choose to copy, also needed to calculate start amount and skip last "choice" buttons
 
 	/* money-related */
-	const payToCopy = 1; // amount you need to pay someone to copy their choices
-	const startAmount = payToCopy * numDecisions; // amount of money you start with
+	const COPY_FEE = 1; // amount you need to pay someone to copy their choices
+	const START_MONEY = COPY_FEE * NUM_DECISIONS; // amount of money you start with
 	
 	/* mode */
 	const offlineMode = (mode == "debug");
 
 	/* placeholders */  
-	const img1 = {
+	const IMG1 = {
 		id: 1,
 		name: "water with mountain",
 		filepath: "../static/images/img1.jpg", 
 		value: 1,
 	};
-	const img2 = {
+	const IMG2 = {
 		id: 2,
 		name: "people on beach",
 		filepath: '../static/images/img2.jpg',
 		value: 2,
 	};
-	const img3 = {
+	const IMG3 = {
 		id: 3,
 		name: "blue blob",
 		filepath: '../static/images/img3.jpg',
 		value: 3,
 	};
-	const img4 = {
+	const IMG4 = {
 		id: 4, 
 		name: "red land with sunset and water",
 		filepath: '../static/images/img4.jpg',
 		value: 4,
 	};
-	const img5 = {
+	const IMG5 = {
 		id: 5, 
 		name: "mountains with river",
 		filepath: '../static/images/img5.jpg',
 		value: 5
 	};
 	
-
 /* ------------------------------------------------------------ */ 
 /* global variables (not const)                                 */     
 /* ------------------------------------------------------------ */
@@ -97,6 +88,12 @@ The functions are defined in func-defs files:
 	/* data structures for mapping */ 
 	let idLookup = {}; // maps player ids to position in dummyPlayers
 	let orderLookup = {}; // keys = trial index, values = order of images as shown to player 
+
+	const conditionLookup = { // condition code lookup 
+		0: buildTable_TotalPayoff,
+		1: buildTable_DirectPayoff,
+		2: buildTable_CopyPayoff, // not currently in use
+	}
 	
 /* ------------------------------------------------------------ */ 
 /* define trials on timeline                                    */     
@@ -147,7 +144,7 @@ The functions are defined in func-defs files:
 			{
 				timeline: [chooseToCopyWait],
 				conditional_function: function() {
-					let is_last = numExecutions >= numDecisions;
+					let is_last = numExecutions >= NUM_DECISIONS;
 					if (is_last) {
 						console.log(`${player.name}: ${testPlayerStats(player)}`);
 						for(i = 0; i < numPlayers; i++){
@@ -160,7 +157,7 @@ The functions are defined in func-defs files:
 				}
 			}
 		],
-		repetitions: numDecisions+1,
+		repetitions: NUM_DECISIONS+1,
 		conditional_function: isValidPlayer,
 	}
 	timeline.push(art_decision_procedure);

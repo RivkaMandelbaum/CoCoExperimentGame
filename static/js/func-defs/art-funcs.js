@@ -13,7 +13,7 @@ function Artwork(name, id, filepath, value) {
 
 // returns a random artwork from the given trial
 function rand_art(trial_index) { 
-    let random_choice = Math.floor((Math.random() * numImages));
+    let random_choice = Math.floor((Math.random() * NUM_IMAGES));
     let arts = getDataAtIndex(trial_index).order;
     return arts[random_choice];
 }
@@ -72,7 +72,7 @@ function offlineArts(round) {
     { name: "AirbrushedFlowers_79", id: 48, filepath: "../static/images/artworks/AirbrushedFlowers_79.jpeg", value: 2},
     { name: "OptimisticFlowers_159", id: 49, filepath: "../static/images/artworks/OptimisticFlowers_159.jpeg", value: 10}];
 
-    let start = round * numImages;
-    let end = start + numImages; 
+    let start = round * NUM_IMAGES;
+    let end = start + NUM_IMAGES; 
     return all_arts.slice(start, end);
 }

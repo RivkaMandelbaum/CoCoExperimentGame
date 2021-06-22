@@ -22,7 +22,7 @@ function duration(offlineMode) {
 	let welcome = {
 		type: "html-keyboard-response",
 		stimulus: function() { 
-            return `<h1>Now let's do it for real!</h1><p>Good job on the practice rounds!</p><p>We're going to reset each player's money and start the real game.</p><p>You will begin with $${startAmount}, as will other players.</p><p>Press any key to begin.</p>`
+            return `<h1>Now let's do it for real!</h1><p>Good job on the practice rounds!</p><p>We're going to reset each player's money and start the real game.</p><p>You will begin with $${START_MONEY}, as will other players.</p><p>Press any key to begin.</p>`
         },
 		on_start: function() { 
             intervalID = startTimer(trialDuration / 1000); 
@@ -162,8 +162,8 @@ let artDisplayCopyChoice = {
             return st; 
     }, 
     // stimulus_html: "height: 30vh; width: 30vh",
-    stimulus_height: 30,
-    stimulus_width: 30,
+    stimulus_height: 30,//function() { return 100/NUM_IMAGES; },
+    stimulus_width: 30,//function() { return 100/NUM_IMAGES; },
     stimulus_height_units: "vh",
     stimulus_width_units: "vh",
     render_on_canvas: false,
@@ -171,7 +171,7 @@ let artDisplayCopyChoice = {
         if (playerState.is_copying) { 
             let pos = idLookup[playerState.player_copying_id];
             let name = dummyPlayers[pos].name;
-            return `<p id='copying-no-choice-explanation'>Because you're copying ${name}, you can't choose an artwork in this round. Here are the artworks that ${name} is choosing from.</p>`   
+            return `<p id='copying-no-choice-explanation'>Because you're copying <strong>${name}</strong>, you can't choose an artwork in this round. Here are the artworks that ${name} is choosing from.</p>`   
         }
         else {
             console.warn("Art display copy trial reached, but playerState.is_copying is false!");
@@ -247,30 +247,30 @@ let chooseToCopyChoice = {
             s = tablefunc();
         }
         else { 
-            console.warn("Inconsistent condition names! Please check getPlayerInfo, createPlayer, and chooseToCopyChoice stimulus.");
+            console.warn("Inconsistent condition names! Please check getPlayerInfo, Player constructor, and chooseToCopyChoice stimulus.");
             s = "<p> ERROR IN EXPERIMENT. SORRY ABOUT THIS. CONTACT US. </p>"
         }
         
 
         // in all but last round, add explanation about being allowed to copy
-        if (numExecutions < numDecisions) {
-            return s + (`<div id='next-round-instructions'>In the next round, you may either choose the highest-value artwork on your own or pay another player $${payToCopy} to copy their choice.</div></div>`);
+        if (numExecutions < NUM_DECISIONS) {
+            return s + (`<div id='next-round-instructions'>In the next round, you may either choose the highest-value artwork on your own or pay another player $${COPY_FEE} to copy their choice.</div></div>`);
         }
         else { 
             return s;
         }
 
     },
-    prompt: function() { 
-        if (numExecutions < numDecisions) {
-            return "<div class='prompt'>Which player would you like to copy?</div>";
-        }
-        else { 
-            return;
-        }
-    }, 
+    // prompt: function() { 
+    //     if (numExecutions < NUM_DECISIONS) {
+    //         return "<div class='prompt'>Which player would you like to copy?</div>";
+    //     }
+    //     else { 
+    //         return;
+    //     }
+    // }, 
     choices: function() { 
-        if (numExecutions < numDecisions) { 
+        if (numExecutions < NUM_DECISIONS) { 
             let ch = ["None, I would like to make my own choice."];
             for (i = 0; i <numPlayers; i++) { 
                 ch.push(`${dummyPlayers[i].name}`);
