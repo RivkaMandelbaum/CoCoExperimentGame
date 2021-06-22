@@ -42,7 +42,6 @@ function buildTable_TotalPayoff(){
     
     // find change between this trial and last trial
     let previous_money_index = jsPsych.progress().current_trial_global-4;
-        // DEAL WITH EDGE CASES: mechanism round (where it says +0), fixed first round with the if undefined logic above
     let amount_earned = getAmountEarned(previous_money_index, player.id);
 
     // build first row of table (yourself)    
@@ -63,24 +62,24 @@ function buildTable_TotalPayoff(){
 // third column: direct payoff (from correctness)
 function buildTable_DirectPayoff(){
     let s = "<div id='stimulus-content'>";
-    if(player.total_reward != 0) { 
+    if(player.reward != 0) { 
         s += "<div id=congratulations>";
         if (playerState.is_copying) { 
             let pos = idLookup[playerState.player_copying_id];
             s += `Good choice copying <span id='congrats-player-name'>${dummyPlayers[pos].name}</span>! `;
         }
-        s += `Your total bonus from from artworks is now <span id='congrats-player-money'>${player.total_reward}</span>!</div>`    
+        s += `Your total bonus from from artworks is now <span id='congrats-player-money'>${player.reward}</span>!</div>`    
     }
 
     let table = introString(s) + "<th> Total Bonus from Artworks </th>";
     const addRowEnd = "</tr>";
 
     // build first row of table (yourself)    
-    table += selfBasic() + `<td id=self-reward-total>${player.total_reward}</td` + addRowEnd; 
+    table += selfBasic() + `<td id=self-reward-total>${player.reward}</td` + addRowEnd; 
 
     // build row of table for each player
     for(i = 0; i < numPlayers; i++) {
-        table += (otherBasic(dummyPlayers[i]) + `<td>${dummyPlayers[i].total_reward}</td`+ addRowEnd);
+        table += (otherBasic(dummyPlayers[i]) + `<td>${dummyPlayers[i].reward}</td`+ addRowEnd);
     }
     table += "</table></div>";
 

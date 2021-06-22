@@ -19,8 +19,12 @@ The functions are defined in func-defs files:
 	var psiturk = new PsiTurk(uniqueId, adServerLoc, mode);
 
 	/* MIGHT NEED TO ADD SOME STUFF HERE, CHECK PSITURK API, EXAMPLE CODE BELOW IN COMMENT */ 
-	var mycondition = condition;  // these two variables are passed by the psiturk server process
+	var mycondition = parseInt(condition);  // these two variables are passed by the psiturk server process
 	// var mycounterbalance = counterbalance;  // they tell you which condition you have been assigned to 
+
+	// give names to the condition meanings
+	const TOTAL_MONEY_CONDITION = 0; 
+	const DIRECT_REWARD_CONDITION = 1;
 
 	/* quantities of parts of experiment*/           
 	const NUM_IMAGES = 5; // the number of artworks displayed (used in offline mode)
@@ -146,10 +150,10 @@ The functions are defined in func-defs files:
 				conditional_function: function() {
 					let is_last = numExecutions >= NUM_DECISIONS;
 					if (is_last) {
-						console.log(`${player.name}: ${testPlayerStats(player)}`);
+						console.log(`${player.name}: ${player.logPlayerStats()}`);
 						for(i = 0; i < numPlayers; i++){
 							let d = dummyPlayers[i];
-							console.log(`${d.name}: ${testPlayerStats(d)}`);
+							console.log(`${d.name}: ${d.logPlayerStats()}`);
 						}
 					}
 					

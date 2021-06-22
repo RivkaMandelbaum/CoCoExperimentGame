@@ -79,28 +79,35 @@ function isValidButton(button) {
 function getAmountEarned(index, id) {
     // find trial data where it saved player_money in previous round
     let trial_data = getDataAtIndex(index);
-    console.log("Current index: " + jsPsych.progress().current_trial_global)
-    console.log("Index given: " + index)
 
-    // find player's current amount of money
-    let curr_money = "Error";
- 
-    if (id == player.id) curr_money = player.money; 
-    else curr_money = dummyPlayers[idLookup[id]].money;
-
-    // find player's previous amount of money 
-    let previous_money = "Error";
-
-    // edge case for first rounds
-    if(trial_data.player_money === undefined) { 
-        console.log(trial_data)
-        previous_money = START_MONEY;
+    // variables to use for calculation 
+    let curr_money, prev_money, property_name, dummy_pos, initial_amount = 0;
+    if (id != player.id) {
+        dummy_pos = idLookup[id];
     }
-    // all other trials
+    if (player.condition === TOTAL_MONEY_CONDITION) initial_amount = START_MONEY;
+
+    // find correct property to use based on condition
+    if (player.condition === TOTAL_MONEY_CONDITION) { 
+        property_name = "money";
+    }
+    else if (player.condition === DIRECT_REWARD_CONDITION) { 
+        property_name = "reward";
+    }
     else { 
-        if (id == player.id) previous_money = trial_data.player_money; 
-        else previous_money = trial_data.dummy_money[idLookup[id]];  
+        console.error(`Unknown condition ${player.condition} of type ${typeof(player.condition)}`);
     }
 
-    return (curr_money - previous_money);
+
+    // find current amount of [money/reward]
+        // note: conditional operator used - (a) ? (b) : (c) is equivalent to "if(a) b; else c;"
+    curr_money = (id == player.id) ? player[property_name] : dummyPlayers[dummy_pos][property_name];
+
+    // find previous amount of [money/reward]
+    if (trial_data[`player_${property_name}`] === undefined) prev_money = initial_amount; // edge case for first round
+    else { 
+        prev_money = (id == player.id) ? trial_data[`player_${property_name}`] : trial_data[`dummy_${property_name}`][dummy_pos];
+    }
+
+    return (curr_money - prev_money);
 }

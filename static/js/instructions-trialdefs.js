@@ -181,10 +181,10 @@ let first_mechanism_trial = {
 
         // update the players based on the (hardcoded) amount that they earned
         player.money += IMG1.value;
-        player.total_reward += IMG1.value;
+        player.reward += IMG1.value;
         for (let i = 0; i < numPlayers; i++) {
             dummyPlayers[i].money += IMG1.value;
-            dummyPlayers[i].total_reward += IMG1.value;
+            dummyPlayers[i].reward += IMG1.value;
         }
     }, 
 }
@@ -362,9 +362,9 @@ let realistic_training_trials = {
                 data: {
                     dummy_choices: "Placeholder",        
                     player_money: function() { return player.money },
-                    player_reward: function() { return player.total_reward },
+                    player_reward: function() { return player.reward },
                     dummy_money: function() { return dummyPlayers.map(p => p.money) },
-                    dummy_reward: function() { return dummyPlayers.map(p => p.total_reward) }
+                    dummy_reward: function() { return dummyPlayers.map(p => p.reward) }
             
                 },
                 on_finish: function() { 
@@ -379,10 +379,10 @@ let realistic_training_trials = {
                 conditional_function: function() {
 					let is_last = numExecutions >= trainingNUM_DECISIONS;
 					if (is_last) {
-						console.log(`${player.name}: ${testPlayerStats(player)}`);
+						console.log(`${player.name}: ${player.logPlayerStats()}`);
 						for(i = 0; i < numPlayers; i++){
 							let d = dummyPlayers[i];
-							console.log(`${d.name}: ${testPlayerStats(d)}`);
+							console.log(`${d.name}: ${d.logPlayerStats()}`);
 						}
 					}
 					
@@ -441,11 +441,11 @@ let quiz_round = {
 
         // make the sort happen by different properties depending on condition
         let dummy_players_attribute = dummyPlayers.map(function(p) { 
-            if (player.condition == 0) return p.money;
-            else if (player.condition == 1) return p.total_reward;
+            if (player.condition == TOTAL_MONEY_CONDITION) return p.money;
+            else if (player.condition == DIRECT_REWARD_CONDITION) return p.reward;
         })
         let player_attribute = player.money;
-        if (player.condition == 1) player_attribute = player.total_reward;
+        if (player.condition == DIRECT_REWARD_CONDITION) player_attribute = player.reward;
 
         // find best dummy player
         for (let i = 0; i < numPlayers; i++) { 
@@ -485,7 +485,7 @@ let quiz_round = {
             options: [direct_payoff_condition, copy_payoff_condition, total_payoff_condition, "Neither art value nor copy fee", "I don't know"]
         }
         questions.push(total_meaning);
-        if(player.condition == 0) correct_answers.total_meaning = total_payoff_condition;
+        if(player.condition == TOTAL_MONEY_CONDITION) correct_answers.total_meaning = total_payoff_condition;
         else if(player.condition == 1) correct_answers.total_meaning = direct_payoff_condition;
         else console.warn("Inconsistent conditions");
 

@@ -27,12 +27,12 @@ function duration(offlineMode) {
 		on_start: function() { 
             intervalID = startTimer(trialDuration / 1000); 
 
-			resetPlayerStats(player);
+			player.resetPlayerStats();
 			console.log("reset player stats")
 			showSidebarInfo();
 
 			for(let i = 0; i < numPlayers; i++) { 
-				resetPlayerStats(dummyPlayers[i]);
+				dummyPlayers[i].resetPlayerStats();
 			}
 
 			playerState.is_copying = false;
@@ -112,14 +112,14 @@ let artDisplaySelectionWait = {
         // update self money and update display to match
         let reward = getPlayerReward(trial_index);
         player.money += reward;
-        player.total_reward += reward;
+        player.reward += reward;
         showSidebarInfo();
 
         // update players (uses data from previous trial)
         for (i = 0; i < numPlayers; i++) { 
             let reward = getDummyReward(dummyPlayers[i].id, trial_index);
             dummyPlayers[i].money += reward;
-            dummyPlayers[i].total_reward += reward;
+            dummyPlayers[i].reward += reward;
         }
     
         jsPsych.resumeExperiment();
@@ -213,14 +213,14 @@ let artDisplayCopyWait = {
         // self:
         let reward = getDummyReward(playerState.player_copying_id, trial_index);
         player.money += reward;
-        player.total_reward += reward;
+        player.reward += reward;
         showSidebarInfo();
 
         // others: 
         for (i = 0; i < numPlayers; i++) { 
             let reward = getDummyReward(dummyPlayers[i].id, trial_index);
             dummyPlayers[i].money += reward;
-            dummyPlayers[i].total_reward += reward;
+            dummyPlayers[i].reward += reward;
         }
 
         jsPsych.resumeExperiment(); 
@@ -285,9 +285,9 @@ let chooseToCopyChoice = {
     data: { 
         dummy_choices: "Placeholder to be updated in waiting trial through backendPlayersCopying function",
         player_money: function() { return player.money },
-        player_reward: function() { return player.total_reward },
+        player_reward: function() { return player.reward },
         dummy_money: function() { return dummyPlayers.map(p => p.money) },
-        dummy_reward: function() { return dummyPlayers.map(p => p.total_reward) }
+        dummy_reward: function() { return dummyPlayers.map(p => p.reward) }
     }, 
     on_finish: function() {
         clearInterval(intervalID);

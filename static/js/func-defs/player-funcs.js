@@ -3,7 +3,8 @@
 /* Author: Rivka Mandelbaum                                                   */
 /* -------------------------------------------------------------------------- */
 
-// creates a player with START_MONEY of money and numCorrect, numWasCopied, numCopyingOther all set to 0. numCorrect and numWasCopied are useful for testing and in case we want to display those later
+/* ---- Functions dealing with Player objects ---- */
+// creates a player with $START_MONEY and numCorrect, numWasCopied, numCopyingOther all set to 0. numCorrect and numWasCopied are useful for testing and in case we want to display those later
 function Player(id, name, avatar_filepath, condition) { 
     this.id = id;   
     this.name = name; 
@@ -11,38 +12,36 @@ function Player(id, name, avatar_filepath, condition) {
     this.condition = condition;
 
     this.money = START_MONEY;
-    this.total_reward = 0;
+    this.reward = 0;
     this.numWasCopied = 0;
     this.numCopyingOther = 0; 
 }
 
 // resets player stats (money and number correct, copied, and copying other)
-function resetPlayerStats(p) {
-    p.money = START_MONEY;
-    p.total_reward = 0;
-    p.numWasCopied = 0;
-    p.numCopyingOther = 0; 
+Player.prototype.resetPlayerStats = function() { 
+    this.money = START_MONEY;
+    this.reward = 0;
+    this.numWasCopied = 0;
+    this.numCopyingOther = 0;
 }
 
 // tests whether the player object is consistent and returns the player's stats as an array of strings 
-function testPlayerStats(p) {
-    if(!'money' in p || !'numCorrect' in p || !'numWasCopied' in p || !'numCopyingOther' in p) console.warn("Error! Parameter does not have correct fields.");
+Player.prototype.testPlayerStats = function () { 
+    let expected_amount = START_MONEY + (this.numWasCopied * COPY_FEE) + (this.reward) - (this.numCopyingOther * COPY_FEE);
 
-    let expected_amount = START_MONEY + (p.numWasCopied * COPY_FEE) + (p.total_reward) - (p.numCopyingOther * COPY_FEE);
-
-    if (p.money != expected_amount) console.warn("Player error! ID and name: " + p.id + " " + p.name);
-    
-    let stats = [`id: ${p.id}`, `$: ${p.money}`, `reward: ${p.total_reward}`, `was_cop: ${p.numWasCopied}`, `copied: ${p.numCopyingOther}`, `condition: ${p.condition}`];
-
-    return stats;  
+    if (this.money != expected_amount) console.warn(`Player ${this.id} (${this.name}) has inconsistent stats!`);
 }
 
-// returns true if the player should remain in the game and false if the player should be removed from the game
-// criteria for removal: time ran out twice, or failed attention checks
-function isValidPlayer() { 
-    return (numTimeRanOut <= 2) && !failedAttentionCheck; 
+// logs player stats (id and properties whose values change during the game) to the consosle
+Player.prototype.logPlayerStats = function() {
+    this.testPlayerStats(); 
+
+    let stats = `id: ${this.id}, total: ${this.money}, reward; ${this.reward}, was_cop: ${this.numWasCopied}, copy_other: ${this.numCopyingOther}, condition: ${this.condition}`;
+
+    console.log(stats);
 }
 
+/* --- updating all players --- */
 /* update the stats of players based on who is copying in a given round
 copyingInfo object should be an array of objects received from the server
 with the following fields: {
@@ -69,8 +68,6 @@ function updateCopying(copyingInfo) {
             showSidebarInfo();
 
             if (currObj.copying) player.numCopyingOther++; 
-
-            //console.log(`${player.name}: ${testPlayerStats(player)}`);
         }
         // updating others
         else { 
@@ -80,10 +77,15 @@ function updateCopying(copyingInfo) {
             currPlayer.money += currObj.delta_money;
 
             if(currObj.copying) currPlayer.numCopyingOther++;
-
-            //console.log(`${currPlayer.name}: ${testPlayerStats(currPlayer)}`)
         }
     }
+}
+
+/* --- miscellaneous player-related functions --- */
+// returns true if the player should remain in the game and false if the player should be removed from the game
+// criteria for removal: time ran out twice, or failed attention checks
+function isValidPlayer() { 
+    return (numTimeRanOut <= 2) && !failedAttentionCheck; 
 }
 
 // given a player id, returns the locally saved player object with that id
