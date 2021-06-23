@@ -6,7 +6,7 @@
 
 /* For trial duration paramaters: 
    Must be placed here so that trialdefs.js can access during creation. */ 
-const trialDuration = (3600 * 1000); // force end of decision after this time
+const TRIAL_DURATION = (3600 * 1000); // force end of decision after this time
 const waitDuration = 10 * 1000; // when offline, and function_ends_trial is false in waiting trials, waiting trials end after this amount of time
 let intervalID = null; // for timer functions
 
@@ -25,7 +25,7 @@ function duration(offlineMode) {
             return `<h1>Now let's do it for real!</h1><p>Good job on the practice rounds!</p><p>We're going to reset each player's money and start the real game.</p><p>You will begin with $${START_MONEY}, as will other players.</p><p>Press any key to begin.</p>`
         },
 		on_start: function() { 
-            intervalID = startTimer(trialDuration / 1000); 
+            intervalID = startTimer(TRIAL_DURATION / 1000); 
 
 			player.resetPlayerStats();
 			console.log("reset player stats")
@@ -50,7 +50,7 @@ function duration(offlineMode) {
  let artDisplaySelectionChoice = {
     type: "multi-image-button-response",
     on_start: function() { 
-        intervalID = startTimer(trialDuration / 1000);
+        intervalID = startTimer(TRIAL_DURATION / 1000);
     },
     choices: function() {
         // return array of artworks in randomized positions to create buttons, and create dictionary of positions player saw in given trial
@@ -90,7 +90,7 @@ function duration(offlineMode) {
         clearInterval(intervalID);
     }, 
     response_ends_trial: true,
-    trial_duration: trialDuration,
+    trial_duration: TRIAL_DURATION,
 };
 
 // wait for other players' info and update local information
@@ -136,7 +136,7 @@ let artDisplaySelection = [artDisplaySelectionChoice, artDisplaySelectionWait];
 let artDisplayCopyChoice = { 
     type: "multi-image-button-response", 
     on_start: function() { 
-        intervalID = startTimer(trialDuration / 1000);
+        intervalID = startTimer(TRIAL_DURATION / 1000);
     },
     stimulus: function() { 
         // create array of images with randomized position and add positions to dictionary
@@ -193,7 +193,7 @@ let artDisplayCopyChoice = {
         clearInterval(intervalID);
     },
     response_ends_trial: true,
-    trial_duration: trialDuration
+    trial_duration: TRIAL_DURATION
 }
 let artDisplayCopyWait = { 
     type: "waiting", 
@@ -236,7 +236,7 @@ let artDisplayCopy = [artDisplayCopyChoice, artDisplayCopyWait]
 let chooseToCopyChoice = {
     type: "html-button-response",
     on_start: function() { 
-        intervalID = startTimer(trialDuration / 1000);
+        intervalID = startTimer(TRIAL_DURATION / 1000);
     },
     stimulus: function() { 
         let s = "";
@@ -293,7 +293,7 @@ let chooseToCopyChoice = {
         clearInterval(intervalID);
     },
     response_ends_trial: true, 
-    trial_duration: trialDuration
+    trial_duration: TRIAL_DURATION
 }
 
 let chooseToCopyWait = { 

@@ -3,8 +3,8 @@
 /* Experiment.                                                  */   
 /* Author: Rivka Mandelbaum                                     */  
 /* ------------------------------------------------------------ */
-const trainingTrialDuration = (3600 * 1000);
-const trainingNUM_DECISIONS = 3; 
+const TRAINING_TRIAL_DURATION = (3600 * 1000); // in ms
+const TRAINING_NUM_DECISIONS = 2; 
 
 const practice_explanation = "<p id='practice-explanation'>This is a practice round. Your choices in this round do <strong>not</strong> impact your final bonus.</p>";
 
@@ -17,7 +17,7 @@ let instructions_explanation = {
         {
             type: "instructions",
             on_start: function() { 
-                intervalID = startTimer(trainingTrialDuration/ 1000);
+                intervalID = startTimer(TRAINING_TRIAL_DURATION/ 1000);
                 document.getElementById("money-amount").innerHTML = "Your total amount of money is: " + START_MONEY.toString();
             },
             pages: ["<div id = 'instructions-welcome'><h1>Welcome to the game of Art Connoisseur!</h1></div>"],
@@ -30,7 +30,7 @@ let instructions_explanation = {
         {
             type: "instructions",
             on_start: function() { 
-                intervalID = startTimer(trainingTrialDuration * 3 / 1000);
+                intervalID = startTimer(TRAINING_TRIAL_DURATION * 3 / 1000);
             },
             show_clickable_nav: true,
             allow_backward: false,
@@ -51,7 +51,7 @@ let instructions_explanation = {
         {
             type: "instructions",
             on_start: function() { 
-                intervalID = startTimer(trainingTrialDuration * 3 / 1000);
+                intervalID = startTimer(TRAINING_TRIAL_DURATION * 3 / 1000);
             },
             show_clickable_nav: true,
             allow_backward: false,
@@ -120,10 +120,10 @@ let intro_mechanism_trial = {
         return `<h1>Welcome!</h1><p>To other players, you will appear as: <div id='player-name-avatar'><img src=${player.avatar_filepath} id ='intro-player-avatar' />${player.name.replace("(you)", "")}</div>`;
     }, 
     prompt: "Press any key to continue.",
-    trial_duration: 10 * trainingTrialDuration,
+    trial_duration: 10 * TRAINING_TRIAL_DURATION,
     response_ends_trial: true,
     on_start: function() { 
-        intervalID = startTimer(trainingTrialDuration / 1000);
+        intervalID = startTimer(TRAINING_TRIAL_DURATION / 1000);
     },
     on_finish: function() { 
         clearInterval(intervalID);
@@ -136,7 +136,7 @@ let attempts_first = 0;
 let first_mechanism_trial = { 
     type: "multi-image-button-response", 
     on_start: function() { 
-        intervalID = startTimer(trainingTrialDuration / 1000);
+        intervalID = startTimer(TRAINING_TRIAL_DURATION / 1000);
     },
     choices: function() {
         img_array = [IMG1, IMG2, IMG3, IMG4, IMG5]
@@ -175,7 +175,7 @@ let first_mechanism_trial = {
     preamble: "<p>This is how you will see artworks in future rounds.</p> <p>Please select the <strong>first (leftmost)</strong> artwork and <strong>ignore</strong> the instruction below.</p>",
     prompt: "Please select what you think is the <strong> highest-value </strong> artwork.",
     response_ends_trial: true,
-    trial_duration: function() { return trainingTrialDuration},
+    trial_duration: function() { return TRAINING_TRIAL_DURATION},
     on_finish: function() { 
         clearInterval(intervalID);
 
@@ -203,7 +203,7 @@ let attempts_second = 0;
 let second_mechanism_round = { 
     type: "html-button-response",
     on_start: function() { 
-        intervalID = startTimer(trainingTrialDuration / 1000);
+        intervalID = startTimer(TRAINING_TRIAL_DURATION / 1000);
     },
     stimulus: function() {
         // set a random correct player for this round (only if correct_player has not yet been set, so the player remains the same if they get it wrong the first time)
@@ -259,7 +259,7 @@ let second_mechanism_round = {
         }
     },
     response_ends_trial: true,
-    trial_duration: function() { return trainingTrialDuration},
+    trial_duration: function() { return TRAINING_TRIAL_DURATION},
     on_finish: function() { 
         clearInterval(intervalID);
     },
@@ -279,7 +279,7 @@ let transition_screen = {
     stimulus: "Nice job! You'll play a few more practice rounds, then answer some questions before moving to the real game.",
     choices: ["Continue"],
     on_start: function() { 
-        intervalID = startTimer(trainingTrialDuration / 1000);
+        intervalID = startTimer(TRAINING_TRIAL_DURATION / 1000);
     },
     on_finish: function() { 
         clearInterval(intervalID);
@@ -296,7 +296,7 @@ instructions_artDisplayCopyChoice.preamble =  function() {
     if (playerState.is_copying) { 
         let pos = idLookup[playerState.player_copying_id];
         let name = dummyPlayers[pos].name;
-        return `${practice_explanation}<p id='copying-no-choice-explanation'>Because you're copying ${name}, you can't choose an artwork in this round. Here are the artworks that ${name} is choosing from.</p>`   
+        return `${practice_explanation}<p id='copying-no-choice-explanation'>Because you're copying <strong>${name}</strong>, you can't choose an artwork in this round. Here are the artworks that ${name} is choosing from.</p>`   
     }
     else {
         console.warn("Art display copy trial reached, but playerState.is_copying is false!");
@@ -324,65 +324,73 @@ let realistic_training_trials = {
 				}  
 			},
             // display player's results and allow choice to copy (or "continue" in last round)
-            // using trainingNUM_DECISIONS, so not the same as trialdefs version
+            // using TRAINING_NUM_DECISIONS, so not the same as trialdefs version
 			{
-                type: "html-button-response",
-                on_start: function() { 
-                    intervalID = startTimer(trainingTrialDuration / 1000);
-                },
-                stimulus: function() { 
-                    let s = practice_explanation;
-                    
-                    s += conditionLookup[player.condition]();
+                timeline: [
+                {
+                    type: "html-button-response",
+                    on_start: function() { 
+                        intervalID = startTimer(TRAINING_TRIAL_DURATION / 1000);
+                    },
+                    stimulus: function() { 
+                        let s = practice_explanation;
+                        
+                        s += conditionLookup[player.condition]();
 
-                    if(numExecutions < trainingNUM_DECISIONS) { 
-                        s += (`<div id='next-round-instructions'>In the next round, you may either choose the highest-value artwork on your own or pay another player $${COPY_FEE} to copy their choice.</div></div>`);
-                    }
-                    return s;
-                },
-                // prompt: function() { 
-                //     if (numExecutions < trainingNUM_DECISIONS) { 
-                //         return "<div class='prompt'>Which player would you like to copy?</div>";
-                //     }
-                //     else return; 
-                // },
-                choices: function() { 
-                    console.log("exec: " + numExecutions + " tnd: " + trainingNUM_DECISIONS);
-                    if (numExecutions < trainingNUM_DECISIONS) { 
-                        let ch = ["None, I would like to make my own choice."];
-                        for (i = 0; i <numPlayers; i++) { 
-                            ch.push(`${dummyPlayers[i].name}`);
+                        if(numExecutions < TRAINING_NUM_DECISIONS) { 
+                            s += (`<div id='next-round-instructions'>In the next round, you may either choose the highest-value artwork on your own or pay another player $${COPY_FEE} to copy their choice.</div></div>`);
                         }
-                        return ch; 
-                    }
-                    else {
-                        return ["Continue to end of practice."];
-                    }
-                }, 
-                data: {
-                    dummy_choices: "Placeholder",        
-                    player_money: function() { return player.money },
-                    player_reward: function() { return player.reward },
-                    dummy_money: function() { return dummyPlayers.map(p => p.money) },
-                    dummy_reward: function() { return dummyPlayers.map(p => p.reward) }
-            
-                },
-                on_finish: function() { 
-                    clearInterval(intervalID)
-                },
-                response_ends_trial: true,
-                trial_duration: trainingTrialDuration,
+                        return s;
+                    },
+                    // prompt: function() { 
+                    //     if (numExecutions < TRAINING_NUM_DECISIONS) { 
+                    //         return "<div class='prompt'>Which player would you like to copy?</div>";
+                    //     }
+                    //     else return; 
+                    // },
+                    choices: function() { 
+                        console.log("exec: " + numExecutions + " tnd: " + TRAINING_NUM_DECISIONS);
+                        console.log(numExecutions<TRAINING_NUM_DECISIONS)
+                        if (numExecutions < TRAINING_NUM_DECISIONS) { 
+                            let ch = ["None, I would like to make my own choice."];
+                            for (i = 0; i <numPlayers; i++) { 
+                                ch.push(`${dummyPlayers[i].name}`);
+                            }
+                            return ch; 
+                        }
+                        else {
+                            return ["Continue to end of practice."];
+                        }
+                    }, 
+                    data: {
+                        dummy_choices: "Placeholder",        
+                        player_money: function() { return player.money },
+                        player_reward: function() { return player.reward },
+                        dummy_money: function() { return dummyPlayers.map(p => p.money) },
+                        dummy_reward: function() { return dummyPlayers.map(p => p.reward) }
+                
+                    },
+                    on_finish: function() { 
+                        clearInterval(intervalID)
+                    },
+                    response_ends_trial: true,
+                    trial_duration: TRAINING_TRIAL_DURATION
+                }],
+
+                conditional_function: function() { 
+                    return numExecutions < TRAINING_NUM_DECISIONS;
+                }
 			},
 			// update stats for all players, playerState.is_copying, playerState.player_copying_id if copying (except last round)
 			{
                 timeline: [chooseToCopyWait],
                 conditional_function: function() {
-					let is_last = numExecutions >= trainingNUM_DECISIONS;
+					let is_last = numExecutions >= TRAINING_NUM_DECISIONS;
 					if (is_last) {
-						console.log(`${player.name}: ${player.logPlayerStats()}`);
+						player.logPlayerStats();
 						for(i = 0; i < numPlayers; i++){
 							let d = dummyPlayers[i];
-							console.log(`${d.name}: ${d.logPlayerStats()}`);
+							d.logPlayerStats();
 						}
 					}
 					
@@ -521,7 +529,7 @@ let quiz_timeline = {
         return redo_questions;
     },
     on_start: function() { 
-        intervalID = startTimer(trainingTrialDuration * 2 / 1000);
+        intervalID = startTimer(TRAINING_TRIAL_DURATION * 2 / 1000);
     },
     on_finish: function() { 
         clearInterval(intervalID);
