@@ -56,9 +56,22 @@ h1 {
     margin-top: 2vh;
 }
 
+/* table wrapper (flexbox */ 
+#stimulus-flexbox-wrapper { 
+    display:flex;
+}
+
+#choice-display { 
+    width: 40%;
+}
+
 /* --- table --- */
 #table-content { 
     padding: 0.5rem;
+}
+
+#stimulus-flexbox-wrapper #table-content{
+    width: 66%;
 }
 
 #table-content th{
@@ -103,6 +116,7 @@ td, th {
 #congratulations {
     font-weight: bold;
     color: green;
+    margin-bottom: 5vh;
 }
 
 #amount-earned{
@@ -122,6 +136,16 @@ td, th {
     margin: 15px;
 }
 
+/* image displayed next to table */ 
+#choice-display-img { 
+    width: 50%;
+    height: 90%;
+}
+
+/* prompt under table */
+#next-round-instructions {
+    margin-top: 5vh;
+}
 
 /* -- sidebar -- */ 
 .sidebar{

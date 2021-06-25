@@ -5,7 +5,33 @@
 /* Author: Rivka Mandelbaum                                                   */
 /* -------------------------------------------------------------------------- */
 
+const TABLE_END_HTML = "</table></div></div>";
+
 /* ---- helper functions ---- */ 
+function showImageChosen(s) { 
+    let choice_trial_index = jsPsych.progress().current_trial_global - 2; 
+    let choice_trial_data = getDataAtIndex(choice_trial_index);
+    let choice, name;
+
+    if (choice_trial_data.dummy_choices != undefined) { 
+        // find the name and choice of player who chose 
+        if(playerState.is_copying) {
+            let dummy_pos = idLookup[playerState.player_copying_id];
+            choice = choice_trial_data.dummy_choices[dummy_pos];
+            name = dummyPlayers[dummy_pos].name;
+        }
+        else { 
+            choice = choice_trial_data.order[getPlayerSelection(choice_trial_index)];
+            name = "You";
+        }
+
+        // create html to display that information 
+        return s + `<div id="stimulus-flexbox-wrapper"><div id="choice-display"><p id="choice-display-caption">${name} chose:</p><img id="choice-display-img" src=${choice.filepath}/></div>`;
+    }
+   else return s;
+
+}
+
 // builds string representing html for intro string and table (up to "Player Pic")
 function introString(s){
     return (s + "<div id = 'table-content'><table><th> Player </th>"); 
@@ -37,6 +63,8 @@ function buildTable_TotalPayoff(){
     }
     s += `Your total bonus earned from artworks and being copied is now <span id='congrats-player-money'>${player.money}</span>!</div>`
 
+    s = showImageChosen(s);
+
     let table = introString(s) + "<th> Total Bonus from Artworks and Copies </th>";
     const addRowEnd = "</tr>";
     
@@ -54,7 +82,7 @@ function buildTable_TotalPayoff(){
 
         table += to_add;
     }
-    table += "</table></div>";
+    table += TABLE_END_HTML;
     return table; ; 
 }
 
@@ -81,7 +109,7 @@ function buildTable_DirectPayoff(){
     for(i = 0; i < numPlayers; i++) {
         table += (otherBasic(dummyPlayers[i]) + `<td>${dummyPlayers[i].reward}</td`+ addRowEnd);
     }
-    table += "</table></div>";
+    table += TABLE_END_HTML;
 
     return table; 
 }
@@ -99,6 +127,6 @@ function buildTable_CopyPayoff(){
     for(i = 0; i < numPlayers; i++) {
         table += (otherBasic(dummyPlayers[i]) + `<td>${dummyPlayers[i].numWasCopied * COPY_FEE}</td`+ addRowEnd);
     }
-    table += "</table></div>";
+    table += TABLE_END_HTML;
     return table; 
 }
