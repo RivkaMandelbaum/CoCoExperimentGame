@@ -40,6 +40,7 @@ h1 {
     left: 25vh;
     margin: 0 auto;
     min-width: fit-content;
+    white-space: nowrap;
 }
 
 /* border around incorrect responses during training */
@@ -86,6 +87,7 @@ table{
     margin: auto;
     width: 90%;
     border-collapse: collapse;
+    white-space: nowrap;
     /* text-align: center; */
 }
 
@@ -138,8 +140,8 @@ td, th {
 
 /* image displayed next to table */ 
 #choice-display-img { 
-    width: 50%;
-    height: 90%;
+    max-width: 50%;
+    max-height: 90%;
 }
 
 /* prompt under table */

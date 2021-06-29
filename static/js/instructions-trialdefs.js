@@ -4,7 +4,7 @@
 /* Author: Rivka Mandelbaum                                     */  
 /* ------------------------------------------------------------ */
 const TRAINING_TIMER_DURATION = 60; // seconds that timer counts down
-const TRAINING_TRIAL_DURATION = (TIMER_DURATION + 1) * 1000; // in ms, force end of decision after this time, +1 to allow timer to reach 0
+const TRAINING_TRIAL_DURATION = (TRAINING_TIMER_DURATION + 1) * 1000; // in ms, force end of decision after this time, +1 to allow timer to reach 0
 const TRAINING_NUM_DECISIONS = 2; 
 
 const practice_explanation = "<p id='practice-explanation'>This is a practice round. Your choices in this round do <strong>not</strong> impact your final bonus.</p>";
@@ -352,8 +352,6 @@ let realistic_training_trials = {
                     //     else return; 
                     // },
                     choices: function() { 
-                        console.log("exec: " + numExecutions + " tnd: " + TRAINING_NUM_DECISIONS);
-                        console.log(numExecutions<TRAINING_NUM_DECISIONS)
                         if (numExecutions < TRAINING_NUM_DECISIONS) { 
                             let ch = ["None, I would like to make my own choice."];
                             for (i = 0; i <numPlayers; i++) { 
