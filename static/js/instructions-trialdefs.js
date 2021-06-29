@@ -3,21 +3,11 @@
 /* Experiment.                                                  */   
 /* Author: Rivka Mandelbaum                                     */  
 /* ------------------------------------------------------------ */
-const TRAINING_TRIAL_DURATION = (3600 * 1000); // in ms
+const TRAINING_TIMER_DURATION = 60; // seconds that timer counts down
+const TRAINING_TRIAL_DURATION = (TIMER_DURATION + 1) * 1000; // in ms, force end of decision after this time, +1 to allow timer to reach 0
 const TRAINING_NUM_DECISIONS = 2; 
 
 const practice_explanation = "<p id='practice-explanation'>This is a practice round. Your choices in this round do <strong>not</strong> impact your final bonus.</p>";
-
-function createNodeWithTrial(trial_definition) { 
-    const NODE_TEMPLATE = {
-        timeline: null,
-        conditional_function: function() { return isValidPlayer(); },
-    };
-
-    let customNode = Object.assign({}, NODE_TEMPLATE);
-    customNode.timeline = [trial_definition];
-    return customNode;
-}
 
 /* ---- pages of text to introduce the game ---- */
 let game_goal = "<div id='game-goal'>placeholder</div>";
@@ -26,7 +16,7 @@ let copy_fee = "<div id='copy-fee'>placeholder</div>";
 let instructions_node_1 = createNodeWithTrial({
     type: "instructions",
     on_start: function() { 
-        intervalID = startTimer(TRAINING_TRIAL_DURATION/ 1000);
+        intervalID = startTimer(TRAINING_TIMER_DURATION);
         document.getElementById("money-amount").innerHTML = "Your total amount of money is: " + START_MONEY.toString();
     },
     pages: ["<div id = 'instructions-welcome'><h1>Welcome to the game of Art Connoisseur!</h1></div>"],
@@ -40,7 +30,7 @@ let instructions_node_1 = createNodeWithTrial({
 let instructions_node_2 = createNodeWithTrial({
     type: "instructions",
     on_start: function() { 
-        intervalID = startTimer(TRAINING_TRIAL_DURATION * 3 / 1000);
+        intervalID = startTimer(TRAINING_TIMER_DURATION * 3);
     },
     show_clickable_nav: true,
     allow_backward: false,
@@ -62,7 +52,7 @@ let instructions_node_2 = createNodeWithTrial({
 let instructions_node_3 = createNodeWithTrial({
     type: "instructions",
     on_start: function() { 
-        intervalID = startTimer(TRAINING_TRIAL_DURATION * 3 / 1000);
+        intervalID = startTimer(TRAINING_TIMER_DURATION * 3);
     },
     show_clickable_nav: true,
     allow_backward: false,
@@ -136,7 +126,7 @@ let intro_mechanism_trial = createNodeWithTrial({
     trial_duration: 10 * TRAINING_TRIAL_DURATION,
     response_ends_trial: true,
     on_start: function() { 
-        intervalID = startTimer(TRAINING_TRIAL_DURATION / 1000);
+        intervalID = startTimer(TRAINING_TIMER_DURATION);
     },
     on_finish: function() { 
         clearInterval(intervalID);
@@ -149,7 +139,7 @@ let attempts_first = 0;
 let first_mechanism_trial = createNodeWithTrial({ 
     type: "multi-image-button-response", 
     on_start: function() { 
-        intervalID = startTimer(TRAINING_TRIAL_DURATION / 1000);
+        intervalID = startTimer(TRAINING_TIMER_DURATION);
     },
     choices: function() {
         img_array = [IMG1, IMG2, IMG3, IMG4, IMG5]
@@ -216,7 +206,7 @@ let attempts_second = 0;
 let second_mechanism_round = createNodeWithTrial({ 
     type: "html-button-response",
     on_start: function() { 
-        intervalID = startTimer(TRAINING_TRIAL_DURATION / 1000);
+        intervalID = startTimer(TRAINING_TIMER_DURATION);
     },
     stimulus: function() {
         // set a random correct player for this round (only if correct_player has not yet been set, so the player remains the same if they get it wrong the first time)
@@ -292,7 +282,7 @@ let transition_screen = createNodeWithTrial({
     stimulus: "Nice job! You'll play a few more practice rounds, then answer some questions before moving to the real game.",
     choices: ["Continue"],
     on_start: function() { 
-        intervalID = startTimer(TRAINING_TRIAL_DURATION / 1000);
+        intervalID = startTimer(TRAINING_TIMER_DURATION);
     },
     on_finish: function() { 
         clearInterval(intervalID);
@@ -343,7 +333,7 @@ let realistic_training_trials = {
                 createNodeWithTrial({
                     type: "html-button-response",
                     on_start: function() { 
-                        intervalID = startTimer(TRAINING_TRIAL_DURATION / 1000);
+                        intervalID = startTimer(TRAINING_TIMER_DURATION);
                     },
                     stimulus: function() { 
                         let s = practice_explanation;
@@ -542,7 +532,7 @@ let quiz_timeline = {
         return redo_questions;
     },
     on_start: function() { 
-        intervalID = startTimer(TRAINING_TRIAL_DURATION * 2 / 1000);
+        intervalID = startTimer(TRAINING_TIMER_DURATION * 2);
     },
     on_finish: function() { 
         clearInterval(intervalID);

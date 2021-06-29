@@ -85,7 +85,7 @@ function updateCopying(copyingInfo) {
 // returns true if the player should remain in the game and false if the player should be removed from the game
 // criteria for removal: time ran out twice, or failed attention checks
 function isValidPlayer() { 
-    return (numTimeRanOut <= 2) && !failedAttentionCheck; 
+    return (numTimeRanOut < 2) && !failedAttentionCheck; 
 }
 
 // given a player id, returns the locally saved player object with that id

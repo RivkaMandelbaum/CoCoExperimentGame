@@ -101,7 +101,8 @@ The functions are defined in func-defs files:
 	
 /* ------------------------------------------------------------ */ 
 /* define trials on timeline                                    */     
-/* ------------------------------------------------------------ */ 
+/* ------------------------------------------------------------ */
+
 	/* add instruction trials */
 	let timeline = []; // timeline for experiment
 
@@ -119,7 +120,7 @@ The functions are defined in func-defs files:
 	};
 
 	timeline.push(instruction_trials);
-	timeline.push({timeline: [welcome], conditional_function: isValidPlayer});
+	timeline.push({timeline: [welcome_node], conditional_function: isValidPlayer});
 
 	/* define art_decision_procedure as three trials: art display and selection, displaying player results, and choice to copy */ 
 	let art_decision_procedure = { 
@@ -142,11 +143,11 @@ The functions are defined in func-defs files:
 			},
 			// display player's results and allow choice to copy (or "continue" in last round)
 			{
-				timeline: [chooseToCopyChoice],
+				timeline: [chooseToCopyChoice_node],
 			},
 			// update stats for all players, playerState.is_copying, playerState.player_copying_id if copying (except last round)
 			{
-				timeline: [chooseToCopyWait],
+				timeline: [chooseToCopyWait_node],
 				conditional_function: function() {
 					let is_last = numExecutions >= NUM_DECISIONS;
 					if (is_last) {
@@ -199,7 +200,7 @@ The functions are defined in func-defs files:
 		},
 		trial_duration: 2000 // Remove this when not debugging (need this line for displayData())
 	};
-	timeline.push({timeline: goodbye, conditional_function: isValidPlayer});  
+	timeline.push(createNodeWithTrial(goodbye));  
 
 	/* start the experiment */ 
 	jsPsych.init({

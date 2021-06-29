@@ -17,7 +17,9 @@ function startTimer(timeLimit) {
         if (timeLeft <= 0) { 
             clearInterval(timerInterval);
             numTimeRanOut++;
+            console.log("ran out of time");
         }
+        if (timeLeft <= 3) { console.log("time left: " + timeLeft)}
 
         // normal timer functionality
         timePassed++; 

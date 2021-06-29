@@ -6,7 +6,8 @@
 
 /* For trial duration paramaters: 
    Must be placed here so that trialdefs.js can access during creation. */ 
-const TRIAL_DURATION = (3600 * 1000); // force end of decision after this time
+const TIMER_DURATION = 120; // seconds that timer counts down
+const TRIAL_DURATION = (TIMER_DURATION + 1) * 1000; // ms, force end of decision after this time (+1 to allow timer to reach 0)
 const waitDuration = 10 * 1000; // when offline, and function_ends_trial is false in waiting trials, waiting trials end after this amount of time
 let intervalID = null; // for timer functions
 
@@ -17,6 +18,18 @@ function duration(offlineMode) {
     else return null;
 }
 
+/* wraps each trial with a conditional function based on whether the player is valid (hasn't failed attention check twice or ran out of time twice) */
+function createNodeWithTrial(trial_definition) { 
+    const NODE_TEMPLATE = {
+        timeline: null,
+        conditional_function: function() { return isValidPlayer(); },
+    };
+
+    let customNode = Object.assign({}, NODE_TEMPLATE);
+    customNode.timeline = [trial_definition];
+    return customNode;
+}
+
 /* --- welcome --- */ 
 	/* define welcome message as a trial */
 	let welcome = {
@@ -25,7 +38,7 @@ function duration(offlineMode) {
             return `<h1>Now let's do it for real!</h1><p>Good job on the practice rounds!</p><p>We're going to reset each player's money and start the real game.</p><p>You will begin with $${START_MONEY}, as will other players.</p><p>Press any key to begin.</p>`
         },
 		on_start: function() { 
-            intervalID = startTimer(TRIAL_DURATION / 1000); 
+            intervalID = startTimer(TIMER_DURATION); 
 
 			player.resetPlayerStats();
 			console.log("reset player stats")
@@ -42,7 +55,9 @@ function duration(offlineMode) {
         on_finish: function() { 
             clearInterval(intervalID);
         }
-	}; 
+    }; 
+    
+    let welcome_node = createNodeWithTrial(welcome);
 
 /* ---- art selection ---- */ 
 
@@ -50,7 +65,7 @@ function duration(offlineMode) {
  let artDisplaySelectionChoice = {
     type: "multi-image-button-response",
     on_start: function() { 
-        intervalID = startTimer(TRIAL_DURATION / 1000);
+        intervalID = startTimer(TIMER_DURATION);
     },
     choices: function() {
         // return array of artworks in randomized positions to create buttons, and create dictionary of positions player saw in given trial
@@ -90,7 +105,7 @@ function duration(offlineMode) {
         clearInterval(intervalID);
     }, 
     response_ends_trial: true,
-    trial_duration: TRIAL_DURATION,
+    trial_duration: (TRIAL_DURATION),
 };
 
 // wait for other players' info and update local information
@@ -128,7 +143,7 @@ let artDisplaySelectionWait = {
     function_ends_trial: true
 }
 
-let artDisplaySelection = [artDisplaySelectionChoice, artDisplaySelectionWait];
+let artDisplaySelection = [createNodeWithTrial(artDisplaySelectionChoice), createNodeWithTrial(artDisplaySelectionWait)];
 
 /* ---- art display while copying ---- */ 
 
@@ -136,7 +151,7 @@ let artDisplaySelection = [artDisplaySelectionChoice, artDisplaySelectionWait];
 let artDisplayCopyChoice = { 
     type: "multi-image-button-response", 
     on_start: function() { 
-        intervalID = startTimer(TRIAL_DURATION / 1000);
+        intervalID = startTimer(TIMER_DURATION);
     },
     stimulus: function() { 
         // create array of images with randomized position and add positions to dictionary
@@ -229,14 +244,14 @@ let artDisplayCopyWait = {
     function_ends_trial: true
 }
 
-let artDisplayCopy = [artDisplayCopyChoice, artDisplayCopyWait]
+let artDisplayCopy = [createNodeWithTrial(artDisplayCopyChoice), createNodeWithTrial(artDisplayCopyWait)];
 
 /* ---- choose whether to copy timeline ---- */ 
 
 let chooseToCopyChoice = {
     type: "html-button-response",
     on_start: function() { 
-        intervalID = startTimer(TRIAL_DURATION / 1000);
+        intervalID = startTimer(TIMER_DURATION);
     },
     stimulus: function() { 
         let s = "";
@@ -296,14 +311,13 @@ let chooseToCopyChoice = {
     trial_duration: TRIAL_DURATION
 }
 
+let chooseToCopyChoice_node = createNodeWithTrial(chooseToCopyChoice);
+
 let chooseToCopyWait = { 
     type: "waiting",
     on_start: function() { 
         document.getElementById("countdown-timer").innerHTML = "";
-        console.log(jsPsych.progress().current_trial_global)
-        console.log(player)
-        console.log(dummyPlayers)
-
+        console.log(numTimeRanOut);
     }, 
     prompt: "Please wait for other players.", 
     trial_function: function() {
@@ -329,4 +343,4 @@ let chooseToCopyWait = {
     function_ends_trial: true
 }
 
-let chooseToCopy = [chooseToCopyChoice, chooseToCopyWait]
+let chooseToCopyWait_node = createNodeWithTrial(chooseToCopyWait);
