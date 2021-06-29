@@ -299,9 +299,11 @@ jsPsych.plugins["multi-image-button-response"] = (function() {
 
         // add stimuli to html as image elements (if applicable)
         if (trial.stimulus !== null) {
+          html += "<div class='stimulus-image-wrapper'>"
           for (let i = 0; i < trial.stimulus.length; i++) {
             html += `<img src = "${trial.stimulus[i]}" class = "multi-image-stimulus" id="jspsych-multi-image-button-response-stimulus-${i}">`;
           }  
+          html+="</div>"
         }
         // add buttons (using trial.button_html if applicable)
         // first get button_html into array:
