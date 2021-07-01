@@ -104,15 +104,25 @@ function buildTable_DirectPayoff(){
         s += `Your total bonus from from artworks is now <span id='congrats-player-money'>${player.reward}</span>!</div>`    
     }
 
+    s = showImageChosen(s);
+
     let table = introString(s) + "<th> Total Bonus from Artworks </th>";
     const addRowEnd = "</tr>";
 
+    // find change between this trial and last trial
+    let previous_money_index = jsPsych.progress().current_trial_global-4;
+    let amount_earned = getAmountEarned(previous_money_index, player.id);
+
     // build first row of table (yourself)    
-    table += selfBasic() + `<td id=self-reward-total>${player.reward}</td` + addRowEnd; 
+    table += selfBasic() + `<td id=self-reward-total><span id=reward-total>${player.reward}</span><span id=amount-earned>+${amount_earned} this round</span></td` + addRowEnd; 
 
     // build row of table for each player
     for(i = 0; i < numPlayers; i++) {
-        table += (otherBasic(dummyPlayers[i]) + `<td>${dummyPlayers[i].reward}</td`+ addRowEnd);
+        let amount_earned = getAmountEarned(previous_money_index, dummyPlayers[i].id);
+
+        let to_add = (otherBasic(dummyPlayers[i])) + `<td>${dummyPlayers[i].reward}<span id=amount-earned>+${amount_earned} this round</span></td>` + addRowEnd;
+
+        table += to_add;
     }
     table += TABLE_END_HTML;
 

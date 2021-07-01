@@ -75,7 +75,7 @@ function isValidButton(button) {
     return (button >= 0) && (button <= numPlayers); 
 }
 
-// calculate the amount player with given id earned between this and previous round
+// calculate the amount player with given id earned between this and previous round; takes player condition into account
 function getAmountEarned(index, id) {
     // find trial data where it saved player_money in previous round
     let trial_data = getDataAtIndex(index);
