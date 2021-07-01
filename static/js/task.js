@@ -151,10 +151,12 @@ The functions are defined in func-defs files:
 				conditional_function: function() {
 					let is_last = numExecutions >= NUM_DECISIONS;
 					if (is_last) {
-						console.log(`${player.name}: ${player.logPlayerStats()}`);
+						console.log(`${player.name}:`)
+						player.logPlayerStats();
 						for(i = 0; i < numPlayers; i++){
 							let d = dummyPlayers[i];
-							console.log(`${d.name}: ${d.logPlayerStats()}`);
+							console.log(`${d.name}:`);
+							d.logPlayerStats();
 						}
 					}
 					

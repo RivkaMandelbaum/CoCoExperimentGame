@@ -33,7 +33,11 @@ function showImageChosen(s) {
             return s + `<div id="stimulus-flexbox-wrapper"><div id="choice-display"><p id="choice-display-caption">${name} did not make a choice.</p></div>`;
         }
     }
-   else return s;
+    // only occurs in first mechanism trial, where image choice is hardcoded
+   else { 
+       let choice_html = `<div id="stimulus-flexbox-wrapper"><div id="choice-display"><p id="choice-display-caption">You chose:</p><img id="choice-display-img" src=${IMG1.filepath}/></div>`;
+       return s + choice_html;;
+    };
 
 }
 

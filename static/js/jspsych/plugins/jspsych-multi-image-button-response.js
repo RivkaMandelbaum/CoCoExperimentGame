@@ -155,8 +155,14 @@ jsPsych.plugins["multi-image-button-response"] = (function() {
           }
         }
 
+        console.log("checking trial preamble");
         if (trial.preamble != null) {
-          display_element.innerHTML += trial.preamble;
+          console.log("trial preamble is not null");
+          //display_element.appendChild(document.createTextNode(trial.preamble));
+          // let template = document.createElement('template');
+          // let preamble_html = (trial.preamble).trim();
+          // template.innerHTML = preamble_html;
+          //display_element.insertAdjacentHTML('beforeend', trial.preamble);
         }
 
         // create canvas element 
@@ -292,8 +298,8 @@ jsPsych.plugins["multi-image-button-response"] = (function() {
       else {
         // use html variable to build html of: stimuli, buttons, and prompt if applicable
         let html = ""; 
-
-        if (trial.preamble !== null) { 
+       
+        if (trial.preamble != null) {
           html += trial.preamble;
         }
 

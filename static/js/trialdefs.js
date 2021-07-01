@@ -91,7 +91,7 @@ function createNodeWithTrial(trial_definition) {
 
         return ch; 
     }, 
-    prompt: "Please select what you think is the <strong> highest-value </strong> artwork.",
+    /*prompt:*/preamble: "Please select what you think is the <strong> highest-value </strong> artwork.",
     data: {
         dummy_choices: "Placeholder to be updated in waiting trial through backendArtSelections function. Array of Artwork objects.", 
         order: "Placeholder to be updated in the on_finish function."
