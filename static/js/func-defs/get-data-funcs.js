@@ -109,5 +109,7 @@ function getAmountEarned(index, id) {
         prev_money = (id == player.id) ? trial_data[`player_${property_name}`] : trial_data[`dummy_${property_name}`][dummy_pos];
     }
 
+    // console.log(`curr: ${curr_money}, prev: ${prev_money}, amount earned: ${curr_money - prev_money}`)
+
     return (curr_money - prev_money);
 }

@@ -18,7 +18,7 @@ function duration(offlineMode) {
     else return null;
 }
 
-/* wraps each trial with a conditional function based on whether the player is valid (hasn't failed attention check twice or ran out of time twice) */
+/* wraps each trial with a conditional function based on whether the player is valid */
 function createNodeWithTrial(trial_definition) { 
     const NODE_TEMPLATE = {
         timeline: null,
@@ -66,8 +66,9 @@ function createNodeWithTrial(trial_definition) {
     type: "multi-image-button-response",
     on_start: function() { 
         intervalID = startTimer(TIMER_DURATION);
-    },
+   },
     choices: function() {
+
         // return array of artworks in randomized positions to create buttons, and create dictionary of positions player saw in given trial
         let ch = [];
         let img_array = getArtworks(offlineMode, numExecutions);
@@ -91,7 +92,8 @@ function createNodeWithTrial(trial_definition) {
 
         return ch; 
     }, 
-    /*prompt:*/preamble: "Please select what you think is the <strong> highest-value </strong> artwork.",
+    /*preamble:*/
+    prompt: "Please select what you think is the <strong> highest-value </strong> artwork.",
     data: {
         dummy_choices: "Placeholder to be updated in waiting trial through backendArtSelections function. Array of Artwork objects.", 
         order: "Placeholder to be updated in the on_finish function."
@@ -124,6 +126,12 @@ let artDisplaySelectionWait = {
         // send and collect responses and update previous trial data
         backendArtSelections(trial_index, offlineMode);
 
+        // test that copying actually worked
+        let choices_arr = getDataAtIndex(trial_index).dummy_choices;
+        let s = ""; 
+        choices_arr.forEach(element => s += element.name + ", ");
+        console.log(s);
+        
         // update self money and update display to match
         let reward = getPlayerReward(trial_index);
         player.money += reward;

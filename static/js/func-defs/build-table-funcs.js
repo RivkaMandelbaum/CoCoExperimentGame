@@ -105,7 +105,7 @@ function buildTable_DirectPayoff(){
             let pos = idLookup[playerState.player_copying_id];
             s += `Good choice copying <span id='congrats-player-name'>${dummyPlayers[pos].name}</span>! `;
         }
-        s += `Your total bonus from from artworks is now <span id='congrats-player-money'>${player.reward}</span>!</div>`    
+        s += `Your total bonus from artworks is now <span id='congrats-player-money'>${player.reward}</span>!</div>`    
     }
 
     s = showImageChosen(s);
@@ -116,6 +116,7 @@ function buildTable_DirectPayoff(){
     // find change between this trial and last trial
     let previous_money_index = jsPsych.progress().current_trial_global-4;
     let amount_earned = getAmountEarned(previous_money_index, player.id);
+
 
     // build first row of table (yourself)    
     table += selfBasic() + `<td id=self-reward-total><span id=reward-total>${player.reward}</span><span id=amount-earned>+${amount_earned} this round</span></td` + addRowEnd; 

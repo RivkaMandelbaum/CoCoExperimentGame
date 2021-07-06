@@ -107,27 +107,28 @@ function backendArtSelections(trial_index, offlineMode) {
 
     // in offline mode, fill with dummy values
     if(offlineMode) {  
-        trial_data.dummy_choices = new Array(numPlayers).fill(null);
- 
+        trial_data.dummy_choices = new Array(numPlayers+1/*FIX*/ ).fill(null); // was numPlayers
+
         // if first round (or first training round), no one is copying, so decide other players' choices and return 
         copying_trial_index = trial_index - 2; 
         copying_trial_data = getDataAtIndex(copying_trial_index);
 
-        if(copying_trial_data.trial_type !== "html-button-response" || copying_trial_data.prompt !== "<div class='prompt'>Which player would you like to copy?</div>") { 
+        if(copying_trial_data.trial_type !== "html-button-response" || copying_trial_data.stimulus.includes("ignore")) { 
             // update dummy choices
             for (i = 0; i < numPlayers; i++) {
                 trial_data.dummy_choices[i] = rand_art(trial_index);
              }
+             /*FIX*/ trial_data.dummy_choices[numPlayers] = trial_data.order[getPlayerSelection(trial_index)];
+            console.log("first (training) round; no one is copying");
             return; 
         }
 
         // otherwise, get players who are copying
         dummy_copying_choices = copying_trial_data.dummy_choices; // {copying: bool, copying_id: null/int}, sorted in dummyChoices order
 
-
         // figure out everyone's choices (when online, the backend should do this)
         // initialize "visited" array for search
-        let visited = new Array(numPlayers);
+        let visited = new Array(numPlayers+1);/*FIX*/ // was numPlayers
         for(p = 0; p < numPlayers; p++) { 
             visited[p] = !dummy_copying_choices[p].copying;
             
@@ -137,9 +138,11 @@ function backendArtSelections(trial_index, offlineMode) {
             }
 
         }
+        /*FIX*/visited[numPlayers] = !playerState.is_copying;
+        /*FIX*/if(!playerState.is_copying) trial_data.dummy_choices[numPlayers] = trial_data.order[getPlayerSelection(trial_index)];
 
         // dfs-type search to give each of them the choosing information here 
-        for(p = 0; p < numPlayers; p++) { 
+        for(p = 0; p <=/*FIX*/ numPlayers; p++) { // was p < numPlayers
             if (!visited[p]){
                 find_art(p, trial_index);
             }
@@ -147,7 +150,13 @@ function backendArtSelections(trial_index, offlineMode) {
         
         function find_art(p, trial_index) {
             visited[p] = true; 
-            let next_pos = idLookup[dummy_copying_choices[p].copying_id];
+            //was: let next_pos = idLookup[dummy_copying_choices[p].copying_id];
+            /*FIX START*/ let next_pos;
+            if (p === numPlayers) next_pos = idLookup[playerState.player_copying_id];
+            else {
+                let next_id = dummy_copying_choices[p].copying_id;
+                (next_id == player.id) ? next_pos = numPlayers : next_pos = idLookup[next_id];
+            }/*FIX END*/
 
             // base cases: make a decision (set artwork choice) which can propogate back to the first person who copied
             if(visited[next_pos]) { 
@@ -168,6 +177,20 @@ function backendArtSelections(trial_index, offlineMode) {
                 return trial_data.dummy_choices[p]; 
             }
         }
+
+        // DEBUG: log copying choices and artwork choices to console
+        for(let i = 0; i < numPlayers; i++) { 
+            let logstring = `${dummyPlayers[i].name} ---- `
+            if (dummy_copying_choices[i].copying) {
+                let name = (dummy_copying_choices[i].copying_id == player.id) ? player.name : dummyPlayers[idLookup[dummy_copying_choices[i].copying_id]].name;
+               logstring += `copying ${name} ---- `;
+            }
+            logstring += `choice ${trial_data.dummy_choices[i].id}`;
+
+            console.log(logstring);
+        }
+        if(playerState.is_copying) console.log(`${player.name} ---- copying ${dummyPlayers[idLookup[playerState.player_copying_id]].name} ---- choice ${trial_data.dummy_choices[numPlayers].id}`);
+        else console.log(`${player.name} ---- choice ${trial_data.dummy_choices[numPlayers].id}`);
     }
 
     // in online mode, send information about self, receive correct answer and responses, and update the timeline variable to match
@@ -231,12 +254,12 @@ function backendArtSelections(trial_index, offlineMode) {
 }
 
 // picks whether and who the player is copying
-function rand_copy(player_pos) { 
+function rand_copy(dummy_pos) { 
     let rand = Math.random() * (numPlayers + 1); // including yourself
     let rand_int = Math.floor(rand);
 
     // return copying: false if the player is not copying (chose self)
-    if (rand_int == player_pos) { 
+    if (rand_int == dummy_pos) { 
         return { copying: false, copying_id: null }
     }
     // else the player is copying; determine copying_id and return
@@ -249,6 +272,61 @@ function rand_copy(player_pos) {
             curr_copying_id = dummyPlayers[rand_int].id;
         }
         return { copying: true, copying_id: curr_copying_id};
+    }
+}
+
+// find the most competent player in previous round for the bots to copy 
+function copy_most_competent(dummy_pos, trial_index) { 
+    let prev_trial_index = trial_index-5;//1;
+
+    // create array of amount each player earned this round 
+    let amount_earned_arr = dummyPlayers.map(p => getAmountEarned(prev_trial_index, p.id))
+    amount_earned_arr.push(getAmountEarned(prev_trial_index, player.id)); 
+
+            // total condition: bots assume 90% of total money is due to competence in each round
+    if (player.condition == TOTAL_MONEY_CONDITION) { 
+        amount_earned_arr = amount_earned_arr.map(e => e * .9);
+    }
+            // and check that the conditions are consistent
+    else if (player.condition != DIRECT_REWARD_CONDITION) { 
+        console.warn("Inconsistent conditions!");
+        return { copying: false, copying_id: null};
+    }
+
+    // find the most competent player(s):
+    let max = -1;
+    let best_arr = [];
+        // find maximum amount of money
+    for (let i = 0; i < amount_earned_arr.length; i++) { 
+        if (amount_earned_arr[i] > max) {
+            max = amount_earned_arr[i];
+        }
+    }
+        // find player(s) with this amount
+    for (let i = 0; i < amount_earned_arr.length; i++) { 
+        if (amount_earned_arr[i] === max) { 
+            best_arr.push(i);
+        }
+    }
+        // convert array to array of id's
+    best_arr = best_arr.map(e => { if (e+1 === amount_earned_arr.length) return player.id; else return dummyPlayers[e].id;});
+
+        // pick a player to copy
+    let best_player_id = best_arr[Math.floor(Math.random() * best_arr.length)];
+
+    // if (best_pos+1 === amount_earned_arr.length) {
+    //     best_player_id = player.id;
+    // }
+    // else {
+    //     best_player_id = dummyPlayers[best_pos].id;
+    // }
+
+    // based on best player id return whether/who copying
+    if (best_player_id === dummyPlayers[dummy_pos].id) { 
+        return {copying: false, copying_id: null};
+    }
+    else { 
+        return {copying: true, copying_id: best_player_id};
     }
 }
 
@@ -284,7 +362,8 @@ function backendPlayersCopying(offlineMode, playerState, trial_index) {
         // determine others' choices randomly
         let copying_info = [];
         for(let i = 0; i < numPlayers; i++) { 
-            let copy_choice = rand_copy(i);
+            //let copy_choice = rand_copy(i); // - for random copy policy
+            let copy_choice = copy_most_competent(i, trial_index); // bots use competence to choose
             copying_info.push(copy_choice);
         }
 
@@ -299,7 +378,7 @@ function backendPlayersCopying(offlineMode, playerState, trial_index) {
         if(playerState.is_copying) { 
             delta_money[player_index] -= COPY_FEE;
 
-            let player_copying_pos = playerState.player_copying_id;
+            let player_copying_pos = idLookup[playerState.player_copying_id];
             delta_money[player_copying_pos] += COPY_FEE;
             delta_num_was_copied[player_copying_pos]++; 
         }

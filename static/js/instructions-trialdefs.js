@@ -311,7 +311,6 @@ let realistic_training_trials = {
     timeline: [
 			// if not copying: display art and allow selection; update money of all players
 			createNodeWithTrial({
-                // timeline: instructions_artDisplaySelection, 
                 timeline: instructions_artDisplaySelection,
 				conditional_function: function() { 
 					// return true when the player will select 
@@ -336,6 +335,7 @@ let realistic_training_trials = {
                         intervalID = startTimer(TRAINING_TIMER_DURATION);
                     },
                     stimulus: function() { 
+                        
                         let s = practice_explanation;
                         
                         s += conditionLookup[player.condition]();

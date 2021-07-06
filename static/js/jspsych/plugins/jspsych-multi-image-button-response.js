@@ -155,14 +155,15 @@ jsPsych.plugins["multi-image-button-response"] = (function() {
           }
         }
 
-        console.log("checking trial preamble");
+        //console.log("checking trial preamble");
         if (trial.preamble != null) {
-          console.log("trial preamble is not null");
+          //console.log("trial preamble is not null");
           //display_element.appendChild(document.createTextNode(trial.preamble));
           // let template = document.createElement('template');
           // let preamble_html = (trial.preamble).trim();
           // template.innerHTML = preamble_html;
           //display_element.insertAdjacentHTML('beforeend', trial.preamble);
+          display_element.innerHTML += trial.preamble;
         }
 
         // create canvas element 

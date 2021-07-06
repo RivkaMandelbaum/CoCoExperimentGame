@@ -41,6 +41,11 @@ Player.prototype.logPlayerStats = function() {
     console.log(stats);
 }
 
+Player.prototype.getPlayerStats = function() {
+    this.testPlayerStats();
+    return `id: ${this.id}, total: ${this.money}, reward: ${this.reward}, was_cop: ${this.numWasCopied}, copy_other: ${this.numCopyingOther}, condition: ${this.condition}`;
+}
+
 /* --- updating all players --- */
 /* update the stats of players based on who is copying in a given round
 copyingInfo object should be an array of objects received from the server
@@ -56,6 +61,7 @@ with the following fields: {
 There should be one object per player including the self.  
 */
 function updateCopying(copyingInfo) { 
+
     for (i = 0; i <= numPlayers; i++) { 
         currObj = copyingInfo[i]; 
 
@@ -64,7 +70,6 @@ function updateCopying(copyingInfo) {
             player.numWasCopied += currObj.num_was_copied; 
 
             player.money += currObj.delta_money;
-
             showSidebarInfo();
 
             if (currObj.copying) player.numCopyingOther++; 
@@ -79,6 +84,25 @@ function updateCopying(copyingInfo) {
             if(currObj.copying) currPlayer.numCopyingOther++;
         }
     }
+    testUpdateCopying(copyingInfo);
+}
+// test that the copying info is correct and matches the updated stats
+    function testUpdateCopying(copyingInfo){ 
+    copyingInfo.forEach((element) => { 
+        let curr_player;
+        if (element.id == player.id){
+            curr_player = player;
+        } 
+        else {
+            curr_player = dummyPlayers[idLookup[element.id]];
+        }
+
+        let name = curr_player.name;
+
+        if (element.copying) console.log(`${name} (${element.id}) is copying plyr ${element.copying_id} and has stats: ${curr_player.getPlayerStats()}`);
+        else console.log(`${name} (${element.id}) is not copying and has stats: ${curr_player.getPlayerStats()}`);
+    });
+    return;
 }
 
 /* --- miscellaneous player-related functions --- */
