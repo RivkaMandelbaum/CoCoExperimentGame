@@ -42,7 +42,7 @@ let instructions_node_2 = createNodeWithTrial({
     ],
     // the game only accesses these constants during actual gameplay
     on_load: function() { 
-        document.getElementById("game-goal").innerHTML = `<div id='game-goal-wrapper'><h1>Choose Arts - Earn Bonus</h1><p>Imagine you are invited to an art museum with ${numPlayers} other players.</p><p>In each round, all players will be shown ${NUM_IMAGES} randomly selected artworks. </p><p>You will be asked to choose the art that you think is the most expensive.</p></div>`;
+        document.getElementById("game-goal").innerHTML = `<div id='game-goal-wrapper'><h1>Choose Arts - Earn Bonus</h1><p>Imagine you are invited to an art museum with ${numOtherPlayers} other players.</p><p>In each round, all players will be shown ${NUM_IMAGES} randomly selected artworks. </p><p>You will be asked to choose the art that you think is the most expensive.</p></div>`;
     },
     on_finish: function() { 
         clearInterval(intervalID);
@@ -87,28 +87,32 @@ let startWait = {
         // returns object with numPlayers, self id, and other ids as array 
         // if offline, will return dummy values of those 
         let initObject = getPlayerInfo(offlineMode); 
-        numPlayers = initObject.players; 
+        numPlayers = initObject.num_players; 
+        numOtherPlayers = numPlayers - 1;
 
-        // define player 
-        let self = initObject.self_info; 
-        player = new Player(self.id, self.name, self.avatar_filepath, self.condition);
-        showSidebarInfo(); 
-
-        // define dummy players 
-        for(i = 0; i < numPlayers; i++) {
+        // define other players
+        for (let i = 0; i < numOtherPlayers; i++) { 
             let other_info = initObject.player_info[i];
             let otherPlayer = new Player(other_info.id, other_info.name, other_info.avatar_filepath, other_info.condition);
 
-            dummyPlayers[i] = otherPlayer;
-            idLookup[otherPlayer.id] = i; 
+            players.push(otherPlayer);
+            idLookup[otherPlayer.id] = i;
         }
+
+         // define self and add to array 
+         let self_info = initObject.self_info; 
+         self = new Player(self_info.id, self_info.name, self_info.avatar_filepath, self_info.condition);
+         showSidebarInfo(); 
+         
+         players.push(self);
+         idLookup[self.id] = numPlayers - 1;     
     }, 
     on_finish: function() { 
         // update participant condition data
-        getDataAtIndex(jsPsych.progress().current_trial_global).participant_condition = player.condition; 
+        getDataAtIndex(jsPsych.progress().current_trial_global).participant_condition = self.condition; 
     }, 
     data: {
-        participant_condition: "placeholder", // to be updated when player.condition is received from backend
+        participant_condition: "placeholder", // to be updated when self.condition is received from backend
     },
     max_trial_duration: function() { return duration(offlineMode)},
     function_ends_trial: true,  
@@ -120,7 +124,7 @@ let startTrial = [createNodeWithTrial(startWait)];
 let intro_mechanism_trial = createNodeWithTrial({
     type: "html-keyboard-response",
     stimulus: function() { 
-        return `<h1>Welcome!</h1><p>To other players, you will appear as: <div id='player-name-avatar'><img src=${player.avatar_filepath} id ='intro-player-avatar' />${player.name.replace("(you)", "")}</div>`;
+        return `<h1>Welcome!</h1><p>To other players, you will appear as: <div id='player-name-avatar'><img src=${self.avatar_filepath} id ='intro-player-avatar' />${self.name.replace("(you)", "")}</div>`;
     }, 
     prompt: "Press any key to continue.",
     trial_duration: 10 * TRAINING_TRIAL_DURATION,
@@ -182,12 +186,9 @@ let first_mechanism_trial = createNodeWithTrial({
     on_finish: function() { 
         clearInterval(intervalID);
 
-        // update the players based on the (hardcoded) amount that they earned
-        player.money += IMG1.value;
-        player.reward += IMG1.value;
-        for (let i = 0; i < numPlayers; i++) {
-            dummyPlayers[i].money += IMG1.value;
-            dummyPlayers[i].reward += IMG1.value;
+        for (let i = 0; i < numPlayers; i++) { 
+            players[i].money += IMG1.value;
+            players[i].reward += IMG1.value;
         }
     }, 
 });
@@ -211,11 +212,10 @@ let second_mechanism_round = createNodeWithTrial({
     stimulus: function() {
         // set a random correct player for this round (only if correct_player has not yet been set, so the player remains the same if they get it wrong the first time)
         if(correct_player === undefined) { 
-            let rand_player = Math.floor(Math.random() * numPlayers);
-            correct_player = rand_player;
+            correct_player = Math.floor(Math.random() * numOtherPlayers);
         }
 
-        let explanation_string = `<p>This screen provides information about each player.</p><p>To show that you understand, please <strong>ignore</strong> the instruction below and choose to copy <strong>${dummyPlayers[correct_player].name}</strong>.</p>`;
+        let explanation_string = `<p>This screen provides information about each player.</p><p>To show that you understand, please <strong>ignore</strong> the instruction below and choose to copy <strong>${players[correct_player].name}</strong>.</p>`;
 
         // create table with preamble, prompt to return
         let tablefunc = conditionLookup[mycondition]; 
@@ -229,8 +229,8 @@ let second_mechanism_round = createNodeWithTrial({
     // prompt: "<div class='prompt'>Which player would you like to copy?</div>",
     choices: function() { 
         let ch = ["None, I would like to make my own choice."];
-        for (i = 0; i < numPlayers; i++) { 
-            ch.push(`${dummyPlayers[i].name}`);
+        for (i = 0; i < numOtherPlayers; i++) { 
+            ch.push(`${players[i].name}`);
         }
         return ch; 
     },
@@ -294,13 +294,13 @@ instructions_artDisplaySelectionChoice.preamble = practice_explanation;
 let instructions_artDisplaySelection = [createNodeWithTrial(instructions_artDisplaySelectionChoice), createNodeWithTrial(artDisplaySelectionWait)];
 let instructions_artDisplayCopyChoice = Object.assign({}, artDisplayCopyChoice);
 instructions_artDisplayCopyChoice.preamble =  function() { 
-    if (playerState.is_copying) { 
-        let pos = idLookup[playerState.player_copying_id];
-        let name = dummyPlayers[pos].name;
+    if (self.is_copying) { 
+        let pos = idLookup[self.copying_id];
+        let name = players[pos].name;
         return `${practice_explanation}<p id='copying-no-choice-explanation'>Because you're copying <strong>${name}</strong>, you can't choose an artwork in this round. Here are the artworks that ${name} is choosing from.</p>`   
     }
     else {
-        console.warn("Art display copy trial reached, but playerState.is_copying is false!");
+        console.warn("Art display copy trial reached, but self.is_copying is false!");
     }
 }
 let instructions_artDisplayCopy = [createNodeWithTrial(instructions_artDisplayCopyChoice), createNodeWithTrial(artDisplayCopyWait)];
@@ -312,7 +312,7 @@ let realistic_training_trials = {
                 timeline: instructions_artDisplaySelection,
 				conditional_function: function() { 
 					// return true when the player will select 
-					return !playerState.is_copying;  
+					return !self.is_copying;  
                 }, 
 			}),
 			// if copying: display art and disallow selection; update money of all players 
@@ -320,7 +320,7 @@ let realistic_training_trials = {
 				timeline: instructions_artDisplayCopy, 
 				conditional_function: function() { 
 					// return true when the player does not select
-					return playerState.is_copying; 
+					return self.is_copying; 
 				}  
 			}),
             // display player's results and allow choice to copy (or "continue" in last round)
@@ -336,7 +336,7 @@ let realistic_training_trials = {
                         
                         let s = practice_explanation;
                         
-                        s += conditionLookup[player.condition]();
+                        s += conditionLookup[self.condition]();
 
                         if(numExecutions < TRAINING_NUM_DECISIONS) { 
                             s += (`<div id='next-round-instructions'>In the next round, you may either choose the highest-value artwork on your own or pay another player $${COPY_FEE} to copy their choice.</div></div>`);
@@ -352,8 +352,8 @@ let realistic_training_trials = {
                     choices: function() { 
                         if (numExecutions < TRAINING_NUM_DECISIONS) { 
                             let ch = ["None, I would like to make my own choice."];
-                            for (i = 0; i <numPlayers; i++) { 
-                                ch.push(`${dummyPlayers[i].name}`);
+                            for (i = 0; i < numOtherPlayers; i++) { 
+                                ch.push(`${players[i].name}`);
                             }
                             return ch; 
                         }
@@ -362,12 +362,9 @@ let realistic_training_trials = {
                         }
                     }, 
                     data: {
-                        dummy_choices: "Placeholder",        
-                        player_money: function() { return player.money },
-                        player_reward: function() { return player.reward },
-                        dummy_money: function() { return dummyPlayers.map(p => p.money) },
-                        dummy_reward: function() { return dummyPlayers.map(p => p.reward) }
-                
+                        copy_choices: "Placeholder", 
+                        players_money: function() { return players.map(p => p.money)},
+                        players_reward: function() { return players.map(p => p.reward)}
                     },
                     on_finish: function() { 
                         clearInterval(intervalID)
@@ -380,17 +377,13 @@ let realistic_training_trials = {
                     return numExecutions < TRAINING_NUM_DECISIONS;
                 }
 			}),
-			// update stats for all players, playerState.is_copying, playerState.player_copying_id if copying (except last round)
+			// update stats for all players, self.is_copying, playerState.player_copying_id if copying (except last round)
 			createNodeWithTrial({
                 timeline: [chooseToCopyWait],
                 conditional_function: function() {
 					let is_last = numExecutions >= TRAINING_NUM_DECISIONS;
 					if (is_last) {
-						player.logPlayerStats();
-						for(i = 0; i < numPlayers; i++){
-							let d = dummyPlayers[i];
-							d.logPlayerStats();
-						}
+                        players.forEach(p => p.logPlayerStats());
 					}
 					
 					return !is_last;
@@ -418,7 +411,7 @@ let quiz_round = {
 
     },
     preamble: function(){ 
-        let build_table_func = conditionLookup[player.condition];
+        let build_table_func = conditionLookup[self.condition];
         return build_table_func() + "Please scroll to answer these questions before continuing to the game."
     },
     questions: function() { 
@@ -426,9 +419,9 @@ let quiz_round = {
         correct_answers = [];
 
         // define answers for first question
-        let quiz_answers = [player.name];
+        let quiz_answers = [];
         for(let i=0; i<numPlayers; i++) { 
-            quiz_answers.push(dummyPlayers[i].name);
+            quiz_answers.push(players[i].name);
         }
         quiz_answers.push("Not enough information");
 
@@ -443,30 +436,27 @@ let quiz_round = {
 
         // find the best players for the next question and to find the correct answer
         let best_player_names = [];
-        let best_dummy_player = "another player";
+        let best_other_player = "another player";
         let most_money = 0;
 
         // make the sort happen by different properties depending on condition
-        let dummy_players_attribute = dummyPlayers.map(function(p) { 
-            if (player.condition == TOTAL_MONEY_CONDITION) return p.money;
-            else if (player.condition == DIRECT_REWARD_CONDITION) return p.reward;
+        let players_property = players.map(function(p) { 
+            if (self.condition === TOTAL_MONEY_CONDITION) return p.money;
+            else if (self.condition === DIRECT_REWARD_CONDITION) return p.reward;
         })
-        let player_attribute = player.money;
-        if (player.condition == DIRECT_REWARD_CONDITION) player_attribute = player.reward;
 
-        // find best dummy player
-        for (let i = 0; i < numPlayers; i++) { 
-            let curr_money = dummy_players_attribute[i];
-            if (curr_money> most_money) { 
+        // find best other player
+        for (let i = 0; i < numOtherPlayers; i++) { 
+            let curr_money = players_property[i];
+            if (curr_money > most_money) { 
                 most_money = curr_money;
-                best_dummy_player = dummyPlayers[i].name;
+                best_other_player = players[i].name;
             }
         }
 
         // find list of players with the most amount of money
-        if (player_attribute >= most_money) best_player_names.push(player.name);
         for (let i = 0; i < numPlayers; i++) { 
-            if (dummy_players_attribute[i] == most_money) best_player_names.push(dummyPlayers[i].name);
+            if (players_property[i] >= most_money) best_player_names.push(players[i].name);
         }
 
         correct_answers.money = best_player_names;
@@ -474,7 +464,7 @@ let quiz_round = {
         // define second question
         let copy_fee = { 
             name: "copy_fee",
-            prompt: `<span class='question-1-text'>If you wanted to copy ${best_dummy_player}, how much money would you have to pay?</span>`,
+            prompt: `<span class='question-1-text'>If you wanted to copy ${best_other_player}, how much money would you have to pay?</span>`,
             options: ["$0.5", "$1", "$2", "$3", "$4", "Other"]
         }
         questions.push(copy_fee);
@@ -492,8 +482,8 @@ let quiz_round = {
             options: [direct_payoff_condition, copy_payoff_condition, total_payoff_condition, "Neither art value nor copy fee", "I don't know"]
         }
         questions.push(total_meaning);
-        if(player.condition == TOTAL_MONEY_CONDITION) correct_answers.total_meaning = total_payoff_condition;
-        else if(player.condition == 1) correct_answers.total_meaning = direct_payoff_condition;
+        if(self.condition == TOTAL_MONEY_CONDITION) correct_answers.total_meaning = total_payoff_condition;
+        else if(self.condition == 1) correct_answers.total_meaning = direct_payoff_condition;
         else console.warn("Inconsistent conditions");
 
         return questions;

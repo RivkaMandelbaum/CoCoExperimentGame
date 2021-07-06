@@ -29,7 +29,7 @@ Player.prototype.resetPlayerStats = function() {
 Player.prototype.testPlayerStats = function () { 
     let expected_amount = START_MONEY + (this.numWasCopied * COPY_FEE) + (this.reward) - (this.numCopyingOther * COPY_FEE);
 
-    if (this.money != expected_amount) console.warn(`Player ${this.id} (${this.name}) has inconsistent stats!`);
+    if (this.money != expected_amount) console.warn(`Player ${this.id} (${this.name}) has inconsistent stats! Expected: ${expected_amount}, actual: ${this.money}`);
 }
 
 // logs player stats (id and properties whose values change during the game) to the consosle

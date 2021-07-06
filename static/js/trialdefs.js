@@ -40,17 +40,13 @@ function createNodeWithTrial(trial_definition) {
 		on_start: function() { 
             intervalID = startTimer(TIMER_DURATION); 
 
-			player.resetPlayerStats();
-			console.log("reset player stats")
-			showSidebarInfo();
+            for (let i = 0; i < numPlayers; i++) { 
+                players[i].resetPlayerStats(); 
+            }
+            showSidebarInfo();
+            console.log("Reset player stats");
 
-			for(let i = 0; i < numPlayers; i++) { 
-				dummyPlayers[i].resetPlayerStats();
-			}
-
-			playerState.is_copying = false;
-			playerState.player_copying_id = -1; 
-			numExecutions = 0; 		
+            numExecutions = 0; 		
         },
         on_finish: function() { 
             clearInterval(intervalID);
@@ -95,7 +91,7 @@ function createNodeWithTrial(trial_definition) {
     /*preamble:*/
     prompt: "Please select what you think is the <strong> highest-value </strong> artwork.",
     data: {
-        dummy_choices: "Placeholder to be updated in waiting trial through backendArtSelections function. Array of Artwork objects.", 
+        art_choices: "Placeholder to be updated in waiting trial through backendArtSelections function. Array of Artwork objects.", 
         order: "Placeholder to be updated in the on_finish function."
     }, 
     on_finish: function() {
@@ -126,24 +122,13 @@ let artDisplaySelectionWait = {
         // send and collect responses and update previous trial data
         backendArtSelections(trial_index, offlineMode);
 
-        // test that copying actually worked
-        let choices_arr = getDataAtIndex(trial_index).dummy_choices;
-        let s = ""; 
-        choices_arr.forEach(element => s += element.name + ", ");
-        console.log(s);
-        
-        // update self money and update display to match
-        let reward = getPlayerReward(trial_index);
-        player.money += reward;
-        player.reward += reward;
-        showSidebarInfo();
-
-        // update players (uses data from previous trial)
-        for (i = 0; i < numPlayers; i++) { 
-            let reward = getDummyReward(dummyPlayers[i].id, trial_index);
-            dummyPlayers[i].money += reward;
-            dummyPlayers[i].reward += reward;
+        // update player money and reward
+        for (let i = 0; i < numPlayers; i++) { 
+            let reward = getRewardById(players[i].id, trial_index);
+            players[i].money += reward;
+            players[i].reward += reward;
         }
+        showSidebarInfo();
     
         jsPsych.resumeExperiment();
     },
@@ -184,16 +169,16 @@ let artDisplayCopyChoice = {
      
             return st; 
     }, 
-    // stimulus_html: "height: 30vh; width: 30vh",
-    stimulus_height: 25,//function() { return 100/NUM_IMAGES; },
-    stimulus_width: 25,//function() { return 100/NUM_IMAGES; },
+    // stimulus_html: "height: 25vh; width: 25vh",
+    stimulus_height: 25,
+    stimulus_width: 25,
     stimulus_height_units: "vh",
     stimulus_width_units: "vh",
     render_on_canvas: false,
     preamble: function() { 
-        if (playerState.is_copying) { 
-            let pos = idLookup[playerState.player_copying_id];
-            let name = dummyPlayers[pos].name;
+        if (self.is_copying) { 
+            let pos = idLookup[self.copying_id];
+            let name = players[pos].name;
             return `<p id='copying-no-choice-explanation'>Because you're copying <strong>${name}</strong>, you can't choose an artwork in this round. Here are the artworks that ${name} is choosing from.</p>`   
         }
         else {
@@ -203,14 +188,13 @@ let artDisplayCopyChoice = {
     prompt: "<p id='press-continue-copy-screen'.>Press <strong> continue </strong> to see the results.</p>", 
     choices: ["Continue"],
     data: { 
-        dummy_choices: "Placeholder to be updated in waiting trial through backendArtSelections function. Array of Artwork objects.",
+        art_choices: "Placeholder to be updated in waiting trial through backendArtSelections function. Array of Artwork objects.",
         order: "Placeholder to be updated in the on_finish function."
     }, 
     on_finish: function() {
         // update order data to be correct
         let index = jsPsych.progress().current_trial_global;
         getDataAtIndex(index).order = orderLookup[index];
-
 
         // clear timer
         clearInterval(intervalID);
@@ -232,19 +216,13 @@ let artDisplayCopyWait = {
         // get responses and update previous trial data to match
         backendArtSelections(trial_index, offlineMode);
 
-        // using responses, update player stats
-        // self:
-        let reward = getDummyReward(playerState.player_copying_id, trial_index);
-        player.money += reward;
-        player.reward += reward;
-        showSidebarInfo();
-
-        // others: 
-        for (i = 0; i < numPlayers; i++) { 
-            let reward = getDummyReward(dummyPlayers[i].id, trial_index);
-            dummyPlayers[i].money += reward;
-            dummyPlayers[i].reward += reward;
+        // update players' money and reward
+        for (let i = 0; i < numPlayers; i++) { 
+            let reward = getRewardById(players[i].id, trial_index);
+            players[i].money += reward;
+            players[i].reward += reward;
         }
+        showSidebarInfo();
 
         jsPsych.resumeExperiment(); 
     }, 
@@ -265,7 +243,7 @@ let chooseToCopyChoice = {
         let s = "";
 
         // build table (based on the different conditions)
-        let tablefunc = conditionLookup[player.condition];
+        let tablefunc = conditionLookup[self.condition];
         if (typeof(tablefunc) === "function") { 
             s = tablefunc();
         }
@@ -295,8 +273,8 @@ let chooseToCopyChoice = {
     choices: function() { 
         if (numExecutions < NUM_DECISIONS) { 
             let ch = ["None, I would like to make my own choice."];
-            for (i = 0; i <numPlayers; i++) { 
-                ch.push(`${dummyPlayers[i].name}`);
+            for (i = 0; i < numOtherPlayers; i++) { 
+                ch.push(`${players[i].name}`);
             }
             return ch; 
         }
@@ -306,11 +284,11 @@ let chooseToCopyChoice = {
         
     },
     data: { 
-        dummy_choices: "Placeholder to be updated in waiting trial through backendPlayersCopying function",
-        player_money: function() { return player.money },
-        player_reward: function() { return player.reward },
-        dummy_money: function() { return dummyPlayers.map(p => p.money) },
-        dummy_reward: function() { return dummyPlayers.map(p => p.reward) }
+        data: {
+            copy_choices: "Placeholder", 
+            players_money: function() { return players.map(p => p.money)},
+            players_reward: function() { return players.map(p => p.reward)}
+        },
     }, 
     on_finish: function() {
         clearInterval(intervalID);
@@ -333,10 +311,6 @@ let chooseToCopyWait = {
         // information related to previous choice
         let curr_trial_index = jsPsych.progress().current_trial_global;
         let button = getPlayerSelection(curr_trial_index - 1);
-
-        // update relevant variables
-        playerState.is_copying = didPlayerCopy(button); 
-        if(playerState.is_copying) playerState.player_copying_id = dummyPlayers[button-1].id; // button labels are created by iteration thrugh dummyPlayers array in order
 
         // get others' choices and update players
         currInfo = backendPlayersCopying(offlineMode, playerState, curr_trial_index);
