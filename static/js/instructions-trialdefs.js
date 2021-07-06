@@ -200,7 +200,7 @@ let first_mechanism_timeline = {
     }
 }
 
-let correct_player = -1;
+let correct_player = undefined;
 let attempts_second = 0;
 
 let second_mechanism_round = createNodeWithTrial({ 
@@ -210,13 +210,12 @@ let second_mechanism_round = createNodeWithTrial({
     },
     stimulus: function() {
         // set a random correct player for this round (only if correct_player has not yet been set, so the player remains the same if they get it wrong the first time)
-        if(correct_player === -1) { 
+        if(correct_player === undefined) { 
             let rand_player = Math.floor(Math.random() * numPlayers);
             correct_player = rand_player;
         }
 
-        let explanation_string = `<p>This screen provides information about each player.</p><p>To show that you understand, please <strong>ignore</strong> the instruction below and choose to copy <strong>${dummyPlayers[correct_player].name}</strong>.</p>`;/*`<p>This screen provides information about each player.</p><p>In a normal round, you may choose to continue deciding on your own, or to pay $${COPY_FEE} to copy another player.</p><p>In this round, to show that you understand, please choose to copy <strong>${dummyPlayers[correct_player].name}</strong>.</p>`; */
-
+        let explanation_string = `<p>This screen provides information about each player.</p><p>To show that you understand, please <strong>ignore</strong> the instruction below and choose to copy <strong>${dummyPlayers[correct_player].name}</strong>.</p>`;
 
         // create table with preamble, prompt to return
         let tablefunc = conditionLookup[mycondition]; 
@@ -293,7 +292,6 @@ let transition_screen = createNodeWithTrial({
 let instructions_artDisplaySelectionChoice = Object.assign({}, artDisplaySelectionChoice);
 instructions_artDisplaySelectionChoice.preamble = practice_explanation;
 let instructions_artDisplaySelection = [createNodeWithTrial(instructions_artDisplaySelectionChoice), createNodeWithTrial(artDisplaySelectionWait)];
-
 let instructions_artDisplayCopyChoice = Object.assign({}, artDisplayCopyChoice);
 instructions_artDisplayCopyChoice.preamble =  function() { 
     if (playerState.is_copying) { 
