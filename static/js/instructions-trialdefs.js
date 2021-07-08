@@ -86,7 +86,7 @@ let startWait = {
 
         // returns object with numPlayers, self id, and other ids as array 
         // if offline, will return dummy values of those 
-        let initObject = getPlayerInfo(offlineMode); 
+        /*let initObject = getPlayerInfo(offlineMode); 
         console.log(initObject);
         numPlayers = initObject.players; 
 
@@ -102,7 +102,10 @@ let startWait = {
 
             dummyPlayers[i] = otherPlayer;
             idLookup[otherPlayer.id] = i; 
-        }
+        } */
+        console.log('about to call getPlayerInfo');
+        getPlayerInfo(offlineMode);
+        console.log('called getPlayerInfo, player id= ', player.id);
     }, 
     on_finish: function() { 
         // update participant condition data
