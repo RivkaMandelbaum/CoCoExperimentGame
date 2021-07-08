@@ -124,7 +124,7 @@ let artDisplaySelectionWait = {
 
         // update player money and reward
         for (let i = 0; i < numPlayers; i++) { 
-            let reward = getRewardById(players[i].id, trial_index);
+            let reward = getRewardEarned(players[i].id, trial_index);
             players[i].money += reward;
             players[i].reward += reward;
         }
@@ -218,7 +218,7 @@ let artDisplayCopyWait = {
 
         // update players' money and reward
         for (let i = 0; i < numPlayers; i++) { 
-            let reward = getRewardById(players[i].id, trial_index);
+            let reward = getRewardEarned(players[i].id, trial_index);
             players[i].money += reward;
             players[i].reward += reward;
         }

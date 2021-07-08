@@ -20,19 +20,19 @@ function getArtworks(offlineMode, round){
 
 // Gets player info from server at start of experiment. Returns object in the format: 
     /* {
-        players: int (number of players, excluding self),
+        num_players: int (number of players),
         self_info: player info object, with format: {
             id: int, 
             name: string, 
             avatar_filepath: string,
-            condition: string ("easy", "medium", or "hard")
+            condition: int 
         },
         player_info: array of player info objects, one per player, with format: 
             {
                 id: int,
                 name: string,
                 avatar_filepath: string,
-                condition: string ("easy", "medium", or "hard")
+                condition: int
             }
         }
     */
@@ -42,7 +42,7 @@ function getPlayerInfo(offlineMode){
         let default_condition = 0; 
 
         let result = {
-            players: numPlayers,
+            num_players: numPlayers,
             self_info: {
                 id: uniqueId,
                 name: "Aima (you)",
