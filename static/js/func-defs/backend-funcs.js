@@ -107,107 +107,87 @@ function backendArtSelections(trial_index, offlineMode) {
 
     // in offline mode, fill with dummy values
     if(offlineMode) {  
-        trial_data.dummy_choices = new Array(numPlayers+1/*FIX*/ ).fill(null); // was numPlayers
-
         // if first round (or first training round), no one is copying, so decide other players' choices and return 
         copying_trial_index = trial_index - 2; 
         copying_trial_data = getDataAtIndex(copying_trial_index);
 
         if(copying_trial_data.trial_type !== "html-button-response" || copying_trial_data.stimulus.includes("ignore")) { 
             // update dummy choices
-            for (i = 0; i < numPlayers; i++) {
-                trial_data.dummy_choices[i] = rand_art(trial_index);
+            for (i = 0; i < numOtherPlayers; i++) {
+                players[i].art_choice = rand_art(trial_index);
              }
-             /*FIX*/ trial_data.dummy_choices[numPlayers] = trial_data.order[getPlayerSelection(trial_index)];
             console.log("first (training) round; no one is copying");
             return; 
         }
 
-        // otherwise, get players who are copying
-        dummy_copying_choices = copying_trial_data.dummy_choices; // {copying: bool, copying_id: null/int}, sorted in dummyChoices order
-
-        // figure out everyone's choices (when online, the backend should do this)
+        // figure out everyone's choices
         // initialize "visited" array for search
-        let visited = new Array(numPlayers+1);/*FIX*/ // was numPlayers
-        for(p = 0; p < numPlayers; p++) { 
-            visited[p] = !dummy_copying_choices[p].copying;
+        let visited = new Array(numPlayers);
+        for(i = 0; i < numPlayers; i++) { 
+            visited[i] = !(players[i].is_copying);
             
-            // since it's offline, if they're choosing, make their choice and add it to dummy_choices at this point 
-            if(!dummy_copying_choices[p].copying) { 
-                trial_data.dummy_choices[p] = rand_art(trial_index);
+            // if bot is choosing, make their choice at this point 
+            if(!players[i].is_copying) { 
+                if (players[i] != self) players[i].art_choice = rand_art(trial_index);
+            }
+            // if any player is copying, reset their art choice to null
+            else {
+                players[i].art_choice = null;
             }
 
         }
-        /*FIX*/visited[numPlayers] = !playerState.is_copying;
-        /*FIX*/if(!playerState.is_copying) trial_data.dummy_choices[numPlayers] = trial_data.order[getPlayerSelection(trial_index)];
 
         // dfs-type search to give each of them the choosing information here 
-        for(p = 0; p <=/*FIX*/ numPlayers; p++) { // was p < numPlayers
-            if (!visited[p]){
-                find_art(p, trial_index);
+        for(i = 0; i < numPlayers; i++) { 
+            if (!visited[i]){
+                find_art(i, trial_index);
             }
         }
         
-        function find_art(p, trial_index) {
-            visited[p] = true; 
-            //was: let next_pos = idLookup[dummy_copying_choices[p].copying_id];
-            /*FIX START*/ let next_pos;
-            if (p === numPlayers) next_pos = idLookup[playerState.player_copying_id];
-            else {
-                let next_id = dummy_copying_choices[p].copying_id;
-                (next_id == player.id) ? next_pos = numPlayers : next_pos = idLookup[next_id];
-            }/*FIX END*/
+        function find_art(i, trial_index) {
+            visited[i] = true; 
+            let next_pos = idLookup[players[i].copying_id];
 
             // base cases: make a decision (set artwork choice) which can propogate back to the first person who copied
             if(visited[next_pos]) { 
-                // if the person p is copying didn't copy, or they did but they've already been assigned a choice, assign p their info
-                if(trial_data.dummy_choices[next_pos] != null) { 
-                    trial_data.dummy_choices[p] = trial_data.dummy_choices[next_pos];
+                // if the person player at index i is copying didn't copy, or they did but they've already been assigned a choice, assign p their info
+                if(players[next_pos].art_choice != null) { 
+                    players[i].art_choice = players[next_pos].art_choice;
                 }
-                // if the person p is copying did copy (art is initialized to null) but they haven't been assigned a choice (art remains null), there's a loop - randomly assign a choice value
+                // if the person player at index i is copying did copy (art is initialized to null) but they haven't been assigned a choice (art remains null), there's a loop - randomly assign a choice value
                 else { 
-                    // make random choice
-                    trial_data.dummy_choices[p] = rand_art(trial_index);
+                    players[i].art_choice = rand_art(trial_index);
                 }
-                return trial_data.dummy_choices[p];
+                return players[i].art_choice;
             }
-            // if the person p is copying did copy and hasn't been assigned a choice, recursively visit that person
+            // if the person player at index i is copying did copy and hasn't been assigned a choice, recursively visit that person
             else { 
-                trial_data.dummy_choices[p] = find_art(next_pos, trial_index);
-                return trial_data.dummy_choices[p]; 
+                players[i].art_choice = find_art(next_pos, trial_index);
+                return players[i].art_choice; 
             }
         }
 
         // DEBUG: log copying choices and artwork choices to console
         for(let i = 0; i < numPlayers; i++) { 
-            let logstring = `${dummyPlayers[i].name} ---- `
-            if (dummy_copying_choices[i].copying) {
-                let name = (dummy_copying_choices[i].copying_id == player.id) ? player.name : dummyPlayers[idLookup[dummy_copying_choices[i].copying_id]].name;
-               logstring += `copying ${name} ---- `;
+            let logstring = `${players[i].name} ---- `
+            if (players[i].is_copying) {
+                logstring += `copying ${idLookup[players[i].copying_id]} ---- `;
             }
-            logstring += `choice ${trial_data.dummy_choices[i].id}`;
+            logstring += `choice ${players[i].art_choice.id}`;
 
             console.log(logstring);
         }
-        if(playerState.is_copying) console.log(`${player.name} ---- copying ${dummyPlayers[idLookup[playerState.player_copying_id]].name} ---- choice ${trial_data.dummy_choices[numPlayers].id}`);
-        else console.log(`${player.name} ---- choice ${trial_data.dummy_choices[numPlayers].id}`);
     }
 
     // in online mode, send information about self, receive correct answer and responses, and update the timeline variable to match
     else { 
-        let pos, chosen_id, chosen_filepath = null;
-        if(!playerState.is_copying) {
-            pos = getPlayerSelection(trial_index);
-            chosen_id = orderLookup[trial_index][pos].id;
-            chosen_filepath = orderLookup[trial_index][pos].filepath;
-        }
-        let send_message = { 
-            id: player.id, 
-            copying: playerState.is_copying, 
-            copying_id: playerState.player_copying_id, 
-            artwork_chosen_id: chosen_id,
-            artwork_chosen_filepath: chosen_filepath,
-            artwork_chosen_position: pos,
+       let send_message = { 
+            id: self.id, 
+            copying: self.is_copying, 
+            copying_id: self.copying_id, 
+            artwork_chosen_id: self.art_choice.id,
+            artwork_chosen_filepath: self.art_choice.filepath,
+            artwork_chosen_position: getPlayerSelection(trial_index),
             trial_type: "art",
             trial_index: (trial_index+1)
         }
@@ -226,29 +206,28 @@ function backendArtSelections(trial_index, offlineMode) {
         let response = 2; // Math.floor(Math.random() * NUM_IMAGES);
         let response_array = /* PLACEHOLDER */ [
             {
-                id: dummyPlayers[0].id,
+                id: players[0].id,
                 artwork_chosen_id: response,
             },
             {
-                id: dummyPlayers[1].id,
+                id: players[1].id,
                 artwork_chosen_id: response,
             },
             {
-                id: dummyPlayers[2].id,
+                id: players[2].id,
                 artwork_chosen_id: response,
             },
             {
-                id: dummyPlayers[3].id,
+                id: players[3].id,
                 artwork_chosen_id: response,
             }
         ];
         
-        getDataAtIndex(trial_index).dummy_choices = [];
-
         // update data
-        for (i = 0; i < numPlayers; i++) {
-            let pos = idLookup[response_array[i].id];
-            getDataAtIndex(trial_index).dummy_choices[pos] = response_array[i].artwork_chosen_id;
+        for (i = 0; i < numOtherPlayers; i++) {
+            players[i].art_choice = response_array[i].artwork_chosen_id;
+            /* TYPE MISMATCH HERE */
+            console.warn("This code is buggy");
         }
     }
 }
