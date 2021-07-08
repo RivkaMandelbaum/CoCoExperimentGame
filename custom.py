@@ -17,7 +17,7 @@ custom_code = Blueprint('custom_code', __name__, template_folder='templates', st
 
 @custom_code.route('/player_information', methods=['GET'])
 def player_information():
-    print(request.args)
+    print("in player information")
     default_condition = 0
     result = {
         "players": 4,

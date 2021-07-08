@@ -87,6 +87,7 @@ let startWait = {
         // returns object with numPlayers, self id, and other ids as array 
         // if offline, will return dummy values of those 
         let initObject = getPlayerInfo(offlineMode); 
+        console.log(initObject);
         numPlayers = initObject.players; 
 
         // define player 

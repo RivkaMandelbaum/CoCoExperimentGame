@@ -38,7 +38,7 @@ function getArtworks(offlineMode, round){
     */
 // If offline, will return dummy values of those
 function getPlayerInfo(offlineMode){
-    if (offlineMode) {
+    if (!offlineMode) {
         let default_condition = 0; 
 
         let result = {
@@ -80,6 +80,31 @@ function getPlayerInfo(offlineMode){
     }
     else{ 
         console.log("get player info: online mode placeholder")
+        let test_return = "---- VARIABLE NOT UPDATED --- ";
+        function callback(response) { 
+            test_return = response;
+            console.log('test_return in callback is: ', test_return);
+            console.log('response in callback is: ', response);
+        }
+
+        $.ajax("player_information", {
+            type: "GET",
+            data: {"ID": uniqueId, 'condition': mycondition},
+            success: function(data) { 
+                callback(data);
+                console.log('success with data: ', data);
+                // console.log('success with response: ', response.player_results)
+                // test_return = response.player_results;
+                // console.log('test_return set to ', test_return)
+                // console.log('test return field test', test_return.self_info);
+            }, 
+            error: function(textStatus, response){
+                console.log('error', textStatus)
+                console.log(response);
+            }
+        });
+        console.log('test_return before returning', test_return);
+        return test_return;
         /* RECEIVE message as described in function comment */ 
         /* self info can still be uniqueId, mycondition, name like offlineMode */ 
     }
