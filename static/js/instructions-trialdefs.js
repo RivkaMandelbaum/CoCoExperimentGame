@@ -104,7 +104,10 @@ let startWait = {
             idLookup[otherPlayer.id] = i; 
         } */
         console.log('about to call getPlayerInfo');
+        jsPsych.pauseExperiment();
+        console.log('paused experiment');
         getPlayerInfo(offlineMode);
+
         console.log('called getPlayerInfo, player id= ', player.id);
     }, 
     on_finish: function() { 

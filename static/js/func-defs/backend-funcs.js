@@ -89,12 +89,13 @@ function getPlayerInfo(offlineMode){
 
         request.done(function(data) { 
             console.log('data in .done function ', data);
-            jsPsych.pauseExperiment();
-            console.log('paused experiment');
+
             setPlayerInfo(data.player_results);
-            console.log('after set player info function');
             jsPsych.resumeExperiment();
             console.log('resumed experiment');
+            
+            console.log('after set player info function');
+
         });
         // console.log('get_result before return', get_result);
         // return get_result;
