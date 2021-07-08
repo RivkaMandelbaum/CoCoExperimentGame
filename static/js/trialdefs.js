@@ -124,7 +124,7 @@ let artDisplaySelectionWait = {
 
         // update player money and reward
         for (let i = 0; i < numPlayers; i++) { 
-            let reward = getRewardEarned(players[i].id, trial_index);
+            let reward = players[i].art_choice.value;
             players[i].money += reward;
             players[i].reward += reward;
         }
@@ -313,7 +313,7 @@ let chooseToCopyWait = {
         let button = getPlayerSelection(curr_trial_index - 1);
 
         // get others' choices and update players
-        currInfo = backendPlayersCopying(offlineMode, playerState, curr_trial_index);
+        currInfo = backendPlayersCopying(offlineMode, curr_trial_index);
         updateCopying(currInfo); 
 
         jsPsych.resumeExperiment(); 
