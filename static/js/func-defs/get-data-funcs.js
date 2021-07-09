@@ -34,7 +34,7 @@ function didPlayerCopy(buttonPressed) {
 
     // if the button isn't valid, log warning and set copying to false
     if (!isValidButton(buttonPressed)) {
-        console.warn("Invalid player choice!");
+        console.warn(`Invalid player choice: ${buttonPressed}!`);
         return false; 
     }
 

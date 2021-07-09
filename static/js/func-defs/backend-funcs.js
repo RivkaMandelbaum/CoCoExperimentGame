@@ -255,7 +255,7 @@ function rand_copy(curr_pos) {
 }
 
 // find the most competent player in previous round for the bots to copy 
-function copy_most_competent(curr_pos) { 
+function find_best_players() { 
     // create array of amount each player earned this round 
     let amount_earned_arr = players.map(p => (self.condition == TOTAL_MONEY_CONDITION) ? (.9 * p.money_earned) : p.reward_earned);
 
@@ -271,8 +271,7 @@ function copy_most_competent(curr_pos) {
         if (amount_earned_arr[i] > max) {
             max = amount_earned_arr[i];
         }
-    }
-        // find player(s) with this amount
+    }        // find player(s) with this amount
     let best_arr = [];
     for (let i = 0; i < amount_earned_arr.length; i++) { 
         if (amount_earned_arr[i] === max) { 
@@ -280,7 +279,11 @@ function copy_most_competent(curr_pos) {
         }
     }
         // convert to player id's and pick a best player
-    best_arr = best_arr.map(i => players[i].id);
+    return best_arr = best_arr.map(i => players[i].id);
+}
+
+function copy_most_competent(curr_pos) {
+    let best_arr = find_best_players();
     let best_player_id = best_arr[Math.floor(Math.random() * best_arr.length)];
 
     // based on best player id return whether/who copying
@@ -361,8 +364,8 @@ function backendPlayersCopying(offlineMode, trial_index) {
                 id: players[i].id,
                 num_was_copied: delta_num_was_copied[i],
                 delta_money: delta_money[i],
-                copying: copying_info[i].is_copying,
-                copying_id: copying_info[i].copying_id, 
+                copying: players[i].is_copying,
+                copying_id: players[i].copying_id, 
                 trial_type: "copy",
                 trial_index: trial_index
             };

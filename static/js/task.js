@@ -199,7 +199,7 @@ The functions are defined in func-defs files:
 		display_element: 'jspsych-target',
 		on_data_update: function(data) {
 			//psiturk.recordTrialData(data); /* CHECK PSITURK API */
-			console.log("placeholder for recording trial data on update. index: " + data.trial_index)
+			console.log(`------ record trial ${data.trial_index} data here ------`);
 		},
 		on_finish: function () {
 			if(offlineMode){

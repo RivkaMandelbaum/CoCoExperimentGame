@@ -13,12 +13,12 @@ function showImageChosen(s) {
     let choice_trial_data = getDataAtIndex(choice_trial_index);
     let choice, name;
 
-    if (choice_trial_data.dummy_choices != undefined) { 
+    if (choice_trial_data.art_choices != undefined) { 
        
         // find the name and choice of player who chose 
-        let pos = (self.is_copying) ? idLookup[self.id] : idLookup[self.copying_id];
+        let pos = (self.is_copying) ? idLookup[self.copying_id] : idLookup[self.id];
         choice = players[pos].art_choice;
-        name = players[pos].art_name;
+        name = players[pos].name;
 
         if (name.includes("You")) name = "You";
 
