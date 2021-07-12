@@ -67,41 +67,27 @@ function createNodeWithTrial(trial_definition) {
     on_start: function() { 
         intervalID = startTimer(TIMER_DURATION);
    },
-    choices: async function() {
+   choices: function() { 
+       async function asyncCall() { 
+        function returnAPromise() { 
+            return new Promise((resolve, reject) => { 
+                $.ajax("artworks", {
+                    type: "GET",
+                    data: {},
+                    success: (data) => { 
+                        resolve(data.arts);
+                        console.log('success')
+                    },
+                    error: (error) => reject(error),
+                });
+            });
+        }
 
-        // return array of artworks in randomized positions to create buttons, and create dictionary of positions player saw in given trial
+        console.log('calling returnAPromise');
+        const img_array = await returnAPromise(); 
+        console.log('returned from returnAPromise with data ', img_array)
+
         let ch = [];
-        /* $.ajax("artworks", {
-            type: "GET", 
-            data: {'test':'test'},
-            success: function(data) { 
-                console.log('success with data ', data)
-                // return data;
-            }
-        })
-        .then(response => { 
-            img_array = response.arts;
-            let len = img_array.length;
-
-            for(i = 0; i < len; i++) ch.push(i);
-            let shuffled = jsPsych.randomization.shuffle(ch); 
-
-            let order = [];
-
-            // add images to the array in the order they will appear in
-            for(i = 0; i < len; i++){
-                pos = shuffled[i];
-
-                ch[i] = `<img src = ${img_array[pos].filepath}></img>`;
-                order.push(img_array[pos]);
-            }
-
-            // add the order that images appeared to the orderLookup object
-            orderLookup[jsPsych.progress().current_trial_global] = order;
-
-            return ch; 
-        }) */
-        let img_array = getArtworks(offlineMode, numExecutions);
         let len = img_array.length;
 
         for(i = 0; i < len; i++) ch.push(i);
@@ -114,14 +100,129 @@ function createNodeWithTrial(trial_definition) {
             pos = shuffled[i];
 
             ch[i] = `<img src = ${img_array[pos].filepath}></img>`;
+            console.log(`ch[${i}] = ${img_array[pos].filepath}`)
             order.push(img_array[pos]);
         }
 
         // add the order that images appeared to the orderLookup object
         orderLookup[jsPsych.progress().current_trial_global] = order;
+        console.log('about to return ch: ', ch)
+        return ch;
+    }
+    return asyncCall(); 
+   },
+   /*choices: async function() { 
+        function returnAPromise() { 
+            return new Promise((resolve, reject) => { 
+                $.ajax("artworks", {
+                    type: "GET",
+                    data: {},
+                    success: (data) => { 
+                        resolve(data.arts);
+                        console.log('success')
+                    },
+                    error: (error) => reject(error),
+                });
+            });
+        }
 
-        return ch; 
-    }, 
+        console.log('calling returnAPromise');
+        const img_array = await returnAPromise(); 
+        console.log('returned from returnAPromise with data ', img_array)
+
+        let ch = [];
+        let len = img_array.length;
+
+        for(i = 0; i < len; i++) ch.push(i);
+        let shuffled = jsPsych.randomization.shuffle(ch); 
+
+        let order = [];
+
+        // add images to the array in the order they will appear in
+        for(i = 0; i < len; i++){
+            pos = shuffled[i];
+
+            ch[i] = `<img src = ${img_array[pos].filepath}></img>`;
+            console.log(`ch[${i}] = ${img_array[pos].filepath}`)
+            order.push(img_array[pos]);
+        }
+
+        // add the order that images appeared to the orderLookup object
+        orderLookup[jsPsych.progress().current_trial_global] = order;
+        console.log('about to return ch: ', ch)
+        return ch;
+   },
+    /*choices: async function() {
+        function sync_choices() { 
+            return new Promise((resolve, reject) => {
+                // return array of artworks in randomized positions to create buttons, and create dictionary of positions player saw in given trial
+                let ch = [];
+                let test_type = $.ajax("artworks", {
+                    type: "GET", 
+                    data: {'test':'test'},
+                    success: function(data) { 
+                        console.log('success with data ', data)
+                        // return data;
+                    }, 
+                });
+                console.log('type of test_type is: ', typeof(test_type))
+                console.log('test_type is ', test_type)
+                let test_then_type = test_type.then(response => { 
+                    img_array = response.arts;
+                    console.log('img_array ', img_array)
+                    let len = img_array.length;
+
+                    for(i = 0; i < len; i++) ch.push(i);
+                    let shuffled = jsPsych.randomization.shuffle(ch); 
+
+                    let order = [];
+
+                    // add images to the array in the order they will appear in
+                    for(i = 0; i < len; i++){
+                        pos = shuffled[i];
+
+                        ch[i] = `<img src = ${img_array[pos].filepath}></img>`;
+                        order.push(img_array[pos]);
+                    }
+
+                    // add the order that images appeared to the orderLookup object
+                    orderLookup[jsPsych.progress().current_trial_global] = order;
+                    console.log('ch at the end of .then: ', ch)
+                    return(ch); 
+                }) 
+
+                console.log('type of test_then_type is: ', typeof(test_then_type))
+                console.log('test_then_type is ', test_type)
+
+                console.log('end of ch')
+                /* let img_array = getArtworks(offlineMode, numExecutions);
+                let len = img_array.length;
+
+                for(i = 0; i < len; i++) ch.push(i);
+                let shuffled = jsPsych.randomization.shuffle(ch); 
+
+                let order = [];
+
+                // add images to the array in the order they will appear in
+                for(i = 0; i < len; i++){
+                    pos = shuffled[i];
+
+                    ch[i] = `<img src = ${img_array[pos].filepath}></img>`;
+                    order.push(img_array[pos]);
+                }
+
+                // add the order that images appeared to the orderLookup object
+                orderLookup[jsPsych.progress().current_trial_global] = order;
+
+                return ch; *-/ 
+                }
+            }
+            );
+            const result = await sync_choices(); 
+            console.log('before return in wrapper, result is ', result)
+            return(result);
+    
+    }, */
     /*preamble:*/
     prompt: "Please select what you think is the <strong> highest-value </strong> artwork.",
     data: {

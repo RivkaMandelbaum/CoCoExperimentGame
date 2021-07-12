@@ -126,6 +126,7 @@ jsPsych.plugins["multi-image-button-response"] = (function() {
 
     for_preload = trial.stimulus; 
     if (trial.stimulus === null) {
+      console.log('trial.choices is ', trial.choices)
       for_preload = [];
       if(trial.choices[0].includes("<img src")) { 
         for(i = 0; i < trial.choices.length; i++) {
