@@ -83,55 +83,18 @@ function getPlayerInfo(offlineMode){
                  type: "GET",
                  data: {"ID": uniqueId, 'condition': mycondition},
                  success: function(data) { 
-                     console.log('success with data ', data)
+                     return data;
                  }
             });
 
         request.done(function(data) { 
-            console.log('data in .done function ', data);
-
             setPlayerInfo(data.player_results);
             jsPsych.resumeExperiment();
-            console.log('resumed experiment');
-            
-            console.log('after set player info function');
-
         });
-        // console.log('get_result before return', get_result);
-        // return get_result;
-        // console.log("get player info: online mode placeholder")
-        // let test_return = "---- VARIABLE NOT UPDATED --- ";
-        // function callback(response) { 
-        //     test_return = response;
-        //     console.log('test_return in callback is: ', test_return);
-        //     console.log('response in callback is: ', response);
-        // }
-
-        // $.ajax("player_information", {
-        //     type: "GET",
-        //     data: {"ID": uniqueId, 'condition': mycondition},
-        //     success: function(data) { 
-        //         callback(data);
-        //         console.log('success with data: ', data);
-        //         // console.log('success with response: ', response.player_results)
-        //         // test_return = response.player_results;
-        //         // console.log('test_return set to ', test_return)
-        //         // console.log('test return field test', test_return.self_info);
-        //     }, 
-        //     error: function(textStatus, response){
-        //         console.log('error', textStatus)
-        //         console.log(response);
-        //     }
-        // });
-        // console.log('test_return before returning', test_return);
-        // return test_return;
-        /* RECEIVE message as described in function comment */ 
-        /* self info can still be uniqueId, mycondition, name like offlineMode */ 
     }
 }
 
 function setPlayerInfo(initObject) { 
-    console.log('in set player info with data ', initObject);
     numPlayers = initObject.players; 
     
     // define player 
@@ -146,7 +109,6 @@ function setPlayerInfo(initObject) {
         dummyPlayers[i] = otherPlayer;
         idLookup[otherPlayer.id] = i; 
     }
-    console.log('finished set player info');
 }
 
 // When online, does the following:

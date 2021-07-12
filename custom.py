@@ -56,6 +56,32 @@ def player_information():
     }
     return jsonify(**{"player_results":result})
 
+@custom_code.route('/artworks', methods=['GET'])
+def artworks():
+    print("in artworks function")
+
+    arts = [
+        { "name": "KnowingCalm_69",
+         "id": 0,
+        "filepath": "../static/images/artworks/KnowingCalm_69.jpeg",
+         "value": 1},
+        { "name": "ScalingColors_69",
+         "id": 1,
+        "filepath": "../static/images/artworks/ScalingColors_69.jpeg", 
+        "value": 1},
+        { "name": "PhoneCalls_79", 
+        "id": 2, 
+        "filepath": "../static/images/artworks/PhoneCalls_79.jpeg", "value": 2},
+        { "name": "WrappedUp_79", 
+        "id": 3, 
+        "filepath": "../static/images/artworks/WrappedUp_79.jpeg", "value": 2},
+        { "name": "NoahsArk_79", 
+        "id": 4, 
+        "filepath": "../static/images/artworks/NoahsArk_79.jpeg", "value": 2}]
+    print(arts)
+    print(arts[0])
+    return jsonify(**{"arts": arts})
+
 @custom_code.route('/compute_bonus', methods=['GET'])
 def compute_bonus():
     # check that user provided the correct keys

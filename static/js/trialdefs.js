@@ -67,10 +67,40 @@ function createNodeWithTrial(trial_definition) {
     on_start: function() { 
         intervalID = startTimer(TIMER_DURATION);
    },
-    choices: function() {
+    choices: async function() {
 
         // return array of artworks in randomized positions to create buttons, and create dictionary of positions player saw in given trial
         let ch = [];
+        /* $.ajax("artworks", {
+            type: "GET", 
+            data: {'test':'test'},
+            success: function(data) { 
+                console.log('success with data ', data)
+                // return data;
+            }
+        })
+        .then(response => { 
+            img_array = response.arts;
+            let len = img_array.length;
+
+            for(i = 0; i < len; i++) ch.push(i);
+            let shuffled = jsPsych.randomization.shuffle(ch); 
+
+            let order = [];
+
+            // add images to the array in the order they will appear in
+            for(i = 0; i < len; i++){
+                pos = shuffled[i];
+
+                ch[i] = `<img src = ${img_array[pos].filepath}></img>`;
+                order.push(img_array[pos]);
+            }
+
+            // add the order that images appeared to the orderLookup object
+            orderLookup[jsPsych.progress().current_trial_global] = order;
+
+            return ch; 
+        }) */
         let img_array = getArtworks(offlineMode, numExecutions);
         let len = img_array.length;
 

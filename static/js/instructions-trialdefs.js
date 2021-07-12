@@ -84,35 +84,10 @@ let startWait = {
         // display initial amount of money 
         document.getElementById("money-amount").innerHTML = "Your total amount of money is: " + START_MONEY.toString();
 
-        // returns object with numPlayers, self id, and other ids as array 
-        // if offline, will return dummy values of those 
-        /*let initObject = getPlayerInfo(offlineMode); 
-        console.log(initObject);
-        numPlayers = initObject.players; 
-
-        // define player 
-        let self = initObject.self_info; 
-        player = new Player(self.id, self.name, self.avatar_filepath, self.condition);
-        showSidebarInfo(); 
-
-        // define dummy players 
-        for(i = 0; i < numPlayers; i++) {
-            let other_info = initObject.player_info[i];
-            let otherPlayer = new Player(other_info.id, other_info.name, other_info.avatar_filepath, other_info.condition);
-
-            dummyPlayers[i] = otherPlayer;
-            idLookup[otherPlayer.id] = i; 
-        } */
-        console.log('about to call getPlayerInfo');
+        // sets numPlayers and defines Player objects
+        // if offline, will return dummy values to fill in objects
         jsPsych.pauseExperiment();
-        console.log('paused experiment');
         getPlayerInfo(offlineMode);
-
-        console.log('called getPlayerInfo, player id= ', player.id);
-    }, 
-    on_finish: function() { 
-        // update participant condition data
-        getDataAtIndex(jsPsych.progress().current_trial_global).participant_condition = player.condition; 
     }, 
     data: {
         participant_condition: "placeholder", // to be updated when player.condition is received from backend
@@ -133,6 +108,7 @@ let intro_mechanism_trial = createNodeWithTrial({
     trial_duration: 10 * TRAINING_TRIAL_DURATION,
     response_ends_trial: true,
     on_start: function() { 
+        getDataAtIndex(jsPsych.progress().current_trial_global - 1).participant_condition = player.condition;
         intervalID = startTimer(TRAINING_TIMER_DURATION);
     },
     on_finish: function() { 
