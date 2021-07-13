@@ -72,16 +72,11 @@ The functions are defined in func-defs files:
 /* ------------------------------------------------------------ */ 
 /* global variables (not const)                                 */     
 /* ------------------------------------------------------------ */
-	/* related to whether you are copying at a given time */ 
-	let playerState = {
-		is_copying: false, // whether the player is currently copying
-		player_copying_id: -1, // which player they're copying (if any)
-	}
-
 	/* related to players */ 
-	let numPlayers = 4; // number of other players - adjusted if live
-	let player; // your self; will be defined after consent
-	let dummyPlayers = []; // array to hold other players; defined after consent
+	let numPlayers = 5; // adjusted if live
+	let numOtherPlayers = numPlayers - 1; // adjusted if live
+	let self; // your self; will be defined after consent
+	let players = []; // array to hold players; filled after consent
 
 	/* related to your point in the experiment */ 
 	let numExecutions = 0; // number of rounds thru timeline 
@@ -90,7 +85,7 @@ The functions are defined in func-defs files:
 
 	
 	/* data structures for mapping */ 
-	let idLookup = {}; // maps player ids to position in dummyPlayers
+	let idLookup = {}; // maps player ids to position in players array
 	let orderLookup = {}; // keys = trial index, values = order of images as shown to player 
 
 	const conditionLookup = { // condition code lookup 
@@ -130,7 +125,7 @@ The functions are defined in func-defs files:
 				timeline: artDisplaySelection, 
 				conditional_function: function() { 
 					// return true when the player will select 
-					return !playerState.is_copying;  
+					return !self.is_copying;  
 				}, 
 			},
 			// if copying: display art and disallow selection; update money of all players 
@@ -138,25 +133,23 @@ The functions are defined in func-defs files:
 				timeline: artDisplayCopy, 
 				conditional_function: function() { 
 					// return true when the player does not select
-					return playerState.is_copying; 
+					return self.is_copying; 
 				}  
 			},
 			// display player's results and allow choice to copy (or "continue" in last round)
 			{
 				timeline: [chooseToCopyChoice_node],
 			},
-			// update stats for all players, playerState.is_copying, playerState.player_copying_id if copying (except last round)
+			// update stats for all players, self.is_copying, playerState.player_copying_id if copying (except last round)
 			{
 				timeline: [chooseToCopyWait_node],
 				conditional_function: function() {
 					let is_last = numExecutions >= NUM_DECISIONS;
 					if (is_last) {
-						console.log(`${player.name}:`)
-						player.logPlayerStats();
-						for(i = 0; i < numPlayers; i++){
-							let d = dummyPlayers[i];
-							console.log(`${d.name}:`);
-							d.logPlayerStats();
+						for (let i = 0; i < numPlayers; i++) { 
+							let p = players[i];
+							console.log(p.name + ":");
+							p.logPlayerStats();
 						}
 					}
 					
@@ -193,10 +186,6 @@ The functions are defined in func-defs files:
 		data: { 
 			orders: orderLookup,
 			players: function() { 
-				let players = [player];
-				for(let i =0; i<numPlayers; i++){
-					players.push(dummyPlayers[i])
-				}
 				return players;
 			}
 		},
@@ -210,7 +199,7 @@ The functions are defined in func-defs files:
 		display_element: 'jspsych-target',
 		on_data_update: function(data) {
 			//psiturk.recordTrialData(data); /* CHECK PSITURK API */
-			console.log("placeholder for recording trial data on update. index: " + data.trial_index)
+			console.log(`------ record trial ${data.trial_index} data here ------`);
 		},
 		on_finish: function () {
 			if(offlineMode){
