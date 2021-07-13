@@ -108,7 +108,7 @@ let intro_mechanism_trial = createNodeWithTrial({
     trial_duration: 10 * TRAINING_TRIAL_DURATION,
     response_ends_trial: true,
     on_start: function() { 
-        getDataAtIndex(jsPsych.progress().current_trial_global - 1).participant_condition = player.condition;
+        getDataAtIndex(jsPsych.progress().current_trial_global - 1).participant_condition = self.condition;
         intervalID = startTimer(TRAINING_TIMER_DURATION);
     },
     on_finish: function() { 
@@ -190,11 +190,14 @@ let second_mechanism_round = createNodeWithTrial({
     },
     stimulus: function() {
         // set a random correct player for this round (only if correct_player has not yet been set, so the player remains the same if they get it wrong the first time)
+        
         if(correct_player === undefined) { 
             correct_player = Math.floor(Math.random() * numOtherPlayers);
         }
-
+        console.log('correct player ', correct_player)
+        console.log('players ', players)
         let explanation_string = `<p>This screen provides information about each player.</p><p>To show that you understand, please <strong>ignore</strong> the instruction below and choose to copy <strong>${players[correct_player].name}</strong>.</p>`;
+        
 
         // create table with preamble, prompt to return
         let tablefunc = conditionLookup[mycondition]; 
@@ -268,11 +271,11 @@ let transition_screen = createNodeWithTrial({
 
 });
 
-let instructions_artDisplaySelectionChoice = Object.assign({}, artDisplaySelectionChoice);
-instructions_artDisplaySelectionChoice.preamble = practice_explanation;
-let instructions_artDisplaySelection = [createNodeWithTrial(instructions_artDisplaySelectionChoice), createNodeWithTrial(artDisplaySelectionWait)];
-let instructions_artDisplayCopyChoice = Object.assign({}, artDisplayCopyChoice);
-instructions_artDisplayCopyChoice.preamble =  function() { 
+let instructions_art_choice = Object.assign({}, art_choice);
+instructions_art_choice.preamble = practice_explanation;
+let instructions_art_choice_wrap = [createNodeWithTrial(instructions_art_choice), createNodeWithTrial(art_choice_wait)];
+let instructions_art_display = Object.assign({}, art_display);
+instructions_art_display.preamble =  function() { 
     if (self.is_copying) { 
         let pos = idLookup[self.copying_id];
         let name = players[pos].name;
@@ -282,13 +285,13 @@ instructions_artDisplayCopyChoice.preamble =  function() {
         console.warn("Art display copy trial reached, but self.is_copying is false!");
     }
 }
-let instructions_artDisplayCopy = [createNodeWithTrial(instructions_artDisplayCopyChoice), createNodeWithTrial(artDisplayCopyWait)];
+let instructions_art_display_wrap = [createNodeWithTrial(instructions_art_display), createNodeWithTrial(art_display_wait)];
 
 let realistic_training_trials = {
     timeline: [
 			// if not copying: display art and allow selection; update money of all players
 			createNodeWithTrial({
-                timeline: instructions_artDisplaySelection,
+                timeline: instructions_art_choice_wrap,
 				conditional_function: function() { 
 					// return true when the player will select 
 					return !self.is_copying;  
@@ -296,7 +299,7 @@ let realistic_training_trials = {
 			}),
 			// if copying: display art and disallow selection; update money of all players 
 			createNodeWithTrial({
-				timeline: instructions_artDisplayCopy, 
+				timeline: instructions_art_display_wrap, 
 				conditional_function: function() { 
 					// return true when the player does not select
 					return self.is_copying; 

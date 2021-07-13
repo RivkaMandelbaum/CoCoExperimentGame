@@ -120,7 +120,7 @@ function getPlayerInfo(offlineMode){
 }
 
 function setPlayerInfo(initObject) { 
-    numPlayers = initObject.num_players; 
+    numPlayers = initObject.players; 
     numOtherPlayers = numPlayers - 1; 
 
     // define other players 

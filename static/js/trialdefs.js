@@ -58,7 +58,7 @@ function createNodeWithTrial(trial_definition) {
 /* ---- art selection ---- */ 
 
  // display art and allow player to choose highest-value image
- let artDisplaySelectionChoice = {
+ let art_choice = {
     type: "multi-image-button-response",
     on_start: function() { 
         intervalID = startTimer(TIMER_DURATION);
@@ -83,7 +83,7 @@ function createNodeWithTrial(trial_definition) {
 };
 
 // wait for other players' info and update local information
-let artDisplaySelectionWait = { 
+let art_choice_wait = { 
     type: "waiting", 
     on_start: function() { 
         document.getElementById("countdown-timer").innerHTML = "";
@@ -118,12 +118,12 @@ let artDisplaySelectionWait = {
     function_ends_trial: true
 }
 
-let artDisplaySelection = [createNodeWithTrial(artDisplaySelectionChoice), createNodeWithTrial(artDisplaySelectionWait)];
+let art_choice_wrap = [createNodeWithTrial(art_choice), createNodeWithTrial(art_choice_wait)];
 
 /* ---- art display while copying ---- */ 
 
 // display art without allowing player to select
-let artDisplayCopyChoice = { 
+let art_display = { 
     type: "multi-image-button-response", 
     on_start: function() { 
         intervalID = startTimer(TIMER_DURATION);
@@ -162,7 +162,7 @@ let artDisplayCopyChoice = {
     response_ends_trial: true,
     trial_duration: TRIAL_DURATION
 }
-let artDisplayCopyWait = { 
+let art_display_wait = { 
     type: "waiting", 
     on_start: function() { 
         document.getElementById("countdown-timer").innerHTML = "";
@@ -192,7 +192,7 @@ let artDisplayCopyWait = {
     function_ends_trial: true
 }
 
-let artDisplayCopy = [createNodeWithTrial(artDisplayCopyChoice), createNodeWithTrial(artDisplayCopyWait)];
+let art_display_wrap = [createNodeWithTrial(art_display), createNodeWithTrial(art_display_wait)];
 
 /* ---- choose whether to copy timeline ---- */ 
 

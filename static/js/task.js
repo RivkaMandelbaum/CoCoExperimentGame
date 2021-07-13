@@ -75,6 +75,7 @@ The functions are defined in func-defs files:
 	/* related to players */ 
 	let numPlayers = 5; // adjusted if live
 	let numOtherPlayers = numPlayers - 1; // adjusted if live
+	
 	let self; // your self; will be defined after consent
 	let players = []; // array to hold players; filled after consent
 
@@ -122,7 +123,7 @@ The functions are defined in func-defs files:
 		timeline: [
 			// if not copying: display art and allow selection; update money of all players
 			{
-				timeline: artDisplaySelection, 
+				timeline: art_choice_wrap, 
 				conditional_function: function() { 
 					// return true when the player will select 
 					return !self.is_copying;  
@@ -130,7 +131,7 @@ The functions are defined in func-defs files:
 			},
 			// if copying: display art and disallow selection; update money of all players 
 			{
-				timeline: artDisplayCopy, 
+				timeline: art_display_wrap, 
 				conditional_function: function() { 
 					// return true when the player does not select
 					return self.is_copying; 
