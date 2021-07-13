@@ -120,20 +120,24 @@ function getPlayerInfo(offlineMode){
 }
 
 function setPlayerInfo(initObject) { 
-    numPlayers = initObject.players; 
-    
-    // define player 
-    let self = initObject.self_info; 
-    player = new Player(self.id, self.name, self.avatar_filepath, parseInt(self.condition));
-    showSidebarInfo();
-    
-    // define dummy players 
-    for(i = 0; i < numPlayers; i++) {
+    numPlayers = initObject.num_players; 
+    numOtherPlayers = numPlayers - 1; 
+
+    // define other players 
+    for (let i = 0; i < numOtherPlayers; i++) { 
         let other_info = initObject.player_info[i];
-        let otherPlayer = new Player(other_info.id, other_info.name, other_info.avatar_filepath, parseInt(other_info.condition));
-        dummyPlayers[i] = otherPlayer;
-        idLookup[otherPlayer.id] = i; 
+        let otherPlayer = new Player(other_info.id, other_info.name, other_info.avatar_filepath, other_info.condition);
+        players.push(otherPlayer);
+        idLookup[otherPlayer.id] = i;
     }
+    
+    // define self and add to array 
+    let self_info = initObject.self_info; 
+    self = new Player(self_info.id, self_info.name, self_info.avatar_filepath, parseInt(self_info.condition));
+    showSidebarInfo();
+
+    players.push(self);
+    idLookup[self.id] = numPlayers - 1; 
 }
 
 // When online, does the following:
