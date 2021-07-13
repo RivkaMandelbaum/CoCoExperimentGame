@@ -122,15 +122,22 @@ jsPsych.plugins["multi-image-button-response"] = (function() {
     }
   }
 
-  plugin.trial = function(display_element, trial) {
+  plugin.trial = async function(display_element, trial) {
+    console.log('trial.choices ', trial.choices);
+    console.log('trial.stimulus ', trial.stimulus);
 
-    for_preload = trial.stimulus; 
-    if (trial.stimulus === null) {
-      console.log('trial.choices is ', trial.choices)
+    let fulfilled_choices = await trial.choices;
+    let fulfilled_stimulus = await trial.stimulus; 
+    
+    console.log('fulfilled choices ', fulfilled_choices)
+    console.log('fulfilled stimulus ', fulfilled_stimulus)
+
+    for_preload = fulfilled_stimulus; 
+    if (fulfilled_stimulus === null) {
       for_preload = [];
-      if(trial.choices[0].includes("<img src")) { 
-        for(i = 0; i < trial.choices.length; i++) {
-          remove_img_tag = trial.choices[i].replace('></img>', '')
+      if(fulfilled_choices[0].includes("<img src")) { 
+        for(i = 0; i < fulfilled_choices.length; i++) {
+          remove_img_tag = fulfilled_choices[i].replace('></img>', '')
           remove_img_tag = remove_img_tag.replace('<img src = ../static', '../static')
           for_preload.push(remove_img_tag)
         }
@@ -176,21 +183,21 @@ jsPsych.plugins["multi-image-button-response"] = (function() {
         let padwidth = 20; // between images
 
 
-        if(trial.stimulus != null) {
+        if(fulfilled_stimulus != null) {
           // create images 
           img_array = [];
 
-          for(let i = 0; i < trial.stimulus.length; i++) { 
+          for(let i = 0; i < fulfilled_stimulus.length; i++) { 
             let img = new Image(); 
 
-            img.src = trial.stimulus[i]; 
+            img.src = fulfilled_stimulus[i]; 
 
             img_array.push(img); 
           }
 
           // determine image height and width
           if (trial.stimulus_height !== null) { // heights were specified 
-            if (trial.stimulus_height.length != trial.stimulus.length) console.warn("There must be the same number of images and image-heights provided!");
+            if (trial.stimulus_height.length != fulfilled_stimulus.length) console.warn("There must be the same number of images and image-heights provided!");
 
             for(let i = 0; i < trial.stimulus_height.length; i++) { 
               heights.push(trial.stimulus_height[i]);
@@ -209,7 +216,7 @@ jsPsych.plugins["multi-image-button-response"] = (function() {
           }
 
           if (trial.stimulus_width !== null) { // widths were specified
-            if(trial.stimulus_width.length != trial.stimulus.length) console.warn("There must be the same number of images and image-widths provided!");
+            if(trial.stimulus_width.length != fulfilled_stimulus.length) console.warn("There must be the same number of images and image-widths provided!");
             for(let i = 0; i < img_array.length; i++){
               widths.push(trial.stimulus_width[i]);
             }
@@ -251,28 +258,28 @@ jsPsych.plugins["multi-image-button-response"] = (function() {
         // create buttons
         var buttons = [];
         if (Array.isArray(trial.button_html)) {
-          if (trial.button_html.length == trial.choices.length) {
+          if (trial.button_html.length == fulfilled_choices.length) {
             buttons = trial.button_html;
           } else {
             console.error('Error in multi-image-button-response plugin. The length of the button_html array does not equal the length of the choices array');
           }
         } else {
-          for (var i = 0; i < trial.choices.length; i++) {
+          for (var i = 0; i < fulfilled_choices.length; i++) {
             buttons.push(trial.button_html);
           }
         }
         var btngroup_div = document.createElement('div');
         btngroup_div.id = "multi-btngroup";
         html = '';
-        for (var i = 0; i < trial.choices.length; i++) {
-          var str = buttons[i].replace(/%choice%/g, trial.choices[i]);
+        for (var i = 0; i < fulfilled_choices.length; i++) {
+          var str = buttons[i].replace(/%choice%/g, fulfilled_choices[i]);
           html += '<div class="multi-button" style="display: inline-block; margin:'+trial.margin_vertical+' '+trial.margin_horizontal+'" id="multi-button-' + i +'" data-choice="'+i+'">'+str+'</div>';
         }
         btngroup_div.innerHTML = html;
 
         display_element.insertBefore(canvas, null);
 
-        if (trial.stimulus != null) {
+        if (fulfilled_stimulus != null) {
           // add canvas to screen and draw image
           var ctx = canvas.getContext("2d");
 
@@ -306,10 +313,10 @@ jsPsych.plugins["multi-image-button-response"] = (function() {
         }
 
         // add stimuli to html as image elements (if applicable)
-        if (trial.stimulus !== null) {
+        if (fulfilled_stimulus !== null) {
           html += "<div class='stimulus-image-wrapper'>"
-          for (let i = 0; i < trial.stimulus.length; i++) {
-            html += `<img src = "${trial.stimulus[i]}" class = "multi-image-stimulus" id="jspsych-multi-image-button-response-stimulus-${i}">`;
+          for (let i = 0; i < fulfilled_stimulus.length; i++) {
+            html += `<img src = "${fulfilled_stimulus[i]}" class = "multi-image-stimulus" id="jspsych-multi-image-button-response-stimulus-${i}">`;
           }  
           html+="</div>"
         }
@@ -318,13 +325,13 @@ jsPsych.plugins["multi-image-button-response"] = (function() {
         var buttons = []; // html for each button
 
         if (Array.isArray(trial.button_html)) {
-          if (trial.button_html.length == trial.choices.length) {
+          if (trial.button_html.length == fulfilled_choices.length) {
             buttons = trial.button_html;
           } else {
             console.error('Error in multi-image-button-response plugin. The length of the button_html array does not equal the length of the choices array');
           }
         } else { // if not an array, all html is the same
-          for (var i = 0; i < trial.choices.length; i++) {
+          for (var i = 0; i < fulfilled_choices.length; i++) {
             buttons.push(trial.button_html);
           }
         }
@@ -333,8 +340,8 @@ jsPsych.plugins["multi-image-button-response"] = (function() {
         html += '<div id="jspsych-image-button-response-btngroup">';
 
         // add the buttons' html to the html variable
-        for (var i = 0; i < trial.choices.length; i++) {
-          var str = buttons[i].replace(/%choice%/g, trial.choices[i]);
+        for (var i = 0; i < fulfilled_choices.length; i++) {
+          var str = buttons[i].replace(/%choice%/g, fulfilled_choices[i]);
 
           html += '<div class="multi-button" style="display: inline-block; margin:'+trial.margin_vertical+' '+trial.margin_horizontal+'" id="multi-button-' + i +'" data-choice="'+i+'">'+str+'</div>';
         }
@@ -350,7 +357,7 @@ jsPsych.plugins["multi-image-button-response"] = (function() {
         display_element.innerHTML = html;
 
         // set image dimensions after image has loaded (so that we have access to naturalHeight/naturalWidth)
-        for(let i = 0; i < trial.stimulus.length; i++) {
+        for(let i = 0; i < fulfilled_stimulus.length; i++) {
           var img = display_element.querySelector(`#jspsych-multi-image-button-response-stimulus-${i}`);
 
           if (trial.stimulus_height !== null) {
@@ -383,7 +390,7 @@ jsPsych.plugins["multi-image-button-response"] = (function() {
     // start timing
     var start_time = performance.now();
 
-    for (var i = 0; i < trial.choices.length; i++) {
+    for (var i = 0; i < fulfilled_choices.length; i++) {
       display_element.querySelector('#multi-button-' + i).addEventListener('click', function(e){
         var choice = e.currentTarget.getAttribute('data-choice'); // don't use dataset for jsdom compatibility
         after_response(choice);
@@ -442,7 +449,7 @@ jsPsych.plugins["multi-image-button-response"] = (function() {
       // gather the data to store for the trial
       var trial_data = {
         "rt": response.rt,
-        "stimulus": trial.stimulus,
+        "stimulus": fulfilled_stimulus,
         "button_pressed": response.button, 
         "clicked_correct": response.clicked_correct 
       };

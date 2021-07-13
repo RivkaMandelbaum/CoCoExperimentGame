@@ -11,6 +11,35 @@ function Artwork(name, id, filepath, value) {
     this.value = value;
 }
 
+// create array of images with randomized position and add positions to dictionary
+// for choices (if not copying) or stimulus (if copying) in art display rounds
+async function artArray(add_img_tag, curr_index) { 
+    const img_array = await getArtworks(offlineMode, numExecutions);
+    const len = img_array.length; 
+
+    // create a dictionary of shuffled positions 
+    let arr = [];
+    for(let i = 0; i < len; i++) arr.push(i);
+    let shuffled = jsPsych.randomization.shuffle(arr);
+    
+    // add images to array in order they will appear
+    let order = []; 
+    for(let i = 0; i < len; i++) { 
+        pos = shuffled[i];
+        
+        if (add_img_tag) arr[i] = `<img src = ${img_array[pos].filepath}></img>`;
+        else arr[i] = img_array[pos].filepath;
+
+        // save the order
+        order.push(img_array[pos]);
+    }
+
+    // save the current order to the global object
+    orderLookup[curr_index] = order;
+
+    return arr;
+} 
+
 // returns a random artwork from the given trial
 function rand_art(trial_index) { 
     let random_choice = Math.floor((Math.random() * NUM_IMAGES));

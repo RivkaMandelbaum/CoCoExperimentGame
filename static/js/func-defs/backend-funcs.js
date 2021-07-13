@@ -10,12 +10,37 @@
 // which have the fields: id, name, filepath
 function getArtworks(offlineMode, round){
     if(offlineMode){
-        return offlineArts(round); 
+        return new Promise((resolve) => {
+            resolve(offlineArts(round));
+        });
     }
     else { 
         /* GET ARTWORKS FROM SERVER */ 
-        return /* SHOULD BE RETURNING ARTWORKS HERE */;
+        return new Promise((resolve, reject) => { 
+            $.ajax("artworks", {
+                type: "GET",
+                data: {},
+                success: (data) => { 
+                    resolve(data.arts);
+                },
+                error: (error) => reject(error),
+            });
+        }); /* SHOULD BE RETURNING ARTWORKS HERE */;
     }
+}
+
+function returnAPromise() { 
+    return new Promise((resolve, reject) => { 
+        $.ajax("artworks", {
+            type: "GET",
+            data: {},
+            success: (data) => { 
+                resolve(data.arts);
+                console.log('3 - success')
+            },
+            error: (error) => reject(error),
+        });
+    });
 }
 
 // Gets player info from server at start of experiment. Returns object in the format: 

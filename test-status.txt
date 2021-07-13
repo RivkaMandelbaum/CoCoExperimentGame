@@ -1,1 +1,1 @@
-Server: currently online
+Server: currently offline
