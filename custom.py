@@ -20,7 +20,7 @@ def player_information():
     print("in player information")
     default_condition = 0
     result = {
-        "players": 4,
+        "players": 5,
         "self_info": {
             "id": request.args["ID"],
             "name": "Aima (you)",

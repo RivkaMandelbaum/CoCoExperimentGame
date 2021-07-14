@@ -15,7 +15,6 @@ function getArtworks(offlineMode, round){
         });
     }
     else { 
-        /* GET ARTWORKS FROM SERVER */ 
         return new Promise((resolve, reject) => { 
             $.ajax("artworks", {
                 type: "GET",
@@ -25,7 +24,7 @@ function getArtworks(offlineMode, round){
                 },
                 error: (error) => reject(error),
             });
-        }); /* SHOULD BE RETURNING ARTWORKS HERE */;
+        });;
     }
 }
 

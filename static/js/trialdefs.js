@@ -209,7 +209,7 @@ let chooseToCopyChoice = {
         let s = "";
 
         // build table (based on the different conditions)
-        let tablefunc = conditionLookup[self.condition];
+        let tablefunc = CONDITION_LOOKUP[self.condition];
         if (typeof(tablefunc) === "function") { 
             s = tablefunc();
         }

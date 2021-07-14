@@ -89,7 +89,7 @@ The functions are defined in func-defs files:
 	let idLookup = {}; // maps player ids to position in players array
 	let orderLookup = {}; // keys = trial index, values = order of images as shown to player 
 
-	const conditionLookup = { // condition code lookup 
+	const CONDITION_LOOKUP = { // condition code lookup 
 		0: buildTable_TotalPayoff,
 		1: buildTable_DirectPayoff,
 		2: buildTable_CopyPayoff, // not currently in use

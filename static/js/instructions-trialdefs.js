@@ -200,7 +200,7 @@ let second_mechanism_round = createNodeWithTrial({
         
 
         // create table with preamble, prompt to return
-        let tablefunc = conditionLookup[mycondition]; 
+        let tablefunc = CONDITION_LOOKUP[mycondition]; 
         let s = explanation_string + tablefunc();
 
         s += (`<p id='next-round-instructions'>In the next round, you may either choose the highest-value artwork on your own or pay another player $${COPY_FEE} to copy their choice.</p></div>`);
@@ -318,7 +318,7 @@ let realistic_training_trials = {
                         
                         let s = practice_explanation;
                         
-                        s += conditionLookup[self.condition]();
+                        s += CONDITION_LOOKUP[self.condition]();
 
                         if(numExecutions < TRAINING_NUM_DECISIONS) { 
                             s += (`<div id='next-round-instructions'>In the next round, you may either choose the highest-value artwork on your own or pay another player $${COPY_FEE} to copy their choice.</div></div>`);
@@ -393,7 +393,7 @@ let quiz_round = {
 
     },
     preamble: function(){ 
-        let build_table_func = conditionLookup[self.condition];
+        let build_table_func = CONDITION_LOOKUP[self.condition];
         return build_table_func() + "Please scroll to answer these questions before continuing to the game."
     },
     questions: function() { 
