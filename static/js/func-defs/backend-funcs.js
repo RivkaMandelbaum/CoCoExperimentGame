@@ -6,42 +6,6 @@
 /* Author: Rivka Mandelbaum                                                   */
 /* -------------------------------------------------------------------------- */
 
-// Gets artworks from server for the round; should be array of art objects, 
-// which have the fields: id, name, filepath
-function getArtworks(offlineMode, round){
-    if(offlineMode){
-        return new Promise((resolve) => {
-            resolve(offlineArts(round));
-        });
-    }
-    else { 
-        return new Promise((resolve, reject) => { 
-            $.ajax("artworks", {
-                type: "GET",
-                data: {},
-                success: (data) => { 
-                    resolve(data.arts);
-                },
-                error: (error) => reject(error),
-            });
-        });;
-    }
-}
-
-function returnAPromise() { 
-    return new Promise((resolve, reject) => { 
-        $.ajax("artworks", {
-            type: "GET",
-            data: {},
-            success: (data) => { 
-                resolve(data.arts);
-                console.log('3 - success')
-            },
-            error: (error) => reject(error),
-        });
-    });
-}
-
 // Gets player info from server at start of experiment. Returns object in the format: 
     /* {
         num_players: int (number of players),
@@ -139,6 +103,28 @@ function setPlayerInfo(initObject) {
     idLookup[self.id] = numPlayers - 1; 
 }
 
+// Gets artworks from server for the round; should be array of art objects, 
+// which have the fields: id, name, filepath
+function getArtworks(offlineMode, round){
+    if(offlineMode){
+        return new Promise((resolve) => {
+            resolve(offlineArts(round));
+        });
+    }
+    else { 
+        return new Promise((resolve, reject) => { 
+            $.ajax("artworks", {
+                type: "GET",
+                data: {},
+                success: (data) => { 
+                    resolve(data.arts);
+                },
+                error: (error) => reject(error),
+            });
+        });;
+    }
+}
+
 // When online, does the following:
 //  1) sends message containing self choices in format described below
 //  2) gets others' choices from server and updates trial data, assuming format:
@@ -156,9 +142,9 @@ function setPlayerInfo(initObject) {
 // If the player is copying, artwork_chosen information is updated based on
 // what the player they are copying chose
 // When offline, dummy values of those
-function backendArtSelections(trial_index, offlineMode) { 
+async function backendArtSelections(trial_index, offlineMode) { 
     // in offline mode, fill with dummy values
-    if(offlineMode) {  
+    if(!offlineMode) {  
         // if first round (or first training round), no one is copying, so decide other players' choices and return 
         copying_trial_index = trial_index - 2; 
         copying_trial_data = getDataAtIndex(copying_trial_index);
@@ -242,7 +228,50 @@ function backendArtSelections(trial_index, offlineMode) {
 
     // in online mode, send information about self, receive correct answer and responses, and update the timeline variable to match
     else { 
-       let send_message = { 
+        /* 
+@custom_code.route('/art_selection', methods=['POST'])
+def art_selection():
+    print("in art selection")
+
+    if not 'self_selection' in request.args:
+        # i don't like returning HTML to JSON requests... maybe should change this
+        raise ExperimentError('improper_inputs')
+    selection = request.args['self_selection']
+    return jsonify(**{"player_results":selection})
+
+
+@custom_code.route('/all_players_art_selections', methods=['GET'])
+def all_players_art_selections():
+    """
+    TODO: port ivkas alogirhtm from backendArtSelections
+    """
+    print("in all_players art selection")
+
+    if not 'player_ids' in request.args:
+        # i don't like returning HTML to JSON requests... maybe should change this
+        raise ExperimentError('improper_inputs')
+
+    if not 'trial_index' in request.args:
+        # i don't like returning HTML to JSON requests... maybe should change this
+        raise ExperimentError('improper_inputs')
+    
+    player_ids = request.args['player_ids']
+    trial_index = request.args['trial_index']
+    selections = {}
+    for idx in player_ids:
+        selections[idx] = {
+            "id": idx,
+            "copying": False,
+            "copying_id": None,
+            "artwork_chosen_id": 0,
+            "artwork_chosen_filepath": "../static/images/artworks/KnowingCalm_69.jpeg",
+            "artwork_chosen_position": 3, 
+            "trial_type": "art",
+            "trial_index": trial_index, 
+        }
+    return jsonify(**{"player_selections":selections})
+        */
+       let self_selection = { 
             id: self.id, 
             copying: self.is_copying, 
             copying_id: self.copying_id, 
@@ -253,12 +282,35 @@ function backendArtSelections(trial_index, offlineMode) {
             trial_index: (trial_index+1)
         }
 
+        let post_test =  await new Promise((resolve, reject) => { 
+            $.ajax("art_selection", {
+                type: "POST",
+                data: {"self_selection": self_selection},
+                success: (data) => { 
+                    resolve(data.self_selection);
+                },
+                error: (error) => reject(error),
+            });
+        });;
+
+        let get_test = await new Promise((resolve, reject) => { 
+            $.ajax("all_players_art_selections", {
+                type: "GET",
+                data: {"player_ids": [1, 2, 3, 4, 5], "trial_index": trial_index+1},
+                success: (data) => { 
+                    console.log(data)
+                    resolve(data.player_selections);
+                },
+                error: (error) => reject(error),
+            });
+        });;
+
+        console.log(get_test)
+
         /* SEND MESSAGES:
             send_message as above
             result of isValidPlayer at this point
         */ 
-
-        // update correct choice to be the id of the correct artwork in this round
 
         /* RECEIVE ARRAY OF MESSAGES
         SHOULD BE OBJECT WITH SAME FIELDS AS send_message ABOVE 

@@ -23,7 +23,7 @@ def art_selection():
         # i don't like returning HTML to JSON requests... maybe should change this
         raise ExperimentError('improper_inputs')
     selection = request.args['self_selection']
-    return jsonify(**{"player_results":selection})
+    return jsonify(**{"self_selection":selection})
 
 
 @custom_code.route('/all_players_art_selections', methods=['GET'])
@@ -32,20 +32,21 @@ def all_players_art_selections():
     TODO: port ivkas alogirhtm from backendArtSelections
     """
     print("in all_players art selection")
+    print(request.args)
 
-    if not 'player_ids' in request.args:
-        # i don't like returning HTML to JSON requests... maybe should change this
-        raise ExperimentError('improper_inputs')
+    # if not 'player_ids' in request.args:
+    #     # i don't like returning HTML to JSON requests... maybe should change this
+    #     raise ExperimentError('improper_inputs')
 
-    if not 'trial_index' in request.args:
-        # i don't like returning HTML to JSON requests... maybe should change this
-        raise ExperimentError('improper_inputs')
+    # if not 'trial_index' in request.args:
+    #     # i don't like returning HTML to JSON requests... maybe should change this
+    #     raise ExperimentError('improper_inputs')
     
     player_ids = request.args['player_ids']
     trial_index = request.args['trial_index']
-    selections = {}
+    selections = []
     for idx in player_ids:
-        selections[idx] = {
+        selections.append({
             "id": idx,
             "copying": False,
             "copying_id": None,
@@ -54,7 +55,7 @@ def all_players_art_selections():
             "artwork_chosen_position": 3, 
             "trial_type": "art",
             "trial_index": trial_index, 
-        }
+        })
     return jsonify(**{"player_selections":selections})
     
 

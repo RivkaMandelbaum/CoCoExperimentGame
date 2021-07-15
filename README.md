@@ -1,7 +1,7 @@
 ***---- DIRECTORY STRUCTURE ----***
 The top-level directory for the game is CoCoExperimentGame. Psiturk server on/off and debug commands should be run from this directory. 
-The directory is formatted according to the structure that psiturk requires. It contains:
-    - static/ (see below)
+The directory is formatted according to the structure that psiturk requires. It contains:  
+   - static/ (see below)
     - templates/ (see below)
     - config.txt (a configuration file for psiturk)
     - custom.py (custom backend functions)
@@ -11,7 +11,7 @@ psiturk also automatically creates server.log and .psiturk_history, but these ar
 
 The **templates** directory is used to create different pages by psiturk. The only one that contains my code is **exp.html**, which includes the scripts that are needed for the experiment. Note that the order of the files under the comment <!-- experiment logic script and files it references --> must remain in this order due to dependencies. 
 
-The **static** directory contains a number of relevant files and directories:
+The **static** directory contains a number of relevant files and directories:  
     - css/
     - fonts/
     - images/
@@ -25,7 +25,7 @@ The **static** directory contains a number of relevant files and directories:
 **images** contains the artworks and avatar images associated with the experiment (note that artworks are in the **artworks/** subdirectory).
 
 **js** contains all of the Javascript code that I've written for this experiment. Important details are:
-    - **task.js** is the wrapper for experiment logic. It declares global variables, sets up the experiment, adds trials to the timeline, and runs the experiment. 
+    - **task.js** is the wrapper for experiment logic. It declares global variables, sets up the experiment, adds trials to the timeline, and runs the experiment.   
     - **instructions-trialdefs.js** and **trialdefs.js** contain definitions of trials for the training rounds and regular rounds, respectively. I have tried to keep these simple and concise, putting complicated funtions or calculations into **func-defs/** files. 
     - **func-defs/** directory contains a number of files with function definitions:
         - **art-funcs.js** contains functions that deal with Artwork objects and getting artworks in a given round. 
