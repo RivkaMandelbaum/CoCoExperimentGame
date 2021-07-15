@@ -15,6 +15,50 @@ custom_code = Blueprint('custom_code', __name__, template_folder='templates', st
 # example computing bonus
 #----------------------------------------------
 
+@custom_code.route('/art_selection', methods=['POST'])
+def art_selection():
+    print("in art selection")
+
+    if not 'self_selection' in request.args:
+        # i don't like returning HTML to JSON requests... maybe should change this
+        raise ExperimentError('improper_inputs')
+    selection = request.args['self_selection']
+    return jsonify(**{"player_results":selection})
+
+
+@custom_code.route('/all_players_art_selections', methods=['GET'])
+def all_players_art_selections():
+    """
+    TODO: port ivkas alogirhtm from backendArtSelections
+    """
+    print("in all_players art selection")
+
+    if not 'player_ids' in request.args:
+        # i don't like returning HTML to JSON requests... maybe should change this
+        raise ExperimentError('improper_inputs')
+
+    if not 'trial_index' in request.args:
+        # i don't like returning HTML to JSON requests... maybe should change this
+        raise ExperimentError('improper_inputs')
+    
+    player_ids = request.args['player_ids']
+    trial_index = request.args['trial_index']
+    selections = {}
+    for idx in player_ids:
+        selections[idx] = {
+            "id": idx,
+            "copying": False,
+            "copying_id": None,
+            "artwork_chosen_id": 0,
+            "artwork_chosen_filepath": "../static/images/artworks/KnowingCalm_69.jpeg",
+            "artwork_chosen_position": 3, 
+            "trial_type": "art",
+            "trial_index": trial_index, 
+        }
+    return jsonify(**{"player_selections":selections})
+    
+
+
 @custom_code.route('/player_information', methods=['GET'])
 def player_information():
     print("in player information")
