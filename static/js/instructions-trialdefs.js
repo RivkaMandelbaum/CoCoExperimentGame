@@ -361,7 +361,7 @@ let realistic_training_trials = {
 			}),
 			// update stats for all players, self.is_copying, playerState.player_copying_id if copying (except last round)
 			createNodeWithTrial({
-                timeline: [chooseToCopyWait],
+                timeline: [results_display_wait],
                 conditional_function: function() {
 					let is_last = numExecutions >= TRAINING_NUM_DECISIONS;
 					if (is_last) {

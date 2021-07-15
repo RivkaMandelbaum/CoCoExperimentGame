@@ -196,7 +196,7 @@ let art_display_wrap = [createNodeWithTrial(art_display), createNodeWithTrial(ar
 
 /* ---- choose whether to copy timeline ---- */ 
 
-let chooseToCopyChoice = {
+let results_display = {
     type: "html-button-response",
     on_start: function() { 
         intervalID = startTimer(TIMER_DURATION);
@@ -214,7 +214,7 @@ let chooseToCopyChoice = {
             s = tablefunc();
         }
         else { 
-            console.warn("Inconsistent condition names! Please check getPlayerInfo, Player constructor, and chooseToCopyChoice stimulus.");
+            console.warn("Inconsistent condition names! Please check getPlayerInfo, Player constructor, and results_display stimulus.");
             s = "<p> ERROR IN EXPERIMENT. SORRY ABOUT THIS. CONTACT US. </p>"
         }
         
@@ -263,9 +263,9 @@ let chooseToCopyChoice = {
     trial_duration: TRIAL_DURATION
 }
 
-let chooseToCopyChoice_node = createNodeWithTrial(chooseToCopyChoice);
+let results_display_node = createNodeWithTrial(results_display);
 
-let chooseToCopyWait = { 
+let results_display_wait = { 
     type: "waiting",
     on_start: function() { 
         document.getElementById("countdown-timer").innerHTML = "";
@@ -306,4 +306,4 @@ let chooseToCopyWait = {
     function_ends_trial: true
 }
 
-let chooseToCopyWait_node = createNodeWithTrial(chooseToCopyWait);
+let results_display_wait_node = createNodeWithTrial(results_display_wait);

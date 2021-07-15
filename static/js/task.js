@@ -139,11 +139,11 @@ The functions are defined in func-defs files:
 			},
 			// display player's results and allow choice to copy (or "continue" in last round)
 			{
-				timeline: [chooseToCopyChoice_node],
+				timeline: [results_display_node],
 			},
 			// update stats for all players, self.is_copying, playerState.player_copying_id if copying (except last round)
 			{
-				timeline: [chooseToCopyWait_node],
+				timeline: [results_display_wait_node],
 				conditional_function: function() {
 					let is_last = numExecutions >= NUM_DECISIONS;
 					if (is_last) {
