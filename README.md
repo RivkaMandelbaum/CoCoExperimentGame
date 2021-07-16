@@ -32,7 +32,7 @@ The **static** directory contains a number of relevant files and directories:
         - **backend-funcs.js** contains functions that send and receive data from backend: getting artworks for the round, getting the player information for the experiment, getting the art selections each player made, and getting the copy selections each player made. 
         - **build-table-funcs.js** contains functions that build the HTML for the player results table, depending on the condition the player is in. 
         - **get-data-funcs.js** contains functions that relate to getting data saved by previous trials: getting the data at a given index, getting the button selected at a given index, and checking whether the player chose to copy during the copy trial.
-        - **player-funcs.js** contains functions that deal with Player objects: creating, resetting stats, getting stats, logging stats, testing that the amount of money they have is self-consistent, updating them based on who's copying, and so on.
+        - **player-funcs.js** contains functions that deal with Player objects: creating, resetting stats, getting stats, logging stats, testing that the amount of money they have is self-consistent, and so on.
         - **timer-funcs.js** contains functions dealing with the timer which appears on the bottom of the screen, including tracking whether the player ran out of time.  
 
 **lib/** contains library files associated with the project, so that someone running the project in the future does not have to find the exact versions we were using at the time. 

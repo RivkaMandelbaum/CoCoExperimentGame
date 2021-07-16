@@ -125,18 +125,53 @@ function getArtworks(offlineMode, round){
     }
 }
 
+function getArtSelections(self_selection) { 
+    // single-player version: post own decision, let backend decide everyone's decisions, and receive them back from the same request
+    return new Promise((resolve, reject) => { 
+        $.ajax("art_selection", {
+            type: "POST",
+            data: {"self_selection": self_selection},
+            success: (data) => { 
+                resolve(data.selections);
+            },
+            error: (error) => reject(error),
+        });
+    });;
+
+    /* 
+    // multi-player version:
+    let post_self_selection = $.ajax("art_selection", { 
+        type: "POST",
+        data: {"self_selection": self_selection},
+        success: (data) => data, // not used
+        error: (error) => error
+    });
+
+    // LOOP TO PING SERVER UNTIL READY HERE 
+    // WHEN READY MAKE THE FOLLOWING REQUEST:
+    return new Promise((resolve, reject) => { 
+        $.ajax("all_art_selections", {
+            type: "GET",
+            data: {},
+            success: (data) => { 
+                resolve(data.selections);
+            },
+            error: (error) => reject(error),
+        });
+    });;  
+    */ 
+}
 // When online, does the following:
 //  1) sends message containing self choices in format described below
 //  2) gets others' choices from server and updates trial data, assuming format:
     /* {
         id: int,
-        copying: bool,
-        copying_id: int or null,
         artwork_chosen_id: int,
         artwork_chosen_filepath: string,
         artwork_chosen_position: int, 
         trial_type: "art",
-        trial_index: int
+        trial_index: int,
+        round_num: int (first round = round 0)
         }
     */
 // If the player is copying, artwork_chosen information is updated based on
@@ -144,7 +179,7 @@ function getArtworks(offlineMode, round){
 // When offline, dummy values of those
 async function backendArtSelections(trial_index, offlineMode) { 
     // in offline mode, fill with dummy values
-    if(!offlineMode) {  
+    if(offlineMode) {  
         // if first round (or first training round), no one is copying, so decide other players' choices and return 
         copying_trial_index = trial_index - 2; 
         copying_trial_data = getDataAtIndex(copying_trial_index);
@@ -188,11 +223,11 @@ async function backendArtSelections(trial_index, offlineMode) {
 
             // base cases: make a decision (set artwork choice) which can propogate back to the first person who copied
             if(visited[next_pos]) { 
-                // if the person player at index i is copying didn't copy, or they did but they've already been assigned a choice, assign p their info
+                // if the  player at index i is copying didn't copy, or they did but they've already been assigned a choice, assign p their info
                 if(players[next_pos].art_choice != null) { 
                     players[i].art_choice = players[next_pos].art_choice;
                 }
-                // if the person player at index i is copying did copy (art is initialized to null) but they haven't been assigned a choice (art remains null), there's a loop - randomly assign a choice value
+                // if the  player at index i is copying did copy (art is initialized to null) but they haven't been assigned a choice (art remains null), there's a loop - randomly assign a choice value
                 else { 
                     players[i].art_choice = rand_art(trial_index);
                 }
@@ -226,124 +261,33 @@ async function backendArtSelections(trial_index, offlineMode) {
 
     }
 
-    // in online mode, send information about self, receive correct answer and responses, and update the timeline variable to match
+    // in online mode, send information about self, receive correct answer and responses, and update the Player objects to match
     else { 
-        /* 
-@custom_code.route('/art_selection', methods=['POST'])
-def art_selection():
-    print("in art selection")
-
-    if not 'self_selection' in request.args:
-        # i don't like returning HTML to JSON requests... maybe should change this
-        raise ExperimentError('improper_inputs')
-    selection = request.args['self_selection']
-    return jsonify(**{"player_results":selection})
-
-
-@custom_code.route('/all_players_art_selections', methods=['GET'])
-def all_players_art_selections():
-    """
-    TODO: port ivkas alogirhtm from backendArtSelections
-    """
-    print("in all_players art selection")
-
-    if not 'player_ids' in request.args:
-        # i don't like returning HTML to JSON requests... maybe should change this
-        raise ExperimentError('improper_inputs')
-
-    if not 'trial_index' in request.args:
-        # i don't like returning HTML to JSON requests... maybe should change this
-        raise ExperimentError('improper_inputs')
-    
-    player_ids = request.args['player_ids']
-    trial_index = request.args['trial_index']
-    selections = {}
-    for idx in player_ids:
-        selections[idx] = {
-            "id": idx,
-            "copying": False,
-            "copying_id": None,
-            "artwork_chosen_id": 0,
-            "artwork_chosen_filepath": "../static/images/artworks/KnowingCalm_69.jpeg",
-            "artwork_chosen_position": 3, 
-            "trial_type": "art",
-            "trial_index": trial_index, 
-        }
-    return jsonify(**{"player_selections":selections})
-        */
        let self_selection = { 
             id: self.id, 
-            copying: self.is_copying, 
-            copying_id: self.copying_id, 
             artwork_chosen_id: self.art_choice.id,
             artwork_chosen_filepath: self.art_choice.filepath,
             artwork_chosen_position: getPlayerSelection(trial_index),
             trial_type: "art",
-            trial_index: (trial_index+1)
+            trial_index: (trial_index+1),
+            round_num: numExecutions
         }
 
-        let post_test =  await new Promise((resolve, reject) => { 
-            $.ajax("art_selection", {
-                type: "POST",
-                data: {"self_selection": self_selection},
-                success: (data) => { 
-                    resolve(data.self_selection);
-                },
-                error: (error) => reject(error),
-            });
-        });;
+        let all_selections = await getArtSelections(self_selection);
+        let arts = getDataAtIndex(trial_index).order; 
+        let art_ids = arts.map(a => a.id);
 
-        let get_test = await new Promise((resolve, reject) => { 
-            $.ajax("all_players_art_selections", {
-                type: "GET",
-                data: {"player_ids": [1, 2, 3, 4, 5], "trial_index": trial_index+1},
-                success: (data) => { 
-                    console.log(data)
-                    resolve(data.player_selections);
-                },
-                error: (error) => reject(error),
-            });
-        });;
+        for (let i = 0; i < numPlayers; i++) { 
+            let curr_selection = all_selections[i];
+            let curr_pos = idLookup[curr_selection.id];
+            let curr_art_choice = arts[art_ids.indexOf(curr_selection.artwork_chosen_id)];
 
-        console.log(get_test)
-
-        /* SEND MESSAGES:
-            send_message as above
-            result of isValidPlayer at this point
-        */ 
-
-        /* RECEIVE ARRAY OF MESSAGES
-        SHOULD BE OBJECT WITH SAME FIELDS AS send_message ABOVE 
-        THE PLACEHOLDER BELOW IS NOT IN THE CORRECT FORMAT */
-
-        let response = 2; // Math.floor(Math.random() * NUM_IMAGES);
-        let response_array = /* PLACEHOLDER */ [
-            {
-                id: players[0].id,
-                artwork_chosen_id: response,
-            },
-            {
-                id: players[1].id,
-                artwork_chosen_id: response,
-            },
-            {
-                id: players[2].id,
-                artwork_chosen_id: response,
-            },
-            {
-                id: players[3].id,
-                artwork_chosen_id: response,
-            }
-        ];
-        
-        // update data
-        for (i = 0; i < numOtherPlayers; i++) {
-            players[i].art_choice = response_array[i].artwork_chosen_id;
-            /* TYPE MISMATCH HERE */
-            console.warn("This code is buggy");
+            players[curr_pos].art_choice = curr_art_choice; 
         }
+
     }
 }
+
 
 // picks whether and who the player is copying
 function rand_copy(curr_pos) { 
@@ -384,7 +328,7 @@ function find_best_players() {
             best_arr.push(i);
         }
     }
-        // convert to player id's and pick a best player
+        // convert to player id's 
     return best_arr = best_arr.map(i => players[i].id);
 }
 
@@ -401,92 +345,136 @@ function copy_most_competent(curr_pos) {
     }
 }
 
+function getCopySelections(self_selection) { 
+    // single-player version
+    return new Promise((resolve, reject) => { 
+        $.ajax("copy_selection", {
+            type: "POST",
+            data: {"self_selection": self_selection},
+            success: (data) => { 
+                resolve(data.selections);
+            },
+            error: (error) => reject(error),
+        });
+    });;
+
+    /* 
+    // multi-player version:
+    let post_self_selection = $.ajax("copy_selection", { 
+        type: "POST",
+        data: {"self_selection": self_selection},
+        success: (data) => data, // not used
+        error: (error) => error
+    });
+
+    // LOOP TO PING SERVER UNTIL READY HERE 
+    // WHEN READY MAKE THE FOLLOWING REQUEST:
+    return new Promise((resolve, reject) => { 
+        $.ajax("all_copy_selections", {
+            type: "GET",
+            data: {},
+            success: (data) => { 
+                resolve(data.selections);
+            },
+            error: (error) => reject(error),
+        });
+    });;  
+    */ 
+}
+
 // If online, sends and gets responses of who's copying who; otherwise returns placeholder. Format of message: 
 /* 
     {
         id: int,
-        num_was_copied: int,
-        delta_money: int,
         copying: bool,
         copying_id: int, 
         trial_type: "copy",
-        trial_index: int
+        trial_index: int,
+        round_num: int starting at 0
     }
 */ 
 function backendPlayersCopying(offlineMode, trial_index) { 
-    // send and receive information if online
-    if(!offlineMode) { 
-        let msg = { 
-            id: self.id,
-            num_was_copied: null,
-            delta_money: null,
-            copying: self.is_copying, 
-            copying_id: self.copying_id,
-            trial_type: "copy",
-            trial_index: trial_index
-        }
-        /* SEND msg HERE*/ 
-
-        /* RECEIVE array of objects with same fields as above */ 
-    }
-    else { 
-        // determine bots' choices randomly
+    let copy_selections = [];
+    
+    if (offlineMode) { 
+        // determine bots' choices 
         for(let i = 0; i < numOtherPlayers; i++) { 
             /* let copy_choice = rand_copy(i); // - for random copy policy */
             let copy_choice = copy_most_competent(i); 
-            players[i].is_copying = copy_choice.is_copying;
-            players[i].copying_id = copy_choice.copying_id;
-        }
-        
-        // determine money changes and num_was_copied in this round
-            // if a player is copying, change: (1) their money, (2) the money of the person they're copying, (3) num_was_copied for the person they copied
-            // use arrays in order of players array with player at last index
-        let delta_money = new Array(numPlayers).fill(0); 
-        let delta_num_was_copied = new Array(numPlayers).fill(0); 
 
-        for (let i = 0; i < numPlayers; i++) { 
-            if(players[i].is_copying) {
-                let copying_pos =  idLookup[players[i].copying_id];
-
-                delta_money[i] -= COPY_FEE;
-                delta_money[copying_pos] += COPY_FEE;
-                delta_num_was_copied[copying_pos]++;
-            }
-        }
-
-        // create array of objects with information about the given round, based on above choices
-        let placeholder = [
-            {
-                id: self.id, 
-                num_was_copied: delta_num_was_copied[numPlayers-1], 
-                delta_money: delta_money[numPlayers-1],
-                copying: self.is_copying,
-                copying_id: self.copying_id,
+            let curr_selection = { 
+                id: players[i].id, 
+                copying: copy_choice.is_copying,
+                copying_id: copy_choice.copying_id,
                 trial_type: "copy",
-                trial_index: trial_index
-            }];
-        for (let i = 0; i < numOtherPlayers; i++) { 
-            let player_copying_info = { 
-                id: players[i].id,
-                num_was_copied: delta_num_was_copied[i],
-                delta_money: delta_money[i],
-                copying: players[i].is_copying,
-                copying_id: players[i].copying_id, 
-                trial_type: "copy",
-                trial_index: trial_index
+                trial_index: trial_index, 
+                round_num: numExecutions,
             };
-            placeholder.push(player_copying_info);
+
+            copy_selections.push(curr_selection);
+        }
+
+        // add self to the copy selections list 
+        copy_selections.push({
+            id: self.id,
+            copying: self.is_copying,
+            copying_id: self.copying_id,
+            trial_type: "copy",
+            trial_index: trial_index, 
+            round_num: numExecutions,
+        });
+    }
+
+    else { 
+        // send and receive information to find copying info if online
+        let self_selection = {
+            id: self.id,
+            copying: self.is_copying,
+            copying_id: self.copying_id,
+            trial_type: "copy",
+            trial_index: trial_index, 
+            round_num: numExecutions,
         };
-            
-        // update data for the previous trial (to use in offline mode in backendArtSelections)
-        let prev_trial_index = trial_index - 1;
+
+        copy_selections = await getCopySelections(self_selection);
+    }
+
+    // determine money changes and num_was_copied in this round
+        // if a player is copying, change: (1) their money, (2) the money of the person they're copying, (3) num_was_copied for the person they copied
+        // use arrays in order of players array with player at last index
+    let delta_money = new Array(numPlayers).fill(0); 
+    let delta_num_was_copied = new Array(numPlayers).fill(0); 
+    
+    for (let i = 0; i < numPlayers; i++) { 
+        let pos = idLookup[copy_selections.id];
+        if (copy_selections[i].copying) {
+            let copying_pos = idLookup[copy_selections[i].copying_id];
+
+            delta_money[pos] -= COPY_FEE;
+            delta_money[copying_pos] += COPY_FEE;
+            delta_num_was_copied[copying_pos]++;
+        }
+    }
+
+    let return_info = [];
+    for (let i = 0; i < numPlayers; i++) { 
+        return_info.push({
+            id: players[i].id,
+            num_was_copied: delta_num_was_copied[i],
+            delta_money: delta_money[i],
+            copying: copy_selections[i].copying,
+            copying_id: copy_selections[i].copying_id,
+        });
+    }
+
+    // update data for the previous trial 
+    let prev_trial_index = trial_index - 1;
         let prev_copy_choices = getDataAtIndex(prev_trial_index).copy_choices;
         prev_copy_choices = [];
 
         for (i = 0; i < numPlayers; i++) { 
-            prev_copy_choices[i] = {is_copying: placeholder[i].copying, copying_id: placeholder[i].copying_id};
+            prev_copy_choices[i] = {is_copying: return_info[i].copying, copying_id: return_info[i].copying_id};
         }
-
-        return placeholder;
-    }
+    
+    return return_info;
 }

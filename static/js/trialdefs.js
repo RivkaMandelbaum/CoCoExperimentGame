@@ -277,25 +277,24 @@ let results_display_wait = {
         // information related to previous choice
         let curr_trial_index = jsPsych.progress().current_trial_global;
         let button = getDataAtIndex(curr_trial_index - 1).button_pressed;
-        let is_copying = didPlayerCopy(button);
 
-        self.is_copying = is_copying;
-        self.copying_id = (is_copying) ? players[button-1].id : null;
+        self.is_copying = didPlayerCopy(button);
+        self.copying_id = (self.is_copying) ? players[button-1].id : null;
 
         // send own choice and get others' choices 
         copyingInfo = backendPlayersCopying(offlineMode, curr_trial_index);
 
         // update player stats based on copy information
         for (let i = 0; i < numPlayers; i++) {
-            currInfo = copyingInfo[i];
-            currPlayer = players[idLookup[currInfo.id]]; // server may not send in sorted order
-            
-            currPlayer.numWasCopied += currInfo.num_was_copied;
-            currPlayer.money += currInfo.delta_money; 
-            currPlayer.money_earned += currInfo.delta_money; 
+            currInfo = copyingInfo[i];            
+            players[i].numWasCopied += currInfo.num_was_copied;
+            players[i].money += currInfo.delta_money; 
+            players[i].money_earned += currInfo.delta_money; 
     
             if (currInfo.copying) {
-                currPlayer.numCopyingOther++;
+                players[i].numCopyingOther++;
+                players[i].is_copying = true;
+                players[i].copying_id = currInfo.copying_id;
             }
         }
         jsPsych.resumeExperiment(); 

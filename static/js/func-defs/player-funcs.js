@@ -71,50 +71,6 @@ Player.prototype.getPlayerStats = function() {
     return s;
 }
 
-/* --- updating all players --- */
-/* update the stats of players based on who is copying in a given round
-copyingInfo object should be an array of objects received from the server
-with the following fields: {
-    id: int,
-    num_was_copied: int,
-    delta_money: int, 
-    copying: bool,
-    copying_id: int or null if not copying,
-    trial_type: "copy",
-    trial_index: int
-    } 
-There should be one object per player including the self.  
-*/
-function updateCopying(copyingInfo) { 
-    for (let i = 0; i < numPlayers; i++) {
-        currInfo = copyingInfo[i];
-        currPlayer = players[idLookup[currInfo.id]]; // server may not send in sorted order
-        
-        currPlayer.numWasCopied += currInfo.num_was_copied;
-        currPlayer.money += currInfo.delta_money; 
-        currPlayer.money_earned += currInfo.delta_money; 
-
-        if (currInfo.copying) {
-            currPlayer.numCopyingOther++;
-            currPlayer.is_copying = true;
-            currPlayer.copying_id = currInfo.copying_id;
-        }
-    }
-
-    // testUpdateCopying(copyingInfo);
-}
-// test that the copying info is correct and matches the updated stats
-    function testUpdateCopying(copyingInfo){ 
-    copyingInfo.forEach((element) => { 
-        let curr_player = players[idLookup[element.id]];
-        let name = curr_player.name;
-
-        if (element.copying) console.log(`${name} (${element.id}) is copying plyr ${element.copying_id} and has stats: ${curr_player.getPlayerStats()}`);
-        else console.log(`${name} (${element.id}) is not copying and has stats: ${curr_player.getPlayerStats()}`);
-    });
-    return;
-}
-
 /* --- miscellaneous player-related functions --- */
 // returns true if the player should remain in the game and false if the player should be removed from the game
 // criteria for removal: time ran out twice, or failed attention checks
