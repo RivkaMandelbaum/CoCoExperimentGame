@@ -101,6 +101,9 @@ let art_choice_wait = {
 
         // send and collect responses and update previous trial data
         backendArtSelections(trial_index, offlineMode);
+        // players.map(e => {
+        //     console.log(`id ${e.id} -- ${e.art_choice.value}`);
+        // })
 
         // update player money and reward
         for (let i = 0; i < numPlayers; i++) { 
@@ -175,6 +178,9 @@ let art_display_wait = {
 
         // get responses and update previous trial data to match
         backendArtSelections(trial_index, offlineMode);
+        players.map(e => {
+            console.log(`id ${e.id} -- ${e.art_choice.value}`);
+        })
 
         // update players' money and reward
         for (let i = 0; i < numPlayers; i++) { 
@@ -271,7 +277,7 @@ let results_display_wait = {
         document.getElementById("countdown-timer").innerHTML = "";
     }, 
     prompt: "Please wait for other players.", 
-    trial_function: function() {
+    trial_function: async function() {
         jsPsych.pauseExperiment(); 
 
         // information related to previous choice
@@ -282,11 +288,12 @@ let results_display_wait = {
         self.copying_id = (self.is_copying) ? players[button-1].id : null;
 
         // send own choice and get others' choices 
-        copyingInfo = backendPlayersCopying(offlineMode, curr_trial_index);
+        copyingInfo = await backendPlayersCopying(offlineMode, curr_trial_index);
+        // console.log("Copying info: ", copyingInfo);
 
         // update player stats based on copy information
         for (let i = 0; i < numPlayers; i++) {
-            currInfo = copyingInfo[i];            
+            currInfo = copyingInfo[i];  
             players[i].numWasCopied += currInfo.num_was_copied;
             players[i].money += currInfo.delta_money; 
             players[i].money_earned += currInfo.delta_money; 
@@ -296,13 +303,17 @@ let results_display_wait = {
                 players[i].is_copying = true;
                 players[i].copying_id = currInfo.copying_id;
             }
+            else { // technically not needed for self but simpler to just overwrite again
+                players[i].is_copying = false;
+                players[i].copying_id = null;
+            }
         }
         jsPsych.resumeExperiment(); 
 
         numExecutions++;  // since this is last trial on timeline
     }, 
     max_trial_duration: function() { return duration(offlineMode); },
-    function_ends_trial: true
+    function_ends_trial: true,
 }
 
 let results_display_wait_node = createNodeWithTrial(results_display_wait);

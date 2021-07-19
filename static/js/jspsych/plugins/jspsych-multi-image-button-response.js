@@ -123,15 +123,9 @@ jsPsych.plugins["multi-image-button-response"] = (function() {
   }
 
   plugin.trial = async function(display_element, trial) {
-    console.log('trial.choices ', trial.choices);
-    console.log('trial.stimulus ', trial.stimulus);
-
     let fulfilled_choices = await trial.choices;
     let fulfilled_stimulus = await trial.stimulus; 
     
-    console.log('fulfilled choices ', fulfilled_choices)
-    console.log('fulfilled stimulus ', fulfilled_stimulus)
-
     for_preload = fulfilled_stimulus; 
     if (fulfilled_stimulus === null) {
       for_preload = [];

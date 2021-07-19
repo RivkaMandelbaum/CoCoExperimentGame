@@ -194,8 +194,8 @@ let second_mechanism_round = createNodeWithTrial({
         if(correct_player === undefined) { 
             correct_player = Math.floor(Math.random() * numOtherPlayers);
         }
-        console.log('correct player ', correct_player)
-        console.log('players ', players)
+        // console.log('correct player ', correct_player)
+        // console.log('players ', players)
         let explanation_string = `<p>This screen provides information about each player.</p><p>To show that you understand, please <strong>ignore</strong> the instruction below and choose to copy <strong>${players[correct_player].name}</strong>.</p>`;
         
 

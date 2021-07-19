@@ -17,7 +17,7 @@ custom_code = Blueprint('custom_code', __name__, template_folder='templates', st
 
 @custom_code.route('/art_selection', methods=['POST'])
 def art_selection():
-    print request.args
+    print(request.args)
 
     
 

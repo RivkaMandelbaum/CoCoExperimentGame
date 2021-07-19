@@ -61,7 +61,7 @@ jsPsych.plugins["waiting"] = (function() {
     }
   }
 
-  plugin.trial = function(display_element, trial) {
+  plugin.trial = async function(display_element, trial) {
 
     if (trial.trial_function === undefined) console.warn("trial_function is required!"); 
 
@@ -105,7 +105,7 @@ jsPsych.plugins["waiting"] = (function() {
 
     // execute the function
     var time_before_function = performance.now(); 
-    trial.trial_function();
+    await trial.trial_function();
     var time_after_function = performance.now();
 
     // end trial if function given and function ends trial

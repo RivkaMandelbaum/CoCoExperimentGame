@@ -393,7 +393,7 @@ function getCopySelections(self_selection) {
         round_num: int starting at 0
     }
 */ 
-function backendPlayersCopying(offlineMode, trial_index) { 
+async function backendPlayersCopying(offlineMode, trial_index) { 
     let copy_selections = [];
     
     if (offlineMode) { 
@@ -446,7 +446,7 @@ function backendPlayersCopying(offlineMode, trial_index) {
     let delta_num_was_copied = new Array(numPlayers).fill(0); 
     
     for (let i = 0; i < numPlayers; i++) { 
-        let pos = idLookup[copy_selections.id];
+        let pos = idLookup[copy_selections[i].id];
         if (copy_selections[i].copying) {
             let copying_pos = idLookup[copy_selections[i].copying_id];
 
@@ -469,12 +469,12 @@ function backendPlayersCopying(offlineMode, trial_index) {
 
     // update data for the previous trial 
     let prev_trial_index = trial_index - 1;
-        let prev_copy_choices = getDataAtIndex(prev_trial_index).copy_choices;
-        prev_copy_choices = [];
+    let prev_copy_choices = getDataAtIndex(prev_trial_index).copy_choices;
+    prev_copy_choices = [];
 
-        for (i = 0; i < numPlayers; i++) { 
-            prev_copy_choices[i] = {is_copying: return_info[i].copying, copying_id: return_info[i].copying_id};
-        }
+    for (i = 0; i < numPlayers; i++) { 
+        prev_copy_choices[i] = {is_copying: return_info[i].copying, copying_id: return_info[i].copying_id};
+    }
     
     return return_info;
 }
