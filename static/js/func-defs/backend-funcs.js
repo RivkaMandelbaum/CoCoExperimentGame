@@ -26,7 +26,7 @@
     */
 // If offline, will return dummy values of those
 function getPlayerInfo(offlineMode){
-    if (!offlineMode) {
+    if (offlineMode) {
         let default_condition = 0; 
 
         let result = {
@@ -106,7 +106,7 @@ function setPlayerInfo(initObject) {
 // Gets artworks from server for the round; should be array of art objects, 
 // which have the fields: id, name, filepath
 function getArtworks(offlineMode, round){
-    if(offlineMode){
+    if (offlineMode){
         return new Promise((resolve) => {
             resolve(offlineArts(round));
         });
@@ -179,7 +179,7 @@ function getArtSelections(self_selection) {
 // When offline, dummy values of those
 async function backendArtSelections(trial_index, offlineMode) { 
     // in offline mode, fill with dummy values
-    if(offlineMode) {  
+    if (offlineMode) {  
         // if first round (or first training round), no one is copying, so decide other players' choices and return 
         copying_trial_index = trial_index - 2; 
         copying_trial_data = getDataAtIndex(copying_trial_index);
@@ -263,11 +263,15 @@ async function backendArtSelections(trial_index, offlineMode) {
 
     // in online mode, send information about self, receive correct answer and responses, and update the Player objects to match
     else { 
-       let self_selection = { 
+        let art_id = (self.is_copying) ? null : self.art_choice.id; 
+        let art_filepath = (self.is_copying) ? null : self.art_choice.filepath; 
+        let art_pos = (self.is_copying) ? null : getPlayerSelection(trial_index); 
+       
+        let self_selection = { 
             id: self.id, 
-            artwork_chosen_id: self.art_choice.id,
-            artwork_chosen_filepath: self.art_choice.filepath,
-            artwork_chosen_position: getPlayerSelection(trial_index),
+            artwork_chosen_id: art_id,
+            artwork_chosen_filepath: art_filepath,
+            artwork_chosen_position: art_pos,
             trial_type: "art",
             trial_index: (trial_index+1),
             round_num: numExecutions

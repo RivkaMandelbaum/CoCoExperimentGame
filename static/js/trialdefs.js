@@ -89,7 +89,7 @@ let art_choice_wait = {
         document.getElementById("countdown-timer").innerHTML = "";
     },
     prompt: "Please wait for other players.", 
-    trial_function: function() {
+    trial_function: async function() {
         let trial_index = jsPsych.progress().current_trial_global - 1;
         let prev_trial_data = getDataAtIndex(trial_index);
         
@@ -100,7 +100,7 @@ let art_choice_wait = {
         jsPsych.pauseExperiment(); 
 
         // send and collect responses and update previous trial data
-        backendArtSelections(trial_index, offlineMode);
+        await backendArtSelections(trial_index, offlineMode);
         // players.map(e => {
         //     console.log(`id ${e.id} -- ${e.art_choice.value}`);
         // })
@@ -171,7 +171,7 @@ let art_display_wait = {
         document.getElementById("countdown-timer").innerHTML = "";
     },
     prompt: "Please wait for other players.", 
-    trial_function: function() {
+    trial_function: async function() {
         let trial_index = jsPsych.progress().current_trial_global - 1;
 
         jsPsych.pauseExperiment(); 

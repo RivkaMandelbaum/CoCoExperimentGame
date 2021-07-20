@@ -9,22 +9,14 @@ from psiturk.models import Participant
 from json import dumps, loads
 
 # explore the Blueprint
-custom_code = Blueprint('custom_code', __name__, template_folder='templates', static_folder='static')
+custom_code = Blueprint('custom_code', __name__, template_folder='templates', static_folder='static')    
 
-#----------------------------------------------
-# example computing bonus
-#----------------------------------------------
-
-@custom_code.route('/art_selection', methods=['POST'])
-def art_selection():
-    print(request.args)
-
-    
-
+# get player information at the beginning of the game
+# single-player: hard-coded bots 
+# multi-player: need to get everyone's real information from server
 
 @custom_code.route('/player_information', methods=['GET'])
 def player_information():
-    print("in player information")
     default_condition = 0
     result = {
         "players": 5,
@@ -34,9 +26,10 @@ def player_information():
             "avatar_filepath": "../static/images/aima.png",
             "condition": request.args["condition"]
         }, 
+        # TO-DO: RANDOMIZE NAMES
         "player_info": [
             { 
-                "id": 10, 
+                "id": 1, 
                 "name": "Kabu",
                 "avatar_filepath": "../static/images/kabu.png",
                 "condition": default_condition
@@ -48,7 +41,7 @@ def player_information():
                 "condition": default_condition
             },
             {
-                "id": 30, 
+                "id": 3, 
                 "name": "Tufa", 
                 "avatar_filepath": "../static/images/Tufa.png",
                 "condition": default_condition
@@ -63,10 +56,10 @@ def player_information():
     }
     return jsonify(**{"player_results":result})
 
+# randomly choose artworks from the list of artworks for the given round 
+# sampling without replacement
 @custom_code.route('/artworks', methods=['GET'])
 def artworks():
-    print("in artworks function")
-
     arts = [
         { "name": "KnowingCalm_69",
          "id": 0,
@@ -85,10 +78,44 @@ def artworks():
         { "name": "NoahsArk_79", 
         "id": 4, 
         "filepath": "../static/images/artworks/NoahsArk_79.jpeg", "value": 2}]
-    print(arts)
-    print(arts[0])
     return jsonify(**{"arts": arts})
 
+# decide art selections for every player 
+@custom_code.route('/art_selection', methods=['POST'])
+def art_selection():
+    print(request.args)
+        # expects array with one of these structures for each player:
+        # {
+            # id: int,
+            # artwork_chosen_id: int,
+            # artwork_chosen_filepath: string,
+            # artwork_chosen_position: int, 
+            # trial_type: "art",
+            # trial_index: int,
+            # round_num: int (first round = round 0)
+        # }
+    selections = [request.args]
+
+    return jsonify(**{"selections": selections})
+
+# decide copy selections for every player 
+@custom_code.route('/copy_selection', methods=['POST'])
+def copy_selection():
+    
+        # expects array with one of these structures for each player:
+        # {
+        #         id: int,
+        #         copying: bool,
+        #         copying_id: int, 
+        #         trial_type: "copy",
+        #         trial_index: int,
+        #         round_num: int starting at 0
+        #     }
+    return jsonify(**{"selections": [request.args]})
+
+#----------------------------------------------
+# example computing bonus
+#----------------------------------------------
 @custom_code.route('/compute_bonus', methods=['GET'])
 def compute_bonus():
     # check that user provided the correct keys
