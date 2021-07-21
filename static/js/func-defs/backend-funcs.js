@@ -30,7 +30,7 @@ function getPlayerInfo(offlineMode){
         let default_condition = 0; 
 
         let result = {
-            num_players: numPlayers,
+            players: numPlayers,
             self_info: {
                 id: uniqueId,
                 name: "Aima (you)",
@@ -64,7 +64,8 @@ function getPlayerInfo(offlineMode){
                 }
             ]
         };
-        return result; 
+        setPlayerInfo(result); 
+        jsPsych.resumeExperiment();
     }
     else{ 
         let request = $.ajax("player_information", {
