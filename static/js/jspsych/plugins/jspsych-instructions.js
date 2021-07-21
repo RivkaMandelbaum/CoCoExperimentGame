@@ -68,7 +68,13 @@ jsPsych.plugins.instructions = (function() {
         pretty_name: 'Page label',
         default: 'Page',
         description: 'The text that appears before x/y (current/total) pages displayed with show_page_number'
-      },      
+      },   
+      trial_duration: {
+        type: jsPsych.plugins.parameterType.INT,
+        pretty_name: 'Trial duration',
+        default: null,
+        description: 'How long to show the trial.'
+      },   
       button_label_previous: {
         type: jsPsych.plugins.parameterType.STRING,
         pretty_name: 'Button label previous',
@@ -230,6 +236,13 @@ jsPsych.plugins.instructions = (function() {
         rt_method: 'performance',
         persist: false
       });
+    }
+
+    // end trial if trial_duration is set
+    if (trial.trial_duration !== null) {
+      jsPsych.pluginAPI.setTimeout(function() {
+        endTrial();
+      }, trial.trial_duration);
     }
   };
 

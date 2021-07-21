@@ -6,7 +6,7 @@
 
 /* For trial duration paramaters: 
    Must be placed here so that trialdefs.js can access during creation. */ 
-const TIMER_DURATION = 600; // seconds that timer counts down
+const TIMER_DURATION = 1; // seconds that timer counts down
 const TRIAL_DURATION = (TIMER_DURATION + 1) * 1000; // ms, force end of decision after this time (+1 to allow timer to reach 0)
 const waitDuration = 10 * 1000; // when offline, and function_ends_trial is false in waiting trials, waiting trials end after this amount of time
 let intervalID = null; // for timer functions
@@ -50,7 +50,9 @@ function createNodeWithTrial(trial_definition) {
         },
         on_finish: function() { 
             clearInterval(intervalID);
-        }
+        },
+        response_ends_trial: true,
+        trial_duration: TRIAL_DURATION
     }; 
     
     let welcome_node = createNodeWithTrial(welcome);
@@ -94,7 +96,12 @@ let art_choice_wait = {
         let prev_trial_data = getDataAtIndex(trial_index);
         
         // update self art choice
-        self.art_choice = prev_trial_data.order[prev_trial_data.button_pressed];
+        if (prev_trial_data.button_pressed === null) {  // ran out of time 
+            self.art_choice = rand_art(trial_index);
+        }
+        else { // made a choice
+            self.art_choice = prev_trial_data.order[prev_trial_data.button_pressed];
+        }
         
         // update players' money:
         jsPsych.pauseExperiment(); 

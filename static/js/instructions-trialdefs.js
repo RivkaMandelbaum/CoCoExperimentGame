@@ -3,13 +3,13 @@
 /* Experiment.                                                  */   
 /* Author: Rivka Mandelbaum                                     */  
 /* ------------------------------------------------------------ */
-const TRAINING_TIMER_DURATION = 600; // seconds that timer counts down
+const TRAINING_TIMER_DURATION = 10; // seconds that timer counts down
 const TRAINING_TRIAL_DURATION = (TRAINING_TIMER_DURATION + 1) * 1000; // in ms, force end of decision after this time, +1 to allow timer to reach 0
 const TRAINING_NUM_DECISIONS = 2; 
 
 const practice_explanation = "<p id='practice-explanation'>This is a practice round. Your choices in this round do <strong>not</strong> impact your final bonus.</p>";
 
-/* ---- pages of text to introduce the game ---- */
+/* ---- pages of text to introduce the game --- */
 let game_goal = "<div id='game-goal'>placeholder</div>";
 let copy_fee = "<div id='copy-fee'>placeholder</div>";
 
@@ -25,6 +25,7 @@ let instructions_node_1 = createNodeWithTrial({
     on_finish: function() { 
         clearInterval(intervalID);
     },
+    trial_duration: TRAINING_TRIAL_DURATION,
 });
 
 let instructions_node_2 = createNodeWithTrial({
@@ -58,7 +59,7 @@ let instructions_node_3 = createNodeWithTrial({
     allow_backward: false,
     pages: [
         copy_fee,
-        "<div id='time'><h1>Let's Keep It in Time</h1><p>Please complete your decision within the designated time at each round.</p><p>If you do not finish in time, your choice will be made for you, and if you run out of time in three rounds, you will be removed from the game.</p><p>Your total amount of money earned can be found on the bottom right of the screen.</p></div>",
+        "<div id='time'><h1>Let's Keep It in Time</h1><p>Please complete your decision within the designated time at each round.</p><p>If you do not finish in time, your choice will be made for you, and if you run out of time twice, or if you fail an attention check, you will be removed from the game.</p><p>Your total amount of money earned can be found on the bottom right of the screen.</p></div>",
         "<div id = 'practice'><h1>Practice</h1><p>We hope you will enjoy this game!</p><p>Let's first practice a little bit.</p><p>Press next to begin practice.</p></div>",
     ],
     // the game only accesses these constants during actual gameplay
@@ -101,19 +102,19 @@ let startTrial = [createNodeWithTrial(startWait)];
 /* --- trials to learn the mechanisms of the game --- */
 let intro_mechanism_trial = createNodeWithTrial({
     type: "html-keyboard-response",
-    stimulus: function() { 
-        return `<h1>Welcome!</h1><p>To other players, you will appear as: <div id='player-name-avatar'><img src=${self.avatar_filepath} id ='intro-player-avatar' />${self.name.replace("(you)", "")}</div>`;
-    }, 
-    prompt: "Press any key to continue.",
-    trial_duration: 10 * TRAINING_TRIAL_DURATION,
-    response_ends_trial: true,
     on_start: function() { 
         getDataAtIndex(jsPsych.progress().current_trial_global - 1).participant_condition = self.condition;
         intervalID = startTimer(TRAINING_TIMER_DURATION);
     },
+    stimulus: function() { 
+        return `<h1>Welcome!</h1><p>To other players, you will appear as: <div id='player-name-avatar'><img src=${self.avatar_filepath} id ='intro-player-avatar' />${self.name.replace("(you)", "")}</div>`;
+    }, 
+    prompt: "Press any key to continue.",
     on_finish: function() { 
         clearInterval(intervalID);
-    }
+    },
+    response_ends_trial: true,
+    trial_duration: TRAINING_TRIAL_DURATION,
 });
 
 let attempts_first = 0; 
@@ -160,16 +161,18 @@ let first_mechanism_trial = createNodeWithTrial({
     },
     preamble: "<p>This is how you will see artworks in future rounds.</p> <p>Please select the <strong>first (leftmost)</strong> artwork and <strong>ignore</strong> the instruction below.</p>",
     prompt: "Please select what you think is the <strong> highest-value </strong> artwork.",
-    response_ends_trial: true,
-    trial_duration: function() { return TRAINING_TRIAL_DURATION},
     on_finish: function() { 
         clearInterval(intervalID);
 
         for (let i = 0; i < numPlayers; i++) { 
             players[i].money += IMG1.value;
             players[i].reward += IMG1.value;
+            players[i].reward_earned = IMG1.value;
+            players[i].money_earned = IMG1.value;
         }
     }, 
+    response_ends_trial: true,
+    trial_duration: TRAINING_TRIAL_DURATION,
 });
 
 let first_mechanism_timeline = {
@@ -267,13 +270,21 @@ let transition_screen = createNodeWithTrial({
     },
     on_finish: function() { 
         clearInterval(intervalID);
-    }
-
+    },
+    response_ends_trial: true,
+    trial_duration: TRAINING_TRIAL_DURATION
 });
 
 let instructions_art_choice = Object.assign({}, art_choice);
 instructions_art_choice.preamble = practice_explanation;
+instructions_art_choice.trial_duration = TRAINING_TRIAL_DURATION;
+instructions_art_choice.on_start = function() { 
+    intervalID = startTimer(TRAINING_TIMER_DURATION);
+}
+
+
 let instructions_art_choice_wrap = [createNodeWithTrial(instructions_art_choice), createNodeWithTrial(art_choice_wait)];
+
 let instructions_art_display = Object.assign({}, art_display);
 instructions_art_display.preamble =  function() { 
     if (self.is_copying) { 
@@ -284,7 +295,12 @@ instructions_art_display.preamble =  function() {
     else {
         console.warn("Art display copy trial reached, but self.is_copying is false!");
     }
+};
+instructions_art_display.trial_duration = TRAINING_TRIAL_DURATION; 
+instructions_art_display.on_start = function() { 
+    intervalID = startTimer(TRAINING_TIMER_DURATION);
 }
+
 let instructions_art_display_wrap = [createNodeWithTrial(instructions_art_display), createNodeWithTrial(art_display_wait)];
 
 let realistic_training_trials = {
@@ -472,6 +488,7 @@ let quiz_round = {
     },
     randomize_question_order: false,
     button_label: "Continue to the game",
+    trial_duration: TRAINING_TRIAL_DURATION * 2
 }
 
 let quiz_timeline = { 

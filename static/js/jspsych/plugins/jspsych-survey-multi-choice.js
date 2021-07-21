@@ -46,6 +46,12 @@ jsPsych.plugins['survey-multi-choice'] = (function() {
             default: false,
             description: 'If true, then questions are centered and options are displayed horizontally.'
           },
+          trial_duration: {
+            type: jsPsych.plugins.parameterType.INT,
+            pretty_name: 'Trial duration',
+            default: null,
+            description: 'How long to show the trial.'
+          },    
           name: {
             type: jsPsych.plugins.parameterType.STRING,
             pretty_name: 'Question Name',
@@ -167,6 +173,10 @@ jsPsych.plugins['survey-multi-choice'] = (function() {
 
     document.querySelector('form').addEventListener('submit', function(event) {
       event.preventDefault();
+      end_trial();
+    });
+
+    function end_trial() { 
       // measure response time
       var endTime = performance.now();
       var response_time = endTime - startTime;
@@ -199,9 +209,16 @@ jsPsych.plugins['survey-multi-choice'] = (function() {
 
       // next trial
       jsPsych.finishTrial(trial_data);
-    });
+    }
 
     var startTime = performance.now();
+    console.log(trial.trial_duration)
+    // end trial if trial_duration is set
+    if (trial.trial_duration !== null) {
+      jsPsych.pluginAPI.setTimeout(function() {
+        end_trial();
+      }, trial.trial_duration);
+    }
   };
 
   return plugin;

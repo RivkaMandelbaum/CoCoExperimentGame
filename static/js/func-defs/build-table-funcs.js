@@ -11,6 +11,8 @@ const TABLE_END_HTML = "</table></div></div>";
 function showImageChosen(s) { 
     let choice_trial_index = jsPsych.progress().current_trial_global - 2; 
     let choice_trial_data = getDataAtIndex(choice_trial_index);
+    if (choice_trial_data.art_choices === undefined && getDataAtIndex(choice_trial_index - 1).art_choices != undefined) choice_trial_data = getDataAtIndex(choice_trial_index - 1); // edge case when quiz round has looped
+    
     let choice, name;
 
     if (choice_trial_data.art_choices != undefined) { 
@@ -20,7 +22,7 @@ function showImageChosen(s) {
         choice = players[pos].art_choice;
         name = players[pos].name;
 
-        if (name.includes("You")) name = "You";
+        if (name.includes("you")) name = "You";
 
         // create html to display that information 
         if (choice != undefined) { 
