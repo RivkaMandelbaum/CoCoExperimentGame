@@ -1,6 +1,6 @@
 ***---- DIRECTORY STRUCTURE ----***  
 The top-level directory for the game is CoCoExperimentGame. Psiturk server on/off and debug commands should be run from this directory.   
-The directory is formatted according to the structure that psiturk requires. It contains:
+The directory is formatted according to the structure that psiturk requires. It contains:  
 &nbsp;&nbsp;&nbsp;&nbsp;static/ (see below)  
 &nbsp;&nbsp;&nbsp;&nbsp;- templates/ (see below)  
 &nbsp;&nbsp;&nbsp;&nbsp;- config.txt (a configuration file for psiturk)  
@@ -9,7 +9,7 @@ The directory is formatted according to the structure that psiturk requires. It 
 &nbsp;&nbsp;&nbsp;&nbsp;- arts.csv (csv file with information related to arts for the backend function "artworks")  
 psiturk also automatically creates server.log and .psiturk_history, but these are in the gitignore since the history during debugging should not be useful.   
   
-The **templates** directory is used to create different pages by psiturk. The only one that contains my code is **exp.html**, which includes the scripts that are needed for the experiment. Note that the order of the files under the comment <!-- experiment logic script and files it references --> must remain in this order due to dependencies.   
+The **templates** directory is used to create different pages by psiturk. The only one that contains my code is **exp.html**, which includes the scripts that are needed for the experiment. Note that the order of the files under the comment "experiment logic script and files it references" must remain in this order due to dependencies.   
   
 The **static** directory contains a number of relevant files and directories:  
 &nbsp;&nbsp;&nbsp;&nbsp;- css/  
