@@ -3,7 +3,7 @@
 /* Experiment.                                                  */   
 /* Author: Rivka Mandelbaum                                     */  
 /* ------------------------------------------------------------ */
-const TRAINING_TIMER_DURATION = 10; // seconds that timer counts down
+const TRAINING_TIMER_DURATION = 600; // seconds that timer counts down
 const TRAINING_TRIAL_DURATION = (TRAINING_TIMER_DURATION + 1) * 1000; // in ms, force end of decision after this time, +1 to allow timer to reach 0
 const TRAINING_NUM_DECISIONS = 2; 
 

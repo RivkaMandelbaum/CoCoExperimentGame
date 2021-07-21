@@ -6,7 +6,7 @@
 
 /* For trial duration paramaters: 
    Must be placed here so that trialdefs.js can access during creation. */ 
-const TIMER_DURATION = 1; // seconds that timer counts down
+const TIMER_DURATION = 600; // seconds that timer counts down
 const TRIAL_DURATION = (TIMER_DURATION + 1) * 1000; // ms, force end of decision after this time (+1 to allow timer to reach 0)
 const waitDuration = 10 * 1000; // when offline, and function_ends_trial is false in waiting trials, waiting trials end after this amount of time
 let intervalID = null; // for timer functions
