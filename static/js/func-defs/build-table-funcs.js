@@ -65,15 +65,17 @@ function otherBasic(p) {
 // third column: total payoff 
 function buildTable_TotalPayoff(){
     let s = "<div id='stimulus-content'><div id=congratulations>";
-    if (self.is_copying) { 
+    if (self.is_copying) {
         let pos = idLookup[self.copying_id];
         s += `Good choice copying <span id='congrats-player-name'>${players[pos].name}</span>! `;
     }
-    s += `Your total bonus earned from artworks and being copied is now <span id='congrats-player-money'>${self.money}</span>!</div>`
+        else
+            s += `Good choice! `;
+    s += `Your total bonus earned from artworks and being followed is now <span id='congrats-player-money'>${self.money}</span>.</div>`
 
     s = showImageChosen(s);
 
-    let table = introString(s) + "<th> Total Bonus from Artworks and Copies </th>";
+    let table = introString(s) + "<th> Total Bonus from Artworks and Followers </th>";
     const addRowEnd = "</tr>";
     
     // build first row of table (yourself)   

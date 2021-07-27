@@ -4,7 +4,7 @@
   consent form.  Even if you are not required to provide
   a consent form, it is helpful to use this form to
   describe what people can do if an error comes up, etc...
-
+/* XB edits */
 -->
 {% block head %}
     {{ super() }}
@@ -33,21 +33,29 @@
 					overflow:visible;
 				}
 			}
+            h3 {text-align: center;}
+            p {font-size: 16px;}
 		</style>
     {% endblock %}
 {% block body %}
         <div id="container-consent">
             <div id="consent">
-                <h1>We need your consent to proceed</h1>
+                <h3>Informed Consent</h3>
                 <hr />
                 <div class="legal well">
                     <p>
-                    You have been invited to take part in a research study named BLAH BLAH
-                    </p>
+                    You have been invited to take part in an interactive game: An Art Connoisseur
+                    </p><br>
                     <p>
-                    Put your consent form here.  If you are a worker and are viewing this
-                    please decline the HIT.  This requester doesn't know what they are doing.
-                    </p>
+                    You will play this game with other people. All of you will see many artworks with different monetary values.
+                        Your task is to find the most expensive artwork, because the more expensive ones you choose the more bonus you can get.
+                        You can select by yourself or you can choose to follow other players if you think they are good at this game.
+                        More instructions appear after this consent form. This study contains minimal risk and all data collected will be confidential.
+                    </p><br>
+                    <p>
+                    This study is approved under Instituional Review Board at Princeton University.
+                        Should you have any question regarding this study, please contact 609-258-8543 or irb@princeton.edu
+                    </p><br>
 
                     <button type="button" class="btn btn-default btn-sm" onClick="window.print();">
                     <span class="glyphicon glyphicon-print"></span> Print a copy of this
@@ -55,7 +63,7 @@
                 </div>
 
                 <hr />
-                <h4>Do you understand and consent to these terms?</h4>
+                <h3>Do you understand and consent to these terms?</h3>
                 <br />
 
                 <center>

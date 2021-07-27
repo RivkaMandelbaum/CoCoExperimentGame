@@ -1,7 +1,8 @@
 /* ------------------------------------------------------------ */ 
 /* Definitions of training trials for Artwork Selection         */
 /* Experiment.                                                  */   
-/* Author: Rivka Mandelbaum                                     */  
+/* Author: Rivka Mandelbaum                                     */
+/* Bai edits */
 /* ------------------------------------------------------------ */
 const TRAINING_TIMER_DURATION = 600; // seconds that timer counts down
 const TRAINING_TRIAL_DURATION = (TRAINING_TIMER_DURATION + 1) * 1000; // in ms, force end of decision after this time, +1 to allow timer to reach 0
@@ -19,7 +20,7 @@ let instructions_node_1 = createNodeWithTrial({
         intervalID = startTimer(TRAINING_TIMER_DURATION);
         document.getElementById("money-amount").innerHTML = "Your total amount of money is: " + START_MONEY.toString();
     },
-    pages: ["<div id = 'instructions-welcome'><h1>Welcome to the game of Art Connoisseur!</h1></div>"],
+    pages: ["<div id = 'instructions-welcome'><h3>Welcome to the game of Art Connoisseur!</h3><br></div>"],
     show_clickable_nav: true,            
     allow_backward: false,
     on_finish: function() { 
@@ -37,13 +38,13 @@ let instructions_node_2 = createNodeWithTrial({
     allow_backward: false,
     pages: [
         game_goal,
-        "<div id = 'art-values'><h1>The Arts and Their Values</h1><p>The artwork values can be $1, $2, $3, $4, $5, $6, $7, $8, $9, or $10.</p><p>The value of the artwork you selected will become your bonus.</p><p>That is, if the art you selected is worth $1, you earn 1 cent; if it is worth $10, you earn 10 cents.</div>",
-        "<div id= 'copy-explanation'><h1>Learn From an Art Connoisseur</h1><p>You will see how you and others did after each round.</p><p>In each round you can either select the artwork on your own, or you can learn from others.</p><p>If you think there is a player who is really good at the game, you can choose to copy their selections.</p></div>",
+        "<div id = 'art-values'><h3>The Arts and Their Values</h3><br><p>The artwork values range from $1 to $10.</p><p>The value of the artwork you selected will become your bonus.</p><p>If the art you selected is worth $1, you earn 1 cent; if it is worth $10, you earn 10 cents.</p><br></div>",
+        "<div id= 'copy-explanation'><h3>Learn From an Art Connoisseur</h3><br><p>You will see how you and others did after each round.</p><p>In each round you can either select the artwork on your own, or you can learn from others.</p><p>If you think there is a player who is really good at the game, you can choose to copy their selections.</p><br></div>",
 
     ],
     // the game only accesses these constants during actual gameplay
     on_load: function() { 
-        document.getElementById("game-goal").innerHTML = `<div id='game-goal-wrapper'><h1>Choose Arts - Earn Bonus</h1><p>Imagine you are invited to an art museum with ${numOtherPlayers} other players.</p><p>In each round, all players will be shown ${NUM_IMAGES} randomly selected artworks. </p><p>You will be asked to choose the art that you think is the most expensive.</p></div>`;
+        document.getElementById("game-goal").innerHTML = `<div id='game-goal-wrapper'><h3>Choose Arts - Earn Bonus</h3><br><p>Imagine you are invited to an art museum with ${numOtherPlayers} other players.</p><p>In each round, all players will be shown ${NUM_IMAGES} randomly selected artworks. </p><p>You will be asked to choose the art that you think is the most expensive.</p><br></div>`;
     },
     on_finish: function() { 
         clearInterval(intervalID);
@@ -59,12 +60,13 @@ let instructions_node_3 = createNodeWithTrial({
     allow_backward: false,
     pages: [
         copy_fee,
-        "<div id='time'><h1>Let's Keep It in Time</h1><p>Please complete your decision within the designated time at each round.</p><p>If you do not finish in time, your choice will be made for you, and if you run out of time twice, or if you fail an attention check, you will be removed from the game.</p><p>Your total amount of money earned can be found on the bottom right of the screen.</p></div>",
-        "<div id = 'practice'><h1>Practice</h1><p>We hope you will enjoy this game!</p><p>Let's first practice a little bit.</p><p>Press next to begin practice.</p></div>",
+        "<div id='time'><h3>Let's Keep It in Time</h3><br><p>Please complete your decision within the designated time at each round.</p><p>If you do not finish in time, your choice will be made for you.</p><p>If you run out of time twice, or if you fail an attention check, you will be removed from the game.</p><br></div>",
+        // <p>Your can find your total money earned on the bottom right of the screen.</p>
+        "<div id = 'practice'><h3>Practice</h3><br><p>We hope you will enjoy this game!</p><p>Let's practice first.</p><br></div>",
     ],
     // the game only accesses these constants during actual gameplay
     on_load: function() { 
-        document.getElementById("copy-fee").innerHTML = `<div id='copy-fee-wrapper'><h1>Pay $${COPY_FEE} to Learn From Others</h1><p>If you decide to copy, all you need to do is pay $1 (worth 1 real cent) to that player.</p><p>If you copy someone, you receive the same reward as they do.</p><p>If you copy, you will be able to see the artworks, but you will not select on your own.</p></div>`;
+        document.getElementById("copy-fee").innerHTML = `<div id='copy-fee-wrapper'><h3>Pay $${COPY_FEE} to Learn From Others</h3><br><p>If you decide to follow, all you need to do is pay $1 (worth 1 real cent) to that player.</p><p>If you follow someone, you receive the same reward as they do.</p><p>If you follow, you will see the selected artworks, but you will not select on your own.</p><br></div>`;
     },
     on_finish: function() { 
         clearInterval(intervalID);
@@ -107,9 +109,9 @@ let intro_mechanism_trial = createNodeWithTrial({
         intervalID = startTimer(TRAINING_TIMER_DURATION);
     },
     stimulus: function() { 
-        return `<h1>Welcome!</h1><p>To other players, you will appear as: <div id='player-name-avatar'><img src=${self.avatar_filepath} id ='intro-player-avatar' />${self.name.replace("(you)", "")}</div>`;
+        return `<h3>Welcome!</h3><br><p>To other players, you will appear as: <strong><id='player-name-avatar'><img src=${self.avatar_filepath} id ='intro-player-avatar' />${self.name.replace("(you)", "")}</strong></div>`;
     }, 
-    prompt: "Press any key to continue.",
+    prompt: "<br>Press any key to continue.",
     on_finish: function() { 
         clearInterval(intervalID);
     },
@@ -160,7 +162,7 @@ let first_mechanism_trial = createNodeWithTrial({
         }
     },
     preamble: "<p>This is how you will see artworks in future rounds.</p> <p>Please select the <strong>first (leftmost)</strong> artwork and <strong>ignore</strong> the instruction below.</p>",
-    prompt: "Please select what you think is the <strong> highest-value </strong> artwork.",
+    prompt: "<br>Please select what you think is the <strong> highest-value </strong> artwork.",
     on_finish: function() { 
         clearInterval(intervalID);
 
@@ -206,7 +208,7 @@ let second_mechanism_round = createNodeWithTrial({
         let tablefunc = CONDITION_LOOKUP[mycondition]; 
         let s = explanation_string + tablefunc();
 
-        s += (`<p id='next-round-instructions'>In the next round, you may either choose the highest-value artwork on your own or pay another player $${COPY_FEE} to copy their choice.</p></div>`);
+        s += (`<p id='next-round-instructions'>In the next round, you may either <strong>choose on your own</strong> or pay another player $${COPY_FEE} to <strong>follow their choice</strong>.</p><br>`);
 
 
         return s;
@@ -263,7 +265,7 @@ let mechanism_rounds = [intro_mechanism_trial, first_mechanism_timeline, second_
 
 let transition_screen = createNodeWithTrial({
     type: "html-button-response", 
-    stimulus: "Nice job! You'll play a few more practice rounds, then answer some questions before moving to the real game.",
+    stimulus: "<h3>Nice job!</h3><br><p>You'll play a few more practice rounds, then answer some questions before moving to the real game.</p><br>",
     choices: ["Continue"],
     on_start: function() { 
         intervalID = startTimer(TRAINING_TIMER_DURATION);
@@ -290,7 +292,7 @@ instructions_art_display.preamble =  function() {
     if (self.is_copying) { 
         let pos = idLookup[self.copying_id];
         let name = players[pos].name;
-        return `${practice_explanation}<p id='copying-no-choice-explanation'>Because you're copying <strong>${name}</strong>, you can't choose an artwork in this round. Here are the artworks that ${name} is choosing from.</p>`   
+        return `${practice_explanation}<p id='copying-no-choice-explanation'>Because you're copying <strong>${name}</strong>, you can't choose an artwork in this round. Here are the artworks that ${name} is choosing from.</p><br>`
     }
     else {
         console.warn("Art display copy trial reached, but self.is_copying is false!");
@@ -337,7 +339,7 @@ let realistic_training_trials = {
                         s += CONDITION_LOOKUP[self.condition]();
 
                         if(numExecutions < TRAINING_NUM_DECISIONS) { 
-                            s += (`<div id='next-round-instructions'>In the next round, you may either choose the highest-value artwork on your own or pay another player $${COPY_FEE} to copy their choice.</div></div>`);
+                            s += (`<p id='next-round-instructions'>In the next round, you may either <strong>choose on your own</strong> or pay another player $${COPY_FEE} to <strong>follow their choice</strong>.</p><br>`);
                         }
                         return s;
                     },
@@ -410,7 +412,7 @@ let quiz_round = {
     },
     preamble: function(){ 
         let build_table_func = CONDITION_LOOKUP[self.condition];
-        return build_table_func() + "Please scroll to answer these questions before continuing to the game."
+        return build_table_func() + "<br>Please scroll to answer these questions before continuing to the game."
     },
     questions: function() { 
         let questions = [];
@@ -469,15 +471,15 @@ let quiz_round = {
         correct_answers.copy_fee = `$${COPY_FEE}`;
 
         // define strings for third question
-        const direct_payoff_condition = "Only art value";
-        const copy_payoff_condition = "Only copy fee";
-        const total_payoff_condition = "Both art value and copy fee"
+        const direct_payoff_condition = "Money earned from artworks <strong>only</strong>";
+        const copy_payoff_condition = "Money earned from followers <strong>only</strong>";
+        const total_payoff_condition = "Money earned from both"
 
         // define third question
         let total_meaning = { 
             name: "total_meaning",
             prompt: "<span class='question-2-text'>What is included in the value shown in the right-hand (money) column?</span>",
-            options: [direct_payoff_condition, copy_payoff_condition, total_payoff_condition, "Neither art value nor copy fee", "I don't know"]
+            options: [direct_payoff_condition, copy_payoff_condition, total_payoff_condition, "Money earned from neither", "I don't know"]
         }
         questions.push(total_meaning);
         if(self.condition == TOTAL_MONEY_CONDITION) correct_answers.total_meaning = total_payoff_condition;
