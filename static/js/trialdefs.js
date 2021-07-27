@@ -35,7 +35,7 @@ function createNodeWithTrial(trial_definition) {
 	let welcome = {
 		type: "html-keyboard-response",
 		stimulus: function() { 
-            return `<h1>Now let's do it for real!</h1><p>Good job on the practice rounds!</p><p>We're going to reset each player's money and start the real game.</p><p>You will begin with $${START_MONEY}, as will other players.</p><p>Press any key to begin.</p>`
+            return `<h3>Now let's do it for real!</h3><br><p>We will reset each player's money and start the real game.</p><p>You will begin with $${START_MONEY}, as will other players.</p><br><p>Press any key to begin.</p>`
         },
 		on_start: function() { 
             intervalID = startTimer(TIMER_DURATION); 
@@ -67,7 +67,7 @@ function createNodeWithTrial(trial_definition) {
    },
    choices: () => artArray(true, jsPsych.progress().current_trial_global),
     /*preamble:*/
-    prompt: "Please select what you think is the <strong> highest-value </strong> artwork.",
+    prompt: "<br>Please select what you think is the <strong> highest-value </strong> artwork.",
     data: {
         art_choices: "Placeholder to be updated in waiting trial through backendArtSelections function. Array of Artwork objects.", 
         order: "Placeholder to be updated in the on_finish function."
@@ -118,7 +118,7 @@ let art_choice_wait = {
             players[i].money += reward;
             players[i].reward += reward;
             players[i].reward_earned = reward;
-            players[i].money_earned = reward;
+            players[i].money_earned += reward;
         }
         showSidebarInfo();
     
@@ -195,7 +195,7 @@ let art_display_wait = {
             players[i].money += reward;
             players[i].reward += reward;
             players[i].reward_earned = reward;
-            players[i].money_earned = reward;
+            players[i].money_earned += reward;
         }
         showSidebarInfo();
 
@@ -234,7 +234,7 @@ let results_display = {
 
         // in all but last round, add explanation about being allowed to copy
         if (numExecutions < NUM_DECISIONS) {
-            return s + (`<div id='next-round-instructions'>In the next round, you may either choose the highest-value artwork on your own or pay another player $${COPY_FEE} to copy their choice.</div></div>`);
+            return s + (`<p id='next-round-instructions'>In the next round, you may either <strong>choose on your own</strong> or pay another player $${COPY_FEE} to <strong>follow their choice</strong>.</p><br>`);
         }
         else { 
             return s;
@@ -303,7 +303,7 @@ let results_display_wait = {
             currInfo = copyingInfo[i];  
             players[i].numWasCopied += currInfo.num_was_copied;
             players[i].money += currInfo.delta_money; 
-            players[i].money_earned += currInfo.delta_money; 
+            players[i].money_earned = currInfo.delta_money;
     
             if (currInfo.copying) {
                 players[i].numCopyingOther++;
