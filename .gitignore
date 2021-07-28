@@ -1,0 +1,6 @@
+participants.db
+.idea/
+.psiturk_history
+__pycache__/
+server.log
+
