@@ -28,7 +28,7 @@ The functions are defined in func-defs files:
 
 	/* quantities of parts of experiment*/           
 	const NUM_IMAGES = 5; // the number of artworks displayed (used in offline mode)
-	const NUM_DECISIONS = 9; // number of times you choose to copy, also needed to calculate start amount and skip last "choice" buttons
+	const NUM_DECISIONS = 19; // the number of rounds of the real game, also needed to calculate start amount and skip last "choice" buttons
 
 	/* money-related */
 	const COPY_FEE = 1; // amount you need to pay someone to copy their choices
